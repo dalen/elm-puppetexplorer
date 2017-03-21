@@ -9,7 +9,6 @@ import Menubar.Types exposing (..)
 view : Model -> Html Msg
 view model =
     Navbar.config NavbarMsg
-        |> Navbar.withAnimation
         |> Navbar.brand [ href "#" ] [ text "Brand" ]
         |> Navbar.items
             [ Navbar.itemLink [ href "#" ] [ text "Item 1" ]
