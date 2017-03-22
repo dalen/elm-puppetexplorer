@@ -1,14 +1,19 @@
 module Main exposing (..)
 
-import Html
-import Types
+import Navigation exposing (Location)
 import State
+import Types
 import View
+
+
+parseRoute : Location -> Types.Msg
+parseRoute location =
+    Types.LocationChange location
 
 
 main : Program Never Types.Model Types.Msg
 main =
-    Html.program
+    Navigation.program parseRoute
         { init = State.init
         , update = State.update
         , subscriptions = State.subscriptions

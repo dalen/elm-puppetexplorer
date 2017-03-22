@@ -1,10 +1,11 @@
 module Search.State exposing (..)
 
+import Navigation exposing (Location)
 import Search.Types exposing (..)
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Location -> ( Model, Cmd Msg )
+init location =
     ( { query = "" }, Cmd.none )
 
 

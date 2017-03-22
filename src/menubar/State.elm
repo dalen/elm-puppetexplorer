@@ -1,11 +1,12 @@
 module Menubar.State exposing (..)
 
+import Navigation exposing (Location)
 import Bootstrap.Navbar as Navbar
 import Menubar.Types exposing (..)
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Location -> ( Model, Cmd Msg )
+init location =
     let
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg

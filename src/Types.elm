@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Menubar.Types
 import Search.Types
+import Navigation exposing (Location)
 
 
 type alias Model =
@@ -14,4 +15,5 @@ type alias Model =
 type Msg
     = MenubarMsg Menubar.Types.Msg
     | SearchMsg Search.Types.Msg
+    | LocationChange Location
     | NoOp
