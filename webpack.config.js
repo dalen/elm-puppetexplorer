@@ -18,6 +18,8 @@ module.exports = {
       {
         test: /\.(css|scss)$/,
         use: [
+          'file-loader',
+          'extract-loader',
           'style-loader',
           'css-loader',
         ]
@@ -25,7 +27,24 @@ module.exports = {
       {
         test:    /\.html$/,
         exclude: /node_modules/,
-        loader:  'file-loader?name=[name].[ext]',
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+            },
+          },
+          {
+            loader: 'extract-loader',
+          },
+          {
+            loader: 'html-loader',
+            options: {
+              attrs: 'img:src',
+              link: 'href',
+            },
+          },
+        ],
       },
       {
         test:    /\.elm$/,
