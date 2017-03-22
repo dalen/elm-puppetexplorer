@@ -9,7 +9,7 @@ import Types exposing (..)
 header : String -> Maybe String -> Model -> Html Msg
 header active query model =
     div []
-        [ Search.view query model
+        [ Search.view query
         , Menubar.view active query model.menubar
         ]
 

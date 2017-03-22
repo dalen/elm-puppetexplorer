@@ -8,8 +8,8 @@ import Types exposing (..)
 import Events exposing (onChange)
 
 
-view : Maybe String -> Model -> Html Msg
-view query model =
+view : Maybe String -> Html Msg
+view query =
     div [ class "input-group" ]
         [ span [ class "input-group-addon" ] [ Icon.search ]
         , Input.search
