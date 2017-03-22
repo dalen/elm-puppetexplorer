@@ -5,6 +5,7 @@ import Debug exposing (log)
 import Menubar.State
 import Search.State
 import Types exposing (..)
+import UrlParser exposing (..)
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -19,9 +20,23 @@ init location =
         ( { string = "Hello"
           , menubar = menubarModel
           , search = searchModel
+          , route = parsePath route location
           }
         , Cmd.none
         )
+
+
+route : Parser (Route -> a) a
+route =
+    oneOf
+        [ map Dashboard (s "" <?> stringParam "query")
+        , map NodeList (s "nodes" <?> stringParam "query")
+        ]
+
+
+noCmd : Model -> ( Model, Cmd msg )
+noCmd model =
+    ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -46,7 +61,8 @@ update msg model =
                     ( { model | search = searchModel }, Cmd.map SearchMsg cmd )
 
             LocationChange location ->
-                ( model, Cmd.none )
+                { model | route = parsePath route location }
+                    |> noCmd
 
             NoOp ->
                 ( model, Cmd.none )

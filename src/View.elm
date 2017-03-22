@@ -8,11 +8,30 @@ import Types exposing (..)
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ Search.View.view model.search
-            |> Html.map SearchMsg
-        , Menubar.View.view
-            model.menubar
-            |> Html.map MenubarMsg
-        , text model.string
-        ]
+    case model.route of
+        Just (Dashboard query) ->
+            div []
+                [ Search.View.view model.search
+                    |> Html.map SearchMsg
+                , Menubar.View.view query model.menubar
+                    |> Html.map MenubarMsg
+                , text model.string
+                ]
+
+        Just (NodeList query) ->
+            div []
+                [ Search.View.view model.search
+                    |> Html.map SearchMsg
+                , Menubar.View.view query model.menubar
+                    |> Html.map MenubarMsg
+                , text "nodelist"
+                ]
+
+        Nothing ->
+            div []
+                [ Search.View.view model.search
+                    |> Html.map SearchMsg
+                , Menubar.View.view Nothing model.menubar
+                    |> Html.map MenubarMsg
+                , text "not found"
+                ]

@@ -6,12 +6,20 @@ import Html.Attributes exposing (href)
 import Menubar.Types exposing (..)
 
 
-view : Model -> Html Msg
-view model =
-    Navbar.config NavbarMsg
-        |> Navbar.brand [ href "#" ] [ text "Brand" ]
-        |> Navbar.items
-            [ Navbar.itemLink [ href "#" ] [ text "Item 1" ]
-            , Navbar.itemLink [ href "#" ] [ text "Item 2" ]
-            ]
-        |> Navbar.view model.navbarState
+view : Maybe String -> Model -> Html Msg
+view query model =
+    let
+        queryString =
+            case query of
+                Just str ->
+                    "?query=" ++ str
+
+                Nothing ->
+                    ""
+    in
+        Navbar.config NavbarMsg
+            |> Navbar.items
+                [ Navbar.itemLink [ href ("/" ++ queryString) ] [ text "Dashboard" ]
+                , Navbar.itemLink [ href ("/nodes" ++ queryString) ] [ text "Nodes" ]
+                ]
+            |> Navbar.view model.navbarState
