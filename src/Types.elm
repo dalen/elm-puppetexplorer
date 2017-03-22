@@ -1,14 +1,12 @@
 module Types exposing (..)
 
-import Menubar.Types
 import Navigation exposing (Location)
-import Search.Types
+import Bootstrap.Navbar
 
 
 type alias Model =
     { string : String
-    , menubar : Menubar.Types.Model
-    , search : Search.Types.Model
+    , menubar : Bootstrap.Navbar.State
     , route : Maybe Route
     }
 
@@ -19,7 +17,8 @@ type Route
 
 
 type Msg
-    = MenubarMsg Menubar.Types.Msg
-    | SearchMsg Search.Types.Msg
+    = NavbarMsg Bootstrap.Navbar.State
+    | UpdateQuery String
+    | NewUrl String
     | LocationChange Location
     | NoOp

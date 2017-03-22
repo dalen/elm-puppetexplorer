@@ -2,27 +2,22 @@ module State exposing (..)
 
 import Navigation exposing (Location)
 import Debug exposing (log)
-import Menubar.State
-import Search.State
 import Types exposing (..)
 import UrlParser exposing (..)
+import Bootstrap.Navbar
 
 
 init : Location -> ( Model, Cmd Msg )
 init location =
     let
-        ( menubarModel, menubarMsg ) =
-            Menubar.State.init location
-
-        ( searchModel, searchMsg ) =
-            Search.State.init location
+        ( navbarState, navbarCmd ) =
+            Bootstrap.Navbar.initialState NavbarMsg
     in
         ( { string = "Hello"
-          , menubar = menubarModel
-          , search = searchModel
+          , menubar = navbarState
           , route = parsePath route location
           }
-        , Cmd.none
+        , navbarCmd
         )
 
 
@@ -46,19 +41,14 @@ update msg model =
             Debug.log "update" ( msg, model )
     in
         case msg of
-            MenubarMsg msg ->
-                let
-                    ( menubarModel, cmd ) =
-                        Menubar.State.update msg model.menubar
-                in
-                    ( { model | menubar = menubarModel }, Cmd.map MenubarMsg cmd )
+            NavbarMsg state ->
+                ( { model | menubar = state }, Cmd.none )
 
-            SearchMsg msg ->
-                let
-                    ( searchModel, cmd ) =
-                        Search.State.update msg model.search
-                in
-                    ( { model | search = searchModel }, Cmd.map SearchMsg cmd )
+            UpdateQuery query ->
+                ( model, Navigation.newUrl ("/?query=" ++ query) )
+
+            NewUrl url ->
+                ( model, Navigation.newUrl url )
 
             LocationChange location ->
                 { model | route = parsePath route location }
@@ -70,4 +60,4 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Bootstrap.Navbar.subscriptions model.menubar NavbarMsg
