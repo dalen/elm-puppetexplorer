@@ -1,6 +1,7 @@
 module Menubar exposing (view)
 
 import Bootstrap.Navbar as Navbar
+import FontAwesome.Web as Icon
 import Html exposing (Html, text)
 import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
@@ -8,20 +9,30 @@ import Types exposing (..)
 import Events
 
 
+{-| List of attributes for a link that has a href and an onClick handler
+    that creates a NewUrl message
+-}
+eventLink : String -> List (Html.Attribute Msg)
+eventLink url =
+    [ href url
+    , (Events.onClickPreventDefault (NewUrl url))
+    ]
+
+
 navLink : String -> String -> String -> String -> Navbar.Item Msg
 navLink name active url queryString =
     let
         attributes =
-            [ href (url ++ queryString), (Events.onClickPreventDefault (NewUrl (url ++ queryString))) ]
+            eventLink (url ++ queryString)
     in
         if name == active then
             Navbar.itemLink
                 attributes
-                [ text name ]
+                [ Icon.tachometer, text " ", text name ]
         else
             Navbar.itemLinkActive
                 attributes
-                [ text name ]
+                [ Icon.tachometer, text " ", text name ]
 
 
 view : String -> Maybe String -> Navbar.State -> Html Msg

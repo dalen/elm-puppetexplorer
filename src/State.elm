@@ -15,6 +15,7 @@ init location =
     in
         ( { string = "Hello"
           , menubar = navbarState
+          , dashboad = [ [] ]
           , route = parsePath route location
           }
         , navbarCmd
@@ -44,6 +45,7 @@ update msg model =
             NavbarMsg state ->
                 ( { model | menubar = state }, Cmd.none )
 
+            -- FIXME: Take current route into account
             UpdateQuery query ->
                 ( model, Navigation.newUrl ("/?query=" ++ query) )
 
