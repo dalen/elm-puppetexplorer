@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Html exposing (Html, div, text, program)
+import Html.Attributes exposing (class)
 import Types exposing (..)
 import Search
 import Menubar
@@ -13,7 +14,7 @@ header model page =
     div []
         [ Search.view (Routing.getQueryParam model.route)
         , Menubar.view model
-        , page
+        , div [ class "container-fluid" ] [ page ]
         ]
 
 
@@ -23,8 +24,8 @@ view model =
         DashboardRoute query ->
             header
                 model
-                (Dashboard.view model query)
+                (Dashboard.view model)
 
         NodeListRoute query ->
             header model
-                (Dashboard.view model query)
+                (Dashboard.view model)

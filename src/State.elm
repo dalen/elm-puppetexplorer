@@ -4,8 +4,8 @@ import Navigation exposing (Location)
 import Debug exposing (log)
 import Types exposing (..)
 import Bootstrap.Navbar
-import Dashboard
 import Routing
+import Dashboard.Panel
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -18,7 +18,15 @@ init location =
           , menubar = navbarState
           , route = Routing.parse location
           , dashboard =
-                { panels = []
+                { panels =
+                    [ [ Dashboard.Panel.new
+                            |> Dashboard.Panel.title "Nodes"
+                            |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-nodes"
+                      , Dashboard.Panel.new
+                            |> Dashboard.Panel.title "Resources"
+                            |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-resources"
+                      ]
+                    ]
                 }
           }
         , navbarCmd
@@ -40,7 +48,6 @@ update msg model =
             NavbarMsg state ->
                 ( { model | menubar = state }, Cmd.none )
 
-            -- FIXME: Take current route into account
             UpdateQueryMsg query ->
                 case model.route of
                     DashboardRoute _ ->

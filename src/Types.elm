@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Navigation exposing (Location)
 import Bootstrap.Navbar
+import Bootstrap.Card
 
 
 type alias Model =
@@ -9,7 +10,7 @@ type alias Model =
     , menubar : Bootstrap.Navbar.State
     , route : Route
     , dashboard :
-        { panels : List DashboardPanel
+        { panels : List (List DashboardPanel)
         }
     }
 
@@ -30,10 +31,8 @@ type Msg
 type alias DashboardPanel =
     { title : String
     , bean : String
-    , style :
-        String
-
-    -- FIXME: create type for style
+    , style : Bootstrap.Card.CardOption Msg
     , multiply : Maybe Float
     , unit : Maybe String
+    , value : Maybe Float
     }
