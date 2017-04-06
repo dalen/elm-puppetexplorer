@@ -3,8 +3,9 @@ module State exposing (..)
 import Navigation exposing (Location)
 import Debug exposing (log)
 import Types exposing (..)
-import UrlParser exposing (..)
 import Bootstrap.Navbar
+import Dashboard
+import Routing
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -15,19 +16,13 @@ init location =
     in
         ( { string = "Hello"
           , menubar = navbarState
-          , dashboad = [ [] ]
-          , route = parsePath route location
+          , route = Routing.parse location
+          , dashboard =
+                { panels = []
+                }
           }
         , navbarCmd
         )
-
-
-route : Parser (Route -> a) a
-route =
-    oneOf
-        [ map Dashboard (s "" <?> stringParam "query")
-        , map NodeList (s "nodes" <?> stringParam "query")
-        ]
 
 
 noCmd : Model -> ( Model, Cmd msg )
@@ -46,17 +41,22 @@ update msg model =
                 ( { model | menubar = state }, Cmd.none )
 
             -- FIXME: Take current route into account
-            UpdateQuery query ->
-                ( model, Navigation.newUrl ("/?query=" ++ query) )
+            UpdateQueryMsg query ->
+                case model.route of
+                    DashboardRoute _ ->
+                        ( model, Navigation.newUrl (Routing.toString (DashboardRoute (Just query))) )
 
-            NewUrl url ->
-                ( model, Navigation.newUrl url )
+                    NodeListRoute _ ->
+                        ( model, Navigation.newUrl (Routing.toString (NodeListRoute (Just query))) )
 
-            LocationChange location ->
-                { model | route = parsePath route location }
+            NewUrlMsg route ->
+                ( model, Navigation.newUrl (Routing.toString route) )
+
+            LocationChangeMsg location ->
+                { model | route = Routing.parse location }
                     |> noCmd
 
-            NoOp ->
+            NoOpMsg ->
                 ( model, Cmd.none )
 
 

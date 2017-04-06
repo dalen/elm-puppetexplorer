@@ -7,14 +7,24 @@ import Bootstrap.Navbar
 type alias Model =
     { string : String
     , menubar : Bootstrap.Navbar.State
-    , route : Maybe Route
-    , dashboard : List List DashboardPanel
+    , route : Route
+    , dashboard :
+        { panels : List DashboardPanel
+        }
     }
 
 
 type Route
-    = Dashboard (Maybe String)
-    | NodeList (Maybe String)
+    = DashboardRoute (Maybe String)
+    | NodeListRoute (Maybe String)
+
+
+type Msg
+    = NavbarMsg Bootstrap.Navbar.State
+    | UpdateQueryMsg String
+    | NewUrlMsg Route
+    | LocationChangeMsg Location
+    | NoOpMsg
 
 
 type alias DashboardPanel =
@@ -22,15 +32,8 @@ type alias DashboardPanel =
     , bean : String
     , style :
         String
-        -- FIXME: create type for style
+
+    -- FIXME: create type for style
     , multiply : Maybe Float
     , unit : Maybe String
     }
-
-
-type Msg
-    = NavbarMsg Bootstrap.Navbar.State
-    | UpdateQuery String
-    | NewUrl String
-    | LocationChange Location
-    | NoOp

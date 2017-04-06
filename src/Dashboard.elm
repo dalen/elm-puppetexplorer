@@ -1,6 +1,10 @@
-module Dashboard exposing (view)
+module Dashboard exposing (..)
 
-import Bootstrap
+import Html exposing (..)
+import Types exposing (..)
+import Navigation exposing (Location)
 
 
+view : Model -> Maybe String -> Html Msg
 view model query =
+    text (Maybe.withDefault "foobar" query)

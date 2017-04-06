@@ -1,36 +1,30 @@
 module View exposing (view)
 
 import Html exposing (Html, div, text, program)
-import Menubar
-import Search
 import Types exposing (..)
+import Search
+import Menubar
+import Dashboard
+import Routing
 
 
-header : String -> Maybe String -> Model -> Html Msg
-header active query model =
+header : Model -> Html Msg -> Html Msg
+header model page =
     div []
-        [ Search.view query
-        , Menubar.view active query model.menubar
+        [ Search.view (Routing.getQueryParam model.route)
+        , Menubar.view model
+        , page
         ]
 
 
 view : Model -> Html Msg
 view model =
     case model.route of
-        Just (Dashboard query) ->
-            div []
-                [ header "Dashboard" query model
-                , text model.string
-                ]
+        DashboardRoute query ->
+            header
+                model
+                (Dashboard.view model query)
 
-        Just (NodeList query) ->
-            div []
-                [ header "Nodes" query model
-                , text "nodelist"
-                ]
-
-        Nothing ->
-            div []
-                [ header "" Nothing model
-                , text "not found"
-                ]
+        NodeListRoute query ->
+            header model
+                (Dashboard.view model query)

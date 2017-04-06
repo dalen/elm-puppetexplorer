@@ -14,6 +14,6 @@ view query =
         [ span [ class "input-group-addon" ] [ Icon.search ]
         , Input.search
             [ Input.value (Maybe.withDefault "" query)
-            , Input.attrs [ onChange UpdateQuery ]
+            , Input.attrs [ onChange UpdateQueryMsg ]
             ]
         ]

@@ -4,51 +4,49 @@ import Bootstrap.Navbar as Navbar
 import FontAwesome.Web as Icon
 import Html exposing (Html, text)
 import Html.Attributes exposing (href)
-import Html.Events exposing (onClick)
 import Types exposing (..)
 import Events
+import Routing
 
 
 {-| List of attributes for a link that has a href and an onClick handler
     that creates a NewUrl message
 -}
-eventLink : String -> List (Html.Attribute Msg)
-eventLink url =
-    [ href url
-    , (Events.onClickPreventDefault (NewUrl url))
+eventLink : Route -> List (Html.Attribute Msg)
+eventLink route =
+    [ href (Routing.toString route)
+    , (Events.onClickPreventDefault (NewUrlMsg route))
     ]
 
 
-navLink : String -> String -> String -> String -> Navbar.Item Msg
-navLink name active url queryString =
-    let
-        attributes =
-            eventLink (url ++ queryString)
-    in
-        if name == active then
-            Navbar.itemLink
-                attributes
-                [ Icon.tachometer, text " ", text name ]
-        else
-            Navbar.itemLinkActive
-                attributes
-                [ Icon.tachometer, text " ", text name ]
+view : Model -> Html Msg
+view model =
+    Navbar.config NavbarMsg
+        |> Navbar.items
+            -- Dashboard
+            [ let
+                itemLink =
+                    case model.route of
+                        DashboardRoute _ ->
+                            Navbar.itemLinkActive
 
+                        _ ->
+                            Navbar.itemLink
+              in
+                itemLink (eventLink (DashboardRoute (Routing.getQueryParam model.route)))
+                    [ Icon.tachometer, text " ", text "Dashboard" ]
 
-view : String -> Maybe String -> Navbar.State -> Html Msg
-view active query navbarState =
-    let
-        queryString =
-            case query of
-                Just str ->
-                    "?query=" ++ str
+            -- Nodes
+            , let
+                itemLink =
+                    case model.route of
+                        NodeListRoute _ ->
+                            Navbar.itemLinkActive
 
-                Nothing ->
-                    ""
-    in
-        Navbar.config NavbarMsg
-            |> Navbar.items
-                [ navLink "Dashboard" active "/" queryString
-                , navLink "Nodes" active "/nodes" queryString
-                ]
-            |> Navbar.view navbarState
+                        _ ->
+                            Navbar.itemLink
+              in
+                itemLink (eventLink (NodeListRoute (Routing.getQueryParam model.route)))
+                    [ Icon.server, text " ", text "Nodes" ]
+            ]
+        |> Navbar.view model.menubar
