@@ -24,7 +24,7 @@ type Msg
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | FetchDashboardPanels
-    | UpdateDashboardPanel Int Int (Result Http.Error String)
+    | UpdateDashboardPanel Int Int (Result Http.Error Float)
     | NoOpMsg
 
 
@@ -34,5 +34,5 @@ type alias DashboardPanel =
     , style : Bootstrap.Card.CardOption Msg
     , multiply : Maybe Float
     , unit : Maybe String
-    , value : Maybe String
+    , value : Maybe Float
     }

@@ -1,10 +1,11 @@
 module Dashboard.Panel exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (href)
 import Types exposing (DashboardPanel, Msg)
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
+import Json.Decode
 
 
 {-| Return a new empty panel config
@@ -24,9 +25,14 @@ bean str panel =
     { panel | bean = str }
 
 
-value : String -> DashboardPanel -> DashboardPanel
+value : Float -> DashboardPanel -> DashboardPanel
 value value panel =
     { panel | value = Just value }
+
+
+decoder : Json.Decode.Decoder Float
+decoder =
+    Json.Decode.at [ "Value" ] Json.Decode.float
 
 
 {-| Render a panel

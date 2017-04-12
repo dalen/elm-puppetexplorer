@@ -4,9 +4,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Dashboard.Panel
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Http
-import Routing
 import Types exposing (..)
 import List.Extra
 
@@ -17,7 +15,7 @@ getPanelMetric row index panel =
         url =
             "/api/metrics/v1/mbeans/" ++ panel.bean
     in
-        Http.send (UpdateDashboardPanel row index) (Http.getString url)
+        Http.send (UpdateDashboardPanel row index) (Http.get url Dashboard.Panel.decoder)
 
 
 getPanelMetrics : Model -> Cmd Msg
@@ -37,7 +35,7 @@ getPanelMetrics model =
         )
 
 
-setPanelMetric : String -> Int -> Int -> Model -> Model
+setPanelMetric : Float -> Int -> Int -> Model -> Model
 setPanelMetric value rowIndex panelIndex model =
     { model
         | dashboardPanels =
