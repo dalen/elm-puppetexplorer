@@ -18,8 +18,7 @@ init location =
         ( route, routeMsg ) =
             Routing.init location
     in
-        ( { string = "Hello"
-          , menubar = navbarState
+        ( { menubar = navbarState
           , route = route
           , dashboardPanels =
                 [ [ Dashboard.Panel.new

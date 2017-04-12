@@ -67,10 +67,7 @@ metricRow panels =
 view : Model -> Html Msg
 view model =
     div []
-        (text
-            (Maybe.withDefault "foobar" (Routing.getQueryParam model.route))
-            :: List.map (\row -> metricRow row) model.dashboardPanels
-        )
+        (List.map (\row -> metricRow row) model.dashboardPanels)
 
 
 {-| The usage Instructions

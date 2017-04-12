@@ -7,8 +7,7 @@ import Http
 
 
 type alias Model =
-    { string : String
-    , menubar : Bootstrap.Navbar.State
+    { menubar : Bootstrap.Navbar.State
     , route : Route
     , dashboardPanels : List (List DashboardPanel)
     }

@@ -28,4 +28,4 @@ view model =
 
         NodeListRoute query ->
             header model
-                (Dashboard.view model)
+                (text "nodelist")
