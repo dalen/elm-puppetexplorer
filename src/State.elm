@@ -5,6 +5,7 @@ import Debug exposing (log)
 import Types exposing (..)
 import Bootstrap.Navbar
 import Routing
+import Dashboard
 import Dashboard.Panel
 
 
@@ -13,27 +14,29 @@ init location =
     let
         ( navbarState, navbarCmd ) =
             Bootstrap.Navbar.initialState NavbarMsg
+
+        ( route, routeMsg ) =
+            Routing.init location
     in
         ( { string = "Hello"
           , menubar = navbarState
-          , route = Routing.parse location
-          , dashboard =
-                { panels =
-                    [ [ Dashboard.Panel.new
-                            |> Dashboard.Panel.title "Nodes"
-                            |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-nodes"
-                      , Dashboard.Panel.new
-                            |> Dashboard.Panel.title "Resources"
-                            |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-resources"
-                      ]
-                    ]
-                }
+          , route = route
+          , dashboardPanels =
+                [ [ Dashboard.Panel.new
+                        |> Dashboard.Panel.title "Nodes"
+                        |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-nodes"
+                  , Dashboard.Panel.new
+                        |> Dashboard.Panel.title "Resources"
+                        |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-resources"
+                  ]
+                ]
           }
         , navbarCmd
         )
+            |> andThen (update routeMsg)
 
 
-noCmd : Model -> ( Model, Cmd msg )
+noCmd : Model -> ( Model, Cmd Msg )
 noCmd model =
     ( model, Cmd.none )
 
@@ -60,8 +63,20 @@ update msg model =
                 ( model, Navigation.newUrl (Routing.toString route) )
 
             LocationChangeMsg location ->
-                { model | route = Routing.parse location }
-                    |> noCmd
+                let
+                    ( route, routeMsg ) =
+                        Routing.init location
+                in
+                    update routeMsg { model | route = route }
+
+            FetchDashboardPanels ->
+                ( model, Dashboard.getPanelMetrics model )
+
+            UpdateDashboardPanel rowIndex panelIndex (Ok value) ->
+                ( Dashboard.setPanelMetric value rowIndex panelIndex model, Cmd.none )
+
+            UpdateDashboardPanel _ _ (Err _) ->
+                ( model, Cmd.none )
 
             NoOpMsg ->
                 ( model, Cmd.none )
@@ -70,3 +85,12 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Bootstrap.Navbar.subscriptions model.menubar NavbarMsg
+
+
+andThen : (Model -> ( Model, Cmd msg )) -> ( Model, Cmd msg ) -> ( Model, Cmd msg )
+andThen advance ( beginModel, cmd1 ) =
+    let
+        ( newModel, cmd2 ) =
+            advance beginModel
+    in
+        ( newModel, Cmd.batch [ cmd1, cmd2 ] )

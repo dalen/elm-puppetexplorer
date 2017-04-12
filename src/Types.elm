@@ -3,15 +3,14 @@ module Types exposing (..)
 import Navigation exposing (Location)
 import Bootstrap.Navbar
 import Bootstrap.Card
+import Http
 
 
 type alias Model =
     { string : String
     , menubar : Bootstrap.Navbar.State
     , route : Route
-    , dashboard :
-        { panels : List (List DashboardPanel)
-        }
+    , dashboardPanels : List (List DashboardPanel)
     }
 
 
@@ -25,6 +24,8 @@ type Msg
     | UpdateQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
+    | FetchDashboardPanels
+    | UpdateDashboardPanel Int Int (Result Http.Error String)
     | NoOpMsg
 
 
@@ -34,5 +35,5 @@ type alias DashboardPanel =
     , style : Bootstrap.Card.CardOption Msg
     , multiply : Maybe Float
     , unit : Maybe String
-    , value : Maybe Float
+    , value : Maybe String
     }

@@ -24,7 +24,7 @@ bean str panel =
     { panel | bean = str }
 
 
-value : Float -> DashboardPanel -> DashboardPanel
+value : String -> DashboardPanel -> DashboardPanel
 value value panel =
     { panel | value = Just value }
 

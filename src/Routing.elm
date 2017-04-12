@@ -1,4 +1,4 @@
-module Routing exposing (parse, getQueryParam, toString)
+module Routing exposing (init, parse, getQueryParam, toString)
 
 import Navigation exposing (Location)
 import Types exposing (..)
@@ -9,6 +9,22 @@ import Erl
 parse : Location -> Route
 parse location =
     Maybe.withDefault (DashboardRoute Nothing) (parsePath route location)
+
+
+{-| Like parse but also returns commands to initialize the route
+-}
+init : Location -> ( Route, Msg )
+init location =
+    let
+        route =
+            parse location
+    in
+        case route of
+            DashboardRoute _ ->
+                ( route, FetchDashboardPanels )
+
+            _ ->
+                ( route, NoOpMsg )
 
 
 getQueryParam : Route -> Maybe String
