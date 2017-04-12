@@ -65,7 +65,13 @@ metricRow panels =
 view : Model -> Html Msg
 view model =
     div []
-        (List.map (\row -> metricRow row) model.dashboardPanels)
+        (List.append
+            (List.map
+                (\row -> metricRow row)
+                model.dashboardPanels
+            )
+            [ usage ]
+        )
 
 
 {-| The usage Instructions
@@ -79,6 +85,9 @@ usage =
                 ]
             , Grid.col []
                 [ text "test2"
+                ]
+            , Grid.col []
+                [ text "test3"
                 ]
             ]
         ]
