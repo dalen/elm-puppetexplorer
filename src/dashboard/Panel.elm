@@ -1,7 +1,6 @@
 module Dashboard.Panel exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (href)
 import Types exposing (DashboardPanel, Msg)
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
