@@ -38,7 +38,7 @@ view model =
                 DashboardRoute query ->
                     header
                         model
-                        (Dashboard.view model)
+                        (Dashboard.view config model)
 
                 NodeListRoute query ->
                     header model

@@ -6,11 +6,12 @@ import Dashboard.Panel
 import Html exposing (..)
 import Types exposing (..)
 import List.Extra
+import Dict
 
 
 init : Config -> Model -> ( Model, Cmd Msg )
 init config model =
-    ( model
+    ( { model | dashboardPanels = Dict.empty }
     , Cmd.batch
         (List.indexedMap
             (\rowIndex row ->
@@ -22,45 +23,49 @@ init config model =
                         row
                     )
             )
-            model.dashboardPanels
+            config.dashboardPanels
         )
     )
 
 
 setPanelMetric : Float -> Int -> Int -> Model -> Model
 setPanelMetric value rowIndex panelIndex model =
-    { model
-        | dashboardPanels =
-            Maybe.withDefault model.dashboardPanels
-                (List.Extra.updateAt rowIndex
-                    (\row ->
-                        Maybe.withDefault row
-                            (List.Extra.updateAt panelIndex
-                                (\panel ->
-                                    { panel | value = Just value }
-                                )
-                                row
-                            )
-                    )
-                    model.dashboardPanels
-                )
-    }
+    { model | dashboardPanels = Dict.insert ( rowIndex, panelIndex ) value model.dashboardPanels }
 
 
 {-| Render a row of metrics
 -}
-metricRow : List DashboardPanel -> Html Msg
-metricRow panels =
+panelRow : List DashboardPanel -> Html Msg
+panelRow panels =
     Card.deck (List.map (\panel -> Dashboard.Panel.view panel) panels)
 
 
-view : Model -> Html Msg
-view model =
+{-| Get a list of DashboardPanel instances from DashboardPanelConfigs and values
+-}
+panels : List (List DashboardPanelConfig) -> DashboardPanelValues -> List (List DashboardPanel)
+panels panelConfigs values =
+    (List.indexedMap
+        (\rowIndex row ->
+            (List.indexedMap
+                (\panelIndex panelConfig ->
+                    { config = panelConfig
+                    , value = Dict.get ( rowIndex, panelIndex ) values
+                    }
+                )
+                row
+            )
+        )
+        panelConfigs
+    )
+
+
+view : Config -> Model -> Html Msg
+view config model =
     div []
         (List.append
             (List.map
-                (\row -> metricRow row)
-                model.dashboardPanels
+                (\row -> panelRow row)
+                (panels config.dashboardPanels model.dashboardPanels)
             )
             [ usage ]
         )

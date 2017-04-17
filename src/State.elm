@@ -8,6 +8,7 @@ import Routing
 import Dashboard
 import Dashboard.Panel
 import Config
+import Dict
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -23,15 +24,7 @@ init location =
           , messages = []
           , menubar = navbarState
           , route = route
-          , dashboardPanels =
-                [ [ Dashboard.Panel.new
-                        |> Dashboard.Panel.title "Nodes"
-                        |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-nodes"
-                  , Dashboard.Panel.new
-                        |> Dashboard.Panel.title "Resources"
-                        |> Dashboard.Panel.bean "puppetlabs.puppetdb.population:name=num-resources"
-                  ]
-                ]
+          , dashboardPanels = Dict.empty
           }
         , Cmd.batch [ Config.fetch, navbarCmd ]
         )

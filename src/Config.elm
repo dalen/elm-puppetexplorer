@@ -36,7 +36,7 @@ decoder =
             (list
                 (list
                     (Json.Decode.Pipeline.decode
-                        DashboardPanel
+                        DashboardPanelConfig
                         |> required "title" string
                         |> required "bean" string
                         |> required "style" (map styleDecoder string)

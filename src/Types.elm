@@ -4,6 +4,7 @@ import Navigation exposing (Location)
 import Bootstrap.Navbar
 import Bootstrap.Card
 import Http
+import Dict
 
 
 type alias Model =
@@ -11,7 +12,7 @@ type alias Model =
     , messages : List String
     , menubar : Bootstrap.Navbar.State
     , route : Route
-    , dashboardPanels : List (List DashboardPanel)
+    , dashboardPanels : DashboardPanelValues
     }
 
 
@@ -34,11 +35,11 @@ type alias Config =
     { serverUrl : String
     , nodeFacts : List String
     , unresponsiveHours : Int
-    , dashboardPanels : List (List DashboardPanel)
+    , dashboardPanels : List (List DashboardPanelConfig)
     }
 
 
-type alias DashboardPanel =
+type alias DashboardPanelConfig =
     { title : String
     , bean : String
     , style : Bootstrap.Card.CardOption Msg
@@ -46,3 +47,13 @@ type alias DashboardPanel =
     , unit : Maybe String
     , value : Maybe Float
     }
+
+
+type alias DashboardPanel =
+    { config : DashboardPanelConfig
+    , value : Maybe Float
+    }
+
+
+type alias DashboardPanelValues =
+    Dict.Dict ( Int, Int ) Float
