@@ -4,6 +4,7 @@ import Navigation exposing (Location)
 import Types exposing (..)
 import UrlParser exposing (..)
 import Erl
+import Dashboard
 
 
 parse : Location -> Route
@@ -11,20 +12,17 @@ parse location =
     Maybe.withDefault (DashboardRoute Nothing) (parsePath route location)
 
 
-{-| Like parse but also returns commands to initialize the route
+{-| Initialize the current route
+    Can update (initialize) the model for the route as well
 -}
-init : Location -> ( Route, Msg )
-init location =
-    let
-        route =
-            parse location
-    in
-        case route of
-            DashboardRoute _ ->
-                ( route, FetchDashboardPanels )
+init : Route -> Config -> Model -> ( Model, Cmd Msg )
+init route config model =
+    case route of
+        DashboardRoute _ ->
+            Dashboard.init config model
 
-            _ ->
-                ( route, NoOpMsg )
+        _ ->
+            ( model, Cmd.none )
 
 
 getQueryParam : Route -> Maybe String

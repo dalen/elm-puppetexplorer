@@ -5,6 +5,7 @@ module.exports = {
     app: [
       path.resolve(__dirname, 'src', 'index.js'),
       path.resolve(__dirname, 'src', 'index.html'),
+      path.resolve(__dirname, 'src', 'config.json'),
     ]
   },
 
@@ -58,6 +59,13 @@ module.exports = {
       {
         test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: 'file-loader',
+      },
+      {
+        test: /config\.json$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+        },
       },
     ],
 

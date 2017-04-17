@@ -7,7 +7,9 @@ import Http
 
 
 type alias Model =
-    { menubar : Bootstrap.Navbar.State
+    { config : Maybe Config
+    , messages : List String
+    , menubar : Bootstrap.Navbar.State
     , route : Route
     , dashboardPanels : List (List DashboardPanel)
     }
@@ -23,9 +25,17 @@ type Msg
     | UpdateQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
-    | FetchDashboardPanels
+    | UpdateConfigMsg (Result Http.Error Config)
     | UpdateDashboardPanel Int Int (Result Http.Error Float)
-    | NoOpMsg
+    | NoopMsg
+
+
+type alias Config =
+    { serverUrl : String
+    , nodeFacts : List String
+    , unresponsiveHours : Int
+    , dashboardPanels : List (List DashboardPanel)
+    }
 
 
 type alias DashboardPanel =

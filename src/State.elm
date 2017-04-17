@@ -7,6 +7,7 @@ import Bootstrap.Navbar
 import Routing
 import Dashboard
 import Dashboard.Panel
+import Config
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -15,10 +16,12 @@ init location =
         ( navbarState, navbarCmd ) =
             Bootstrap.Navbar.initialState NavbarMsg
 
-        ( route, routeMsg ) =
-            Routing.init location
+        route =
+            Routing.parse location
     in
-        ( { menubar = navbarState
+        ( { config = Nothing
+          , messages = []
+          , menubar = navbarState
           , route = route
           , dashboardPanels =
                 [ [ Dashboard.Panel.new
@@ -30,14 +33,8 @@ init location =
                   ]
                 ]
           }
-        , navbarCmd
+        , Cmd.batch [ Config.fetch, navbarCmd ]
         )
-            |> andThen (update routeMsg)
-
-
-noCmd : Model -> ( Model, Cmd Msg )
-noCmd model =
-    ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -49,6 +46,18 @@ update msg model =
         case msg of
             NavbarMsg state ->
                 ( { model | menubar = state }, Cmd.none )
+
+            UpdateConfigMsg (Ok config) ->
+                let
+                    ( routeModel, routeCmd ) =
+                        Routing.init model.route config model
+                in
+                    ( { routeModel | config = Just config }, routeCmd )
+
+            UpdateConfigMsg (Err _) ->
+                ( { model | messages = "Failed to fetch configuration, retrying" :: model.messages }
+                , Config.fetch
+                )
 
             UpdateQueryMsg query ->
                 case model.route of
@@ -63,13 +72,18 @@ update msg model =
 
             LocationChangeMsg location ->
                 let
-                    ( route, routeMsg ) =
-                        Routing.init location
-                in
-                    update routeMsg { model | route = route }
+                    route =
+                        Routing.parse location
 
-            FetchDashboardPanels ->
-                ( model, Dashboard.getPanelMetrics model )
+                    routeModel =
+                        { model | route = route }
+                in
+                    case model.config of
+                        Nothing ->
+                            ( routeModel, Cmd.none )
+
+                        Just config ->
+                            Routing.init route config routeModel
 
             UpdateDashboardPanel rowIndex panelIndex (Ok value) ->
                 ( Dashboard.setPanelMetric value rowIndex panelIndex model, Cmd.none )
@@ -77,7 +91,7 @@ update msg model =
             UpdateDashboardPanel _ _ (Err _) ->
                 ( model, Cmd.none )
 
-            NoOpMsg ->
+            NoopMsg ->
                 ( model, Cmd.none )
 
 

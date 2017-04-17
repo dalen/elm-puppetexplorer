@@ -4,7 +4,8 @@ import Html exposing (..)
 import Types exposing (DashboardPanel, Msg)
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
-import Json.Decode
+import PuppetDB
+import Http
 
 
 {-| Return a new empty panel config
@@ -29,9 +30,9 @@ value value panel =
     { panel | value = Just value }
 
 
-decoder : Json.Decode.Decoder Float
-decoder =
-    Json.Decode.at [ "Value" ] Json.Decode.float
+fetch : String -> DashboardPanel -> (Result Http.Error Float -> msg) -> Cmd msg
+fetch serverUrl panel msg =
+    PuppetDB.fetchBean serverUrl panel.bean msg
 
 
 {-| Render a panel
