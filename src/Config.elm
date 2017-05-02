@@ -5,6 +5,7 @@ import Http
 import Json.Decode exposing (int, float, string, list, nullable, map)
 import Json.Decode.Pipeline exposing (decode, required, optional)
 import Bootstrap.Card
+import RemoteData
 
 
 fetch : Cmd Msg
@@ -13,7 +14,9 @@ fetch =
         url =
             "/config.json"
     in
-        Http.send (UpdateConfigMsg) (Http.get url decoder)
+        Http.get url decoder
+            |> RemoteData.sendRequest
+            |> Cmd.map UpdateConfigMsg
 
 
 styleDecoder : String -> Bootstrap.Card.CardOption msg

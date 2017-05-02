@@ -3,16 +3,20 @@ module Types exposing (..)
 import Navigation exposing (Location)
 import Bootstrap.Navbar
 import Bootstrap.Card
-import Http
 import Dict
+import Date
+import Time
+import RemoteData exposing (WebData)
 
 
 type alias Model =
-    { config : Maybe Config
+    { config : WebData Config
     , messages : List String
     , menubar : Bootstrap.Navbar.State
     , route : Route
     , dashboardPanels : DashboardPanelValues
+    , nodeList : WebData (List NodeListItem)
+    , date : Date.Date
     }
 
 
@@ -26,8 +30,11 @@ type Msg
     | UpdateQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
-    | UpdateConfigMsg (Result Http.Error Config)
-    | UpdateDashboardPanel Int Int (Result Http.Error Float)
+    | UpdateConfigMsg (WebData Config)
+    | UpdateDashboardPanel Int Int (WebData Float)
+    | UpdateNodeListMsg (WebData (List NodeListItem))
+      --| Index of NodeListItem to update with report stats and the value
+    | TimeMsg Time.Time
     | NoopMsg
 
 
@@ -51,9 +58,23 @@ type alias DashboardPanelConfig =
 
 type alias DashboardPanel =
     { config : DashboardPanelConfig
-    , value : Maybe Float
+    , value : Maybe (WebData Float) -- FIXME: Maybe WebData is pretty convoluted
     }
 
 
 type alias DashboardPanelValues =
-    Dict.Dict ( Int, Int ) Float
+    Dict.Dict ( Int, Int ) (WebData Float)
+
+
+type alias NodeListItem =
+    { certname : String
+    , reportTimestamp : Maybe Date.Date
+    , latestReportStatus : NodeItemStatus
+    }
+
+
+type NodeItemStatus
+    = Changed
+    | Failed
+    | Unchanged
+    | Unknown

@@ -6,9 +6,11 @@ import Types exposing (..)
 import Search
 import Menubar
 import Dashboard
+import NodeList
 import Routing
 import Bootstrap.Alert
 import Bootstrap.Progress
+import RemoteData
 
 
 header : Model -> Html Msg -> Html Msg
@@ -25,15 +27,15 @@ header model page =
 view : Model -> Html Msg
 view model =
     case model.config of
-        Nothing ->
+        RemoteData.Failure err ->
             header model
                 (Bootstrap.Progress.progress
-                    [ Bootstrap.Progress.label "Loading configuration..."
+                    [ Bootstrap.Progress.label ("Failed to load configuration: " ++ (toString err))
                     , Bootstrap.Progress.animated
                     ]
                 )
 
-        Just config ->
+        RemoteData.Success config ->
             case model.route of
                 DashboardRoute query ->
                     header
@@ -42,4 +44,12 @@ view model =
 
                 NodeListRoute query ->
                     header model
-                        (text "nodelist")
+                        (NodeList.view config model)
+
+        _ ->
+            header model
+                (Bootstrap.Progress.progress
+                    [ Bootstrap.Progress.label "Loading configuration..."
+                    , Bootstrap.Progress.animated
+                    ]
+                )

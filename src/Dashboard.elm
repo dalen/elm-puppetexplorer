@@ -5,8 +5,8 @@ import Bootstrap.Grid as Grid
 import Dashboard.Panel
 import Html exposing (..)
 import Types exposing (..)
-import List.Extra
 import Dict
+import RemoteData exposing (WebData)
 
 
 init : Config -> Model -> ( Model, Cmd Msg )
@@ -28,7 +28,7 @@ init config model =
     )
 
 
-setPanelMetric : Float -> Int -> Int -> Model -> Model
+setPanelMetric : WebData Float -> Int -> Int -> Model -> Model
 setPanelMetric value rowIndex panelIndex model =
     { model | dashboardPanels = Dict.insert ( rowIndex, panelIndex ) value model.dashboardPanels }
 

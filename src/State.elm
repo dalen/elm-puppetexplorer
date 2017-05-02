@@ -6,9 +6,13 @@ import Types exposing (..)
 import Bootstrap.Navbar
 import Routing
 import Dashboard
-import Dashboard.Panel
+import NodeList
 import Config
 import Dict
+import RemoteData
+import Time
+import Date
+import Date.Extra
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -20,11 +24,13 @@ init location =
         route =
             Routing.parse location
     in
-        ( { config = Nothing
+        ( { config = RemoteData.NotAsked
           , messages = []
           , menubar = navbarState
           , route = route
           , dashboardPanels = Dict.empty
+          , nodeList = RemoteData.NotAsked
+          , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
           }
         , Cmd.batch [ Config.fetch, navbarCmd ]
         )
@@ -40,17 +46,20 @@ update msg model =
             NavbarMsg state ->
                 ( { model | menubar = state }, Cmd.none )
 
-            UpdateConfigMsg (Ok config) ->
+            UpdateConfigMsg response ->
                 let
-                    ( routeModel, routeCmd ) =
-                        Routing.init model.route config model
+                    configModel =
+                        { model | config = response }
                 in
-                    ( { routeModel | config = Just config }, routeCmd )
+                    case response of
+                        RemoteData.Success config ->
+                            Routing.init model.route config configModel
 
-            UpdateConfigMsg (Err _) ->
-                ( { model | messages = "Failed to fetch configuration, retrying" :: model.messages }
-                , Config.fetch
-                )
+                        RemoteData.Failure _ ->
+                            ( configModel, Config.fetch )
+
+                        _ ->
+                            ( configModel, Cmd.none )
 
             UpdateQueryMsg query ->
                 case model.route of
@@ -72,17 +81,20 @@ update msg model =
                         { model | route = route }
                 in
                     case model.config of
-                        Nothing ->
-                            ( routeModel, Cmd.none )
-
-                        Just config ->
+                        RemoteData.Success config ->
                             Routing.init route config routeModel
 
-            UpdateDashboardPanel rowIndex panelIndex (Ok value) ->
-                ( Dashboard.setPanelMetric value rowIndex panelIndex model, Cmd.none )
+                        _ ->
+                            ( routeModel, Cmd.none )
 
-            UpdateDashboardPanel _ _ (Err _) ->
-                ( model, Cmd.none )
+            UpdateDashboardPanel rowIndex panelIndex response ->
+                ( Dashboard.setPanelMetric response rowIndex panelIndex model, Cmd.none )
+
+            UpdateNodeListMsg response ->
+                ( { model | nodeList = response }, Cmd.none )
+
+            TimeMsg time ->
+                ( { model | date = Date.fromTime time }, Cmd.none )
 
             NoopMsg ->
                 ( model, Cmd.none )
@@ -90,7 +102,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Bootstrap.Navbar.subscriptions model.menubar NavbarMsg
+    Sub.batch
+        [ Bootstrap.Navbar.subscriptions model.menubar NavbarMsg
+        , Time.every Time.second TimeMsg
+        ]
 
 
 andThen : (Model -> ( Model, Cmd msg )) -> ( Model, Cmd msg ) -> ( Model, Cmd msg )

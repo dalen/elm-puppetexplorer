@@ -5,6 +5,7 @@ import Types exposing (..)
 import UrlParser exposing (..)
 import Erl
 import Dashboard
+import NodeList
 
 
 parse : Location -> Route
@@ -13,7 +14,7 @@ parse location =
 
 
 {-| Initialize the current route
-    Can update (initialize) the model for the route as well
+Can update (initialize) the model for the route as well
 -}
 init : Route -> Config -> Model -> ( Model, Cmd Msg )
 init route config model =
@@ -21,8 +22,8 @@ init route config model =
         DashboardRoute _ ->
             Dashboard.init config model
 
-        _ ->
-            ( model, Cmd.none )
+        NodeListRoute query ->
+            NodeList.init config model
 
 
 getQueryParam : Route -> Maybe String

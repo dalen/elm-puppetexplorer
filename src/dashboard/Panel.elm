@@ -1,11 +1,12 @@
 module Dashboard.Panel exposing (..)
 
-import Html exposing (..)
+import Html
+import Html.Attributes
 import Types exposing (DashboardPanel, DashboardPanelConfig, Msg)
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
 import PuppetDB
-import Http
+import RemoteData exposing (WebData)
 
 
 {-| Return a new empty panel config
@@ -30,7 +31,7 @@ value value panel =
     { panel | value = Just value }
 
 
-fetch : String -> DashboardPanelConfig -> (Result Http.Error Float -> msg) -> Cmd msg
+fetch : String -> DashboardPanelConfig -> (WebData Float -> msg) -> Cmd msg
 fetch serverUrl panel msg =
     PuppetDB.fetchBean serverUrl panel.bean msg
 
@@ -40,12 +41,18 @@ fetch serverUrl panel msg =
 view : DashboardPanel -> Card.Config Msg
 view panel =
     Card.config [ panel.config.style ]
-        |> Card.headerH4 [] [ text panel.config.title ]
+        |> Card.headerH4 [] [ Html.text panel.config.title ]
         |> Card.block []
             [ case panel.value of
-                Just value ->
-                    Card.text [] [ text (toString value) ]
+                Just (RemoteData.Success value) ->
+                    Card.text [] [ Html.text (toString value) ]
 
-                Nothing ->
+                Just RemoteData.Loading ->
                     Card.text [] [ Icon.spinner ]
+
+                Just (RemoteData.Failure err) ->
+                    Card.text [ Html.Attributes.title (toString err) ] [ Icon.exclamation_circle ]
+
+                _ ->
+                    Card.text [] []
             ]
