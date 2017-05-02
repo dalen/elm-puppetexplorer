@@ -27,7 +27,8 @@ init config model =
                     , "report_timestamp"
                     , "latest_report_status"
                     ]
-                    (Maybe.withDefault "" query)
+                    "order by certname"
+                    query
                 )
                 nodeListDecoder
                 UpdateNodeListMsg

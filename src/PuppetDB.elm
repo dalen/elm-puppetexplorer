@@ -70,11 +70,27 @@ fetch serverUrl path decoder msg =
             |> Cmd.map msg
 
 
+{-| Create a PQL subquery
+-}
+subquery : String -> String -> String
+subquery endpoint inner =
+    endpoint ++ "{" ++ inner ++ "}"
+
+
 {-| Create a PQL statement
 -}
-pql : String -> List String -> String -> String
-pql endpoint extract inner =
-    if List.isEmpty extract then
-        endpoint ++ "{" ++ inner ++ "}"
-    else
-        endpoint ++ "[" ++ String.join "," extract ++ "]{" ++ inner ++ "}"
+pql : String -> List String -> String -> Maybe String -> String
+pql endpoint extract inner inventoryQuery =
+    let
+        innerQuery =
+            case inventoryQuery of
+                Just inventoryQuery ->
+                    (subquery "inventory" inventoryQuery) ++ " and " ++ inner
+
+                Nothing ->
+                    inner
+    in
+        if List.isEmpty extract then
+            endpoint ++ "{" ++ innerQuery ++ "}"
+        else
+            endpoint ++ "[" ++ String.join "," extract ++ "]{" ++ innerQuery ++ "}"
