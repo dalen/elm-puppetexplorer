@@ -1,26 +1,26 @@
 module View exposing (view)
 
-import Html exposing (Html, div, text, program)
-import Html.Attributes exposing (class)
+import Html exposing (Html)
 import Types exposing (..)
 import Search
 import Menubar
 import Dashboard
 import NodeList
 import NodeDetail
-import Bootstrap.Alert
-import Bootstrap.Progress
+import Bootstrap.Alert as Alert
+import Bootstrap.Progress as Progress
+import Bootstrap.Grid as Grid
 import RemoteData
 
 
 header : Maybe String -> Model -> Html Msg -> Html Msg
 header query model page =
-    div []
+    Html.div []
         [ Search.view query
         , Menubar.view query model.route model.menubar
-        , div [ class "container-fluid" ]
-            (List.map (\message -> Bootstrap.Alert.warning [ text message ]) model.messages)
-        , div [ class "container-fluid" ] [ page ]
+        , Grid.containerFluid []
+            (List.map (\message -> Alert.warning [ Html.text message ]) model.messages)
+        , Grid.containerFluid [] [ page ]
         ]
 
 
@@ -31,10 +31,10 @@ view model =
             -- FIXME: Skip header perhaps?
             header Nothing
                 model
-                (Bootstrap.Progress.progress
-                    [ Bootstrap.Progress.label ("Failed to load configuration: " ++ (toString err))
-                    , Bootstrap.Progress.animated
-                    , Bootstrap.Progress.value 100
+                (Progress.progress
+                    [ Progress.label ("Failed to load configuration: " ++ (toString err))
+                    , Progress.animated
+                    , Progress.value 100
                     ]
                 )
 
@@ -59,8 +59,8 @@ view model =
             -- FIXME: Skip header perhaps?
             header Nothing
                 model
-                (Bootstrap.Progress.progress
-                    [ Bootstrap.Progress.label "Loading configuration..."
-                    , Bootstrap.Progress.animated
+                (Progress.progress
+                    [ Progress.label "Loading configuration..."
+                    , Progress.animated
                     ]
                 )

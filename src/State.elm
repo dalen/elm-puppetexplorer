@@ -58,7 +58,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         _ =
-            Debug.log "update" ( msg, model )
+            case msg of
+                TimeMsg _ ->
+                    msg
+
+                _ ->
+                    Debug.log "update" msg
     in
         case msg of
             NavbarMsg state ->
@@ -113,6 +118,9 @@ update msg model =
 
             UpdateNodeListMsg response ->
                 ( { model | nodeList = response }, Cmd.none )
+
+            UpdateNodeReportListMsg response ->
+                ( { model | nodeReportList = response }, Cmd.none )
 
             TimeMsg time ->
                 ( { model | date = Date.fromTime time }, Cmd.none )

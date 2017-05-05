@@ -9,8 +9,10 @@ import Json.Decode.Extra
 import Json.Decode.Pipeline
 import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
-import Bootstrap.Progress
+import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Date
 import Date.Distance
 
@@ -23,14 +25,29 @@ init config node model =
 
         _ ->
             ( { model | nodeReportList = RemoteData.Loading }
-            , Cmd.none
-              -- FIXME: Actually do request
+            , PuppetDB.queryPQL
+                config.serverUrl
+                (PuppetDB.pql "reports"
+                    [ "receive_time"
+                    , "status"
+                    ]
+                    "order by receive_time desc limit 10"
+                )
+                reportListDecoder
+                UpdateNodeReportListMsg
             )
 
 
 view : Config -> String -> Model -> Html.Html Msg
 view config node model =
-    reportList model.date model.nodeReportList
+    Html.div []
+        [ Html.h1 [] [ Html.text node ]
+        , Grid.simpleRow
+            [ Grid.col
+                [ Col.md6 ]
+                [ reportList model.date model.nodeReportList ]
+            ]
+        ]
 
 
 reportList : Date.Date -> WebData (List NodeReportListItem) -> Html.Html Msg
@@ -48,10 +65,10 @@ reportList date reports =
                 }
 
         _ ->
-            Bootstrap.Progress.progress
-                [ Bootstrap.Progress.label "Loading reports..."
-                , Bootstrap.Progress.animated
-                , Bootstrap.Progress.value 100
+            Progress.progress
+                [ Progress.label "Loading reports..."
+                , Progress.animated
+                , Progress.value 100
                 ]
 
 
@@ -90,17 +107,16 @@ reportListItemView date report =
         Table.tr [] [ timeAgo, status ]
 
 
-nodeListDecoder : Json.Decode.Decoder (List NodeListItem)
-nodeListDecoder =
-    Json.Decode.list nodeListItemDecoder
+reportListDecoder : Json.Decode.Decoder (List NodeReportListItem)
+reportListDecoder =
+    Json.Decode.list reportListItemDecoder
 
 
-nodeListItemDecoder : Json.Decode.Decoder NodeListItem
-nodeListItemDecoder =
-    Json.Decode.Pipeline.decode NodeListItem
-        |> Json.Decode.Pipeline.required "certname" Json.Decode.string
-        |> Json.Decode.Pipeline.required "report_timestamp" (Json.Decode.nullable Json.Decode.Extra.date)
-        |> Json.Decode.Pipeline.required "latest_report_status"
+reportListItemDecoder : Json.Decode.Decoder NodeReportListItem
+reportListItemDecoder =
+    Json.Decode.Pipeline.decode NodeReportListItem
+        |> Json.Decode.Pipeline.required "receive_time" (Json.Decode.nullable Json.Decode.Extra.date)
+        |> Json.Decode.Pipeline.required "status"
             (Json.Decode.oneOf
                 [ Json.Decode.string
                     |> Json.Decode.andThen

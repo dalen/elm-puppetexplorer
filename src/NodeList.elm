@@ -9,7 +9,7 @@ import Json.Decode.Extra
 import Json.Decode.Pipeline
 import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
-import Bootstrap.Progress
+import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
 import Date
 import Date.Distance
@@ -23,7 +23,7 @@ init config model =
             ( { model | nodeList = RemoteData.Loading }
             , PuppetDB.queryPQL
                 config.serverUrl
-                (PuppetDB.pql "nodes"
+                (PuppetDB.pqlInventory "nodes"
                     [ "certname"
                     , "report_timestamp"
                     , "latest_report_status"
@@ -55,10 +55,10 @@ view config query model =
                 }
 
         _ ->
-            Bootstrap.Progress.progress
-                [ Bootstrap.Progress.label "Loading nodes..."
-                , Bootstrap.Progress.animated
-                , Bootstrap.Progress.value 100
+            Progress.progress
+                [ Progress.label "Loading nodes..."
+                , Progress.animated
+                , Progress.value 100
                 ]
 
 

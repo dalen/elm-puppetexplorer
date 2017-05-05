@@ -7,6 +7,9 @@ import Events
 import Routing
 
 
+-- FIXME: move this to Routing
+
+
 link : Route -> List (Html.Html Msg) -> Html.Html Msg
 link route =
     Html.a (linkAttributes route)

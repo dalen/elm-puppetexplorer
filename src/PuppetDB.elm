@@ -1,4 +1,4 @@
-module PuppetDB exposing (fetch, fetchBean, queryPQL, pql)
+module PuppetDB exposing (fetch, fetchBean, queryPQL, pql, pqlInventory)
 
 import Http
 import Json.Decode
@@ -77,10 +77,20 @@ subquery endpoint inner =
     endpoint ++ "{" ++ inner ++ "}"
 
 
+{-| Create a regular PQL statement
+-}
+pql : String -> List String -> String -> String
+pql endpoint extract inner =
+    if List.isEmpty extract then
+        endpoint ++ "{" ++ inner ++ "}"
+    else
+        endpoint ++ "[" ++ String.join "," extract ++ "]{" ++ inner ++ "}"
+
+
 {-| Create a PQL statement with a inventory query
 -}
-pql : String -> List String -> String -> Maybe String -> String
-pql endpoint extract inner inventoryQuery =
+pqlInventory : String -> List String -> String -> Maybe String -> String
+pqlInventory endpoint extract inner inventoryQuery =
     let
         innerQuery =
             case inventoryQuery of
@@ -90,7 +100,4 @@ pql endpoint extract inner inventoryQuery =
                 Nothing ->
                     inner
     in
-        if List.isEmpty extract then
-            endpoint ++ "{" ++ innerQuery ++ "}"
-        else
-            endpoint ++ "[" ++ String.join "," extract ++ "]{" ++ innerQuery ++ "}"
+        pql endpoint extract innerQuery

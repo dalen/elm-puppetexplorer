@@ -35,7 +35,7 @@ type Msg
     | UpdateConfigMsg (WebData Config)
     | UpdateDashboardPanel Int Int (WebData Float)
     | UpdateNodeListMsg (WebData (List NodeListItem))
-      --| Index of NodeListItem to update with report stats and the value
+    | UpdateNodeReportListMsg (WebData (List NodeReportListItem))
     | TimeMsg Time.Time
     | NoopMsg
 
