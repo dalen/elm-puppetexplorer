@@ -1,33 +1,14 @@
-module Routing exposing (init, parse, getQueryParam, toString)
+module Routing exposing (parse, getQueryParam, toString)
 
 import Navigation exposing (Location)
 import Types exposing (..)
 import UrlParser exposing (..)
 import Erl
-import Dashboard
-import NodeList
-import NodeDetail
 
 
 parse : Location -> Route
 parse location =
     Maybe.withDefault (DashboardRoute Nothing) (parsePath route location)
-
-
-{-| Initialize the current route
-Can update (initialize) the model for the route as well
--}
-init : Route -> Config -> Model -> ( Model, Cmd Msg )
-init route config model =
-    case route of
-        DashboardRoute _ ->
-            Dashboard.init config model
-
-        NodeListRoute query ->
-            NodeList.init config model
-
-        NodeDetailRoute node query ->
-            NodeDetail.init config node model
 
 
 getQueryParam : Route -> Maybe String

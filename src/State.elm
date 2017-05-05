@@ -7,6 +7,7 @@ import Bootstrap.Navbar
 import Routing
 import Dashboard
 import NodeList
+import NodeDetail
 import Config
 import Dict
 import RemoteData
@@ -30,10 +31,27 @@ init location =
           , route = route
           , dashboardPanels = Dict.empty
           , nodeList = RemoteData.NotAsked
+          , nodeReportList = RemoteData.NotAsked
           , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
           }
         , Cmd.batch [ Config.fetch, navbarCmd ]
         )
+
+
+{-| Initialize the current route
+Can update (initialize) the model for the route as well
+-}
+initRoute : Route -> Config -> Model -> ( Model, Cmd Msg )
+initRoute route config model =
+    case route of
+        DashboardRoute _ ->
+            Dashboard.init config model
+
+        NodeListRoute query ->
+            NodeList.init config model
+
+        NodeDetailRoute node query ->
+            NodeDetail.init config node model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -53,7 +71,7 @@ update msg model =
                 in
                     case response of
                         RemoteData.Success config ->
-                            Routing.init model.route config configModel
+                            initRoute model.route config configModel
 
                         RemoteData.Failure _ ->
                             ( configModel, Config.fetch )
@@ -85,7 +103,7 @@ update msg model =
                 in
                     case model.config of
                         RemoteData.Success config ->
-                            Routing.init route config routeModel
+                            initRoute route config routeModel
 
                         _ ->
                             ( routeModel, Cmd.none )

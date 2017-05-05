@@ -3,20 +3,9 @@ module Menubar exposing (view)
 import Bootstrap.Navbar as Navbar
 import FontAwesome.Web as Icon
 import Html exposing (Html, text)
-import Html.Attributes exposing (href)
 import Types exposing (..)
-import Events
 import Routing
-
-
-{-| List of attributes for a link that has a href and an onClick handler
-that creates a NewUrl message
--}
-eventLink : Route -> List (Html.Attribute Msg)
-eventLink route =
-    [ href (Routing.toString route)
-    , (Events.onClickPreventDefault (NewUrlMsg route))
-    ]
+import Link
 
 
 view : Maybe String -> Route -> Navbar.State -> Html Msg
@@ -33,7 +22,7 @@ view query route menuModel =
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (eventLink (DashboardRoute query))
+                itemLink (Link.linkAttributes (DashboardRoute query))
                     [ Icon.tachometer, text " ", text "Dashboard" ]
 
             -- Nodes
@@ -46,7 +35,7 @@ view query route menuModel =
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (eventLink (NodeListRoute query))
+                itemLink (Link.linkAttributes (NodeListRoute query))
                     [ Icon.server, text " ", text "Nodes" ]
             ]
         |> Navbar.view menuModel

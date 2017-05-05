@@ -16,6 +16,7 @@ type alias Model =
     , route : Route
     , dashboardPanels : DashboardPanelValues
     , nodeList : WebData (List NodeListItem)
+    , nodeReportList : WebData (List NodeReportListItem)
     , date : Date.Date
     }
 
@@ -79,3 +80,9 @@ type NodeItemStatus
     | Failed
     | Unchanged
     | Unknown
+
+
+type alias NodeReportListItem =
+    { reportTimestamp : Maybe Date.Date
+    , status : NodeItemStatus
+    }

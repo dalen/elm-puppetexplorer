@@ -13,6 +13,7 @@ import Bootstrap.Progress
 import Bootstrap.Table as Table
 import Date
 import Date.Distance
+import Link
 
 
 init : Config -> Model -> ( Model, Cmd Msg )
@@ -38,8 +39,8 @@ init config model =
             ( model, Cmd.none )
 
 
-view : Config -> Model -> Html.Html Msg
-view config model =
+view : Config -> Maybe String -> Model -> Html.Html Msg
+view config query model =
     case model.nodeList of
         RemoteData.Success nodes ->
             Table.table
@@ -50,18 +51,19 @@ view config model =
                         , Table.th [] [ Html.text "Last run" ]
                         , Table.th [] [ Html.text "Status" ]
                         ]
-                , tbody = Table.tbody [] (List.map (nodeListItemView model.date) nodes)
+                , tbody = Table.tbody [] (List.map (nodeListItemView model.date query) nodes)
                 }
 
         _ ->
             Bootstrap.Progress.progress
-                [ Bootstrap.Progress.label "Loading configuration..."
+                [ Bootstrap.Progress.label "Loading nodes..."
                 , Bootstrap.Progress.animated
+                , Bootstrap.Progress.value 100
                 ]
 
 
-nodeListItemView : Date.Date -> NodeListItem -> Table.Row Msg
-nodeListItemView date node =
+nodeListItemView : Date.Date -> Maybe String -> NodeListItem -> Table.Row Msg
+nodeListItemView date query node =
     let
         status =
             case node.latestReportStatus of
@@ -92,7 +94,7 @@ nodeListItemView date node =
                 Nothing ->
                     Table.td [] [ Icon.question_circle ]
     in
-        Table.tr [] [ Table.td [] [ Html.text node.certname ], timeAgo, status ]
+        Table.tr [] [ Table.td [] [ Link.link (NodeDetailRoute node.certname query) [ Html.text node.certname ] ], timeAgo, status ]
 
 
 nodeListDecoder : Json.Decode.Decoder (List NodeListItem)

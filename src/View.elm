@@ -28,11 +28,13 @@ view : Model -> Html Msg
 view model =
     case model.config of
         RemoteData.Failure err ->
+            -- FIXME: Skip header perhaps?
             header Nothing
                 model
                 (Bootstrap.Progress.progress
                     [ Bootstrap.Progress.label ("Failed to load configuration: " ++ (toString err))
                     , Bootstrap.Progress.animated
+                    , Bootstrap.Progress.value 100
                     ]
                 )
 
@@ -46,14 +48,15 @@ view model =
                 NodeListRoute query ->
                     header query
                         model
-                        (NodeList.view config model)
+                        (NodeList.view config query model)
 
                 NodeDetailRoute node query ->
                     header query
                         model
-                        (NodeDetail.view config model)
+                        (NodeDetail.view config node model)
 
         _ ->
+            -- FIXME: Skip header perhaps?
             header Nothing
                 model
                 (Bootstrap.Progress.progress

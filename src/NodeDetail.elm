@@ -17,54 +17,49 @@ import Date.Distance
 
 init : Config -> String -> Model -> ( Model, Cmd Msg )
 init config node model =
-    case model.route of
-        NodeListRoute query ->
-            ( { model | nodeList = RemoteData.Loading }
-            , PuppetDB.queryPQL
-                config.serverUrl
-                (PuppetDB.pql "nodes"
-                    [ "certname"
-                    , "report_timestamp"
-                    , "latest_report_status"
-                    ]
-                    "order by certname"
-                    query
-                )
-                nodeListDecoder
-                UpdateNodeListMsg
-            )
-
-        _ ->
+    case model.nodeReportList of
+        RemoteData.Loading ->
             ( model, Cmd.none )
 
+        _ ->
+            ( { model | nodeReportList = RemoteData.Loading }
+            , Cmd.none
+              -- FIXME: Actually do request
+            )
 
-view : Config -> Model -> Html.Html Msg
-view config model =
-    case model.nodeList of
-        RemoteData.Success nodes ->
+
+view : Config -> String -> Model -> Html.Html Msg
+view config node model =
+    reportList model.date model.nodeReportList
+
+
+reportList : Date.Date -> WebData (List NodeReportListItem) -> Html.Html Msg
+reportList date reports =
+    case reports of
+        RemoteData.Success reports ->
             Table.table
                 { options = [ Table.striped ]
                 , thead =
                     Table.simpleThead
-                        [ Table.th [] []
-                        , Table.th [] [ Html.text "Last run" ]
+                        [ Table.th [] [ Html.text "Last run" ]
                         , Table.th [] [ Html.text "Status" ]
                         ]
-                , tbody = Table.tbody [] (List.map (nodeListItemView model.date) nodes)
+                , tbody = Table.tbody [] (List.map (reportListItemView date) reports)
                 }
 
         _ ->
             Bootstrap.Progress.progress
-                [ Bootstrap.Progress.label "Loading configuration..."
+                [ Bootstrap.Progress.label "Loading reports..."
                 , Bootstrap.Progress.animated
+                , Bootstrap.Progress.value 100
                 ]
 
 
-nodeListItemView : Date.Date -> NodeListItem -> Table.Row Msg
-nodeListItemView date node =
+reportListItemView : Date.Date -> NodeReportListItem -> Table.Row Msg
+reportListItemView date report =
     let
         status =
-            case node.latestReportStatus of
+            case report.status of
                 Changed ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.exclamation_circle ]
@@ -84,7 +79,7 @@ nodeListItemView date node =
                     Table.td [] [ Icon.question_circle ]
 
         timeAgo =
-            case node.reportTimestamp of
+            case report.reportTimestamp of
                 Just reportDate ->
                     Table.td []
                         [ Html.text (Date.Distance.inWords date reportDate) ]
@@ -92,7 +87,7 @@ nodeListItemView date node =
                 Nothing ->
                     Table.td [] [ Icon.question_circle ]
     in
-        Table.tr [] [ Table.td [] [ Html.text node.certname ], timeAgo, status ]
+        Table.tr [] [ timeAgo, status ]
 
 
 nodeListDecoder : Json.Decode.Decoder (List NodeListItem)
