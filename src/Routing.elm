@@ -6,6 +6,7 @@ import UrlParser exposing (..)
 import Erl
 import Dashboard
 import NodeList
+import NodeDetail
 
 
 parse : Location -> Route
@@ -25,6 +26,9 @@ init route config model =
         NodeListRoute query ->
             NodeList.init config model
 
+        NodeDetailRoute node query ->
+            NodeDetail.init config node model
+
 
 getQueryParam : Route -> Maybe String
 getQueryParam route =
@@ -35,12 +39,16 @@ getQueryParam route =
         NodeListRoute query ->
             query
 
+        NodeDetailRoute _ query ->
+            query
+
 
 route : Parser (Route -> a) a
 route =
     oneOf
         [ map DashboardRoute (s "" <?> stringParam "query")
         , map NodeListRoute (s "nodes" <?> stringParam "query")
+        , map NodeDetailRoute (s "nodes" </> string <?> stringParam "query")
         ]
 
 
@@ -53,6 +61,11 @@ routeToErlUrl route =
 
         NodeListRoute query ->
             Erl.parse "/nodes"
+                |> addParam "query" query
+
+        NodeDetailRoute node query ->
+            Erl.parse "/nodes"
+                |> Erl.appendPathSegments [ node ]
                 |> addParam "query" query
 
 

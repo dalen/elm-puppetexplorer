@@ -10,7 +10,7 @@ import Routing
 
 
 {-| List of attributes for a link that has a href and an onClick handler
-    that creates a NewUrl message
+that creates a NewUrl message
 -}
 eventLink : Route -> List (Html.Attribute Msg)
 eventLink route =
@@ -19,34 +19,34 @@ eventLink route =
     ]
 
 
-view : Model -> Html Msg
-view model =
+view : Maybe String -> Route -> Navbar.State -> Html Msg
+view query route menuModel =
     Navbar.config NavbarMsg
         |> Navbar.items
             -- Dashboard
             [ let
                 itemLink =
-                    case model.route of
+                    case route of
                         DashboardRoute _ ->
                             Navbar.itemLinkActive
 
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (eventLink (DashboardRoute (Routing.getQueryParam model.route)))
+                itemLink (eventLink (DashboardRoute query))
                     [ Icon.tachometer, text " ", text "Dashboard" ]
 
             -- Nodes
             , let
                 itemLink =
-                    case model.route of
+                    case route of
                         NodeListRoute _ ->
                             Navbar.itemLinkActive
 
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (eventLink (NodeListRoute (Routing.getQueryParam model.route)))
+                itemLink (eventLink (NodeListRoute query))
                     [ Icon.server, text " ", text "Nodes" ]
             ]
-        |> Navbar.view model.menubar
+        |> Navbar.view menuModel

@@ -7,17 +7,17 @@ import Search
 import Menubar
 import Dashboard
 import NodeList
-import Routing
+import NodeDetail
 import Bootstrap.Alert
 import Bootstrap.Progress
 import RemoteData
 
 
-header : Model -> Html Msg -> Html Msg
-header model page =
+header : Maybe String -> Model -> Html Msg -> Html Msg
+header query model page =
     div []
-        [ Search.view (Routing.getQueryParam model.route)
-        , Menubar.view model
+        [ Search.view query
+        , Menubar.view query model.route model.menubar
         , div [ class "container-fluid" ]
             (List.map (\message -> Bootstrap.Alert.warning [ text message ]) model.messages)
         , div [ class "container-fluid" ] [ page ]
@@ -28,7 +28,8 @@ view : Model -> Html Msg
 view model =
     case model.config of
         RemoteData.Failure err ->
-            header model
+            header Nothing
+                model
                 (Bootstrap.Progress.progress
                     [ Bootstrap.Progress.label ("Failed to load configuration: " ++ (toString err))
                     , Bootstrap.Progress.animated
@@ -38,16 +39,23 @@ view model =
         RemoteData.Success config ->
             case model.route of
                 DashboardRoute query ->
-                    header
+                    header query
                         model
                         (Dashboard.view config model)
 
                 NodeListRoute query ->
-                    header model
+                    header query
+                        model
                         (NodeList.view config model)
 
+                NodeDetailRoute node query ->
+                    header query
+                        model
+                        (NodeDetail.view config model)
+
         _ ->
-            header model
+            header Nothing
+                model
                 (Bootstrap.Progress.progress
                     [ Bootstrap.Progress.label "Loading configuration..."
                     , Bootstrap.Progress.animated

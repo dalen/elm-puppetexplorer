@@ -69,6 +69,9 @@ update msg model =
                     NodeListRoute _ ->
                         ( model, Navigation.newUrl (Routing.toString (NodeListRoute (Just query))) )
 
+                    NodeDetailRoute node _ ->
+                        ( model, Navigation.newUrl (Routing.toString (NodeDetailRoute node (Just query))) )
+
             NewUrlMsg route ->
                 ( model, Navigation.newUrl (Routing.toString route) )
 

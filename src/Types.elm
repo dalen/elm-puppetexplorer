@@ -23,6 +23,7 @@ type alias Model =
 type Route
     = DashboardRoute (Maybe String)
     | NodeListRoute (Maybe String)
+    | NodeDetailRoute String (Maybe String)
 
 
 type Msg

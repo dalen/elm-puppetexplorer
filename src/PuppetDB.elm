@@ -77,7 +77,7 @@ subquery endpoint inner =
     endpoint ++ "{" ++ inner ++ "}"
 
 
-{-| Create a PQL statement
+{-| Create a PQL statement with a inventory query
 -}
 pql : String -> List String -> String -> Maybe String -> String
 pql endpoint extract inner inventoryQuery =
