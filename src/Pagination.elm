@@ -88,7 +88,7 @@ button text active disabled msg =
             ]
         , Events.onClick msg
         ]
-        [ Html.span [ Attributes.class "page-link" ] [ Html.text text ]
+        [ Html.span [ Attributes.class "page-link", Attributes.style [ ( "cursor", "pointer" ) ] ] [ Html.text text ]
         ]
 
 
