@@ -69,15 +69,32 @@ next str config =
 
 view : Config msg -> Html.Html msg
 view config =
-    Html.nav []
-        [ Html.ul [ Attributes.class "pagination" ]
-            (firstButton config
-                ++ prevButton config
-                ++ List.map (pageButton config) (List.range 1 config.items)
-                ++ nextButton config
-                ++ lastButton config
-            )
+    nav
+        (firstButton config
+            ++ prevButton config
+            ++ List.map (pageButton config) (List.range 1 config.items)
+            ++ nextButton config
+            ++ lastButton config
+        )
+
+
+button : String -> Bool -> Bool -> msg -> Html.Html msg
+button text active disabled msg =
+    Html.li
+        [ Attributes.classList
+            [ ( "page-item", True )
+            , ( "active", active )
+            , ( "disabled", disabled )
+            ]
+        , Events.onClick msg
         ]
+        [ Html.span [ Attributes.class "page-link" ] [ Html.text text ]
+        ]
+
+
+nav : List (Html.Html msg) -> Html.Html msg
+nav buttons =
+    Html.nav [] [ Html.ul [ Attributes.class "pagination" ] buttons ]
 
 
 
@@ -86,31 +103,14 @@ view config =
 
 pageButton : Config msg -> Int -> Html.Html msg
 pageButton config page =
-    Html.li
-        [ Attributes.classList
-            [ ( "page-item", True )
-            , ( "active", config.activePage == page )
-            ]
-        , Events.onClick (config.onClick page)
-        ]
-        [ Html.span [ Attributes.class "page-link" ] [ Html.text (toString page) ]
-        ]
+    button (toString page) (config.activePage == page) False (config.onClick page)
 
 
 firstButton : Config msg -> List (Html.Html msg)
 firstButton config =
     case config.first of
         Just first ->
-            [ Html.li
-                [ Attributes.classList
-                    [ ( "page-item", True )
-                    , ( "disabled", config.activePage == 1 )
-                    ]
-                , Events.onClick (config.onClick 1)
-                ]
-                [ Html.span [ Attributes.class "page-link" ] [ Html.text first ]
-                ]
-            ]
+            [ button first False (config.activePage == 1) (config.onClick 1) ]
 
         Nothing ->
             []
@@ -120,16 +120,7 @@ lastButton : Config msg -> List (Html.Html msg)
 lastButton config =
     case config.last of
         Just last ->
-            [ Html.li
-                [ Attributes.classList
-                    [ ( "page-item", True )
-                    , ( "disabled", config.activePage == config.items )
-                    ]
-                , Events.onClick (config.onClick config.items)
-                ]
-                [ Html.span [ Attributes.class "page-link" ] [ Html.text last ]
-                ]
-            ]
+            [ button last False (config.activePage == config.items) (config.onClick config.items) ]
 
         Nothing ->
             []
@@ -139,16 +130,7 @@ prevButton : Config msg -> List (Html.Html msg)
 prevButton config =
     case config.prev of
         Just prev ->
-            [ Html.li
-                [ Attributes.classList
-                    [ ( "page-item", True )
-                    , ( "disabled", config.activePage == 1 )
-                    ]
-                , Events.onClick (config.onClick (config.activePage - 1))
-                ]
-                [ Html.span [ Attributes.class "page-link" ] [ Html.text prev ]
-                ]
-            ]
+            [ button prev False (config.activePage == 1) (config.onClick (config.activePage - 1)) ]
 
         Nothing ->
             []
@@ -158,16 +140,7 @@ nextButton : Config msg -> List (Html.Html msg)
 nextButton config =
     case config.next of
         Just next ->
-            [ Html.li
-                [ Attributes.classList
-                    [ ( "page-item", True )
-                    , ( "disabled", config.activePage == config.items )
-                    ]
-                , Events.onClick (config.onClick (config.activePage + 1))
-                ]
-                [ Html.span [ Attributes.class "page-link" ] [ Html.text next ]
-                ]
-            ]
+            [ button next False (config.activePage == config.items) (config.onClick (config.activePage + 1)) ]
 
         Nothing ->
             []

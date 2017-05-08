@@ -16,7 +16,7 @@ route =
     oneOf
         [ map DashboardRoute (s "" <?> stringParam "query")
         , map NodeListRoute (s "nodes" <?> stringParam "query")
-        , map NodeDetailRoute (s "nodes" </> string <?> stringParam "query")
+        , map NodeDetailRoute (s "nodes" </> string <?> intParam "page" <?> stringParam "query")
         ]
 
 
@@ -31,7 +31,7 @@ routeToErlUrl route =
             Erl.parse "/nodes"
                 |> addParam "query" query
 
-        NodeDetailRoute node query ->
+        NodeDetailRoute node page query ->
             Erl.parse "/nodes"
                 |> Erl.appendPathSegments [ node ]
                 |> addParam "query" query

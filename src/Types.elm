@@ -2,7 +2,6 @@ module Types exposing (..)
 
 import Navigation exposing (Location)
 import Bootstrap.Navbar
-import Bootstrap.Card
 import Dict
 import Date
 import Time
@@ -24,7 +23,7 @@ type alias Model =
 type Route
     = DashboardRoute (Maybe String)
     | NodeListRoute (Maybe String)
-    | NodeDetailRoute String (Maybe String)
+    | NodeDetailRoute String (Maybe Int) (Maybe String)
 
 
 type Msg
@@ -35,6 +34,8 @@ type Msg
     | UpdateDashboardPanel Int Int (WebData Float)
     | UpdateNodeListMsg (WebData (List NodeListItem))
     | UpdateNodeReportListMsg (WebData (List NodeReportListItem))
+    | UpdateNodeReportListCountMsg (WebData Int)
+    | ChangePageMsg Int
     | TimeMsg Time.Time
     | NoopMsg
 

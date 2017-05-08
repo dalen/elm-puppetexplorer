@@ -35,7 +35,7 @@ view model =
                 model
                 (NodeList.view model query)
 
-        NodeDetailRoute node query ->
+        NodeDetailRoute node page query ->
             header query
                 model
-                (NodeDetail.view model node)
+                (NodeDetail.view model node page)

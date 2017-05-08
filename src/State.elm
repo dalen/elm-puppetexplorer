@@ -53,8 +53,8 @@ initRoute route model =
         NodeListRoute query ->
             NodeList.init model query
 
-        NodeDetailRoute node query ->
-            NodeDetail.init model node
+        NodeDetailRoute node page query ->
+            NodeDetail.init model node page
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,8 +80,8 @@ update msg model =
                     NodeListRoute _ ->
                         ( model, Navigation.newUrl (Routing.toString (NodeListRoute (Just query))) )
 
-                    NodeDetailRoute node _ ->
-                        ( model, Navigation.newUrl (Routing.toString (NodeDetailRoute node (Just query))) )
+                    NodeDetailRoute node page _ ->
+                        ( model, Navigation.newUrl (Routing.toString (NodeDetailRoute node page (Just query))) )
 
             NewUrlMsg route ->
                 ( model, Navigation.newUrl (Routing.toString route) )
@@ -104,6 +104,12 @@ update msg model =
 
             UpdateNodeReportListMsg response ->
                 ( { model | nodeReportList = response }, Cmd.none )
+
+            UpdateNodeReportListCountMsg response ->
+                ( model, Cmd.none )
+
+            ChangePageMsg page ->
+                ( model, Cmd.none )
 
             TimeMsg time ->
                 ( { model | date = Date.fromTime time }, Cmd.none )

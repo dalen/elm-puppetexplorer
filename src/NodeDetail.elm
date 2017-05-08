@@ -15,37 +15,62 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Date
 import Date.Distance
+import Pagination
 
 
-init : Model -> String -> ( Model, Cmd Msg )
-init model node =
-    case model.nodeReportList of
-        RemoteData.Loading ->
-            ( model, Cmd.none )
+init : Model -> String -> Maybe Int -> ( Model, Cmd Msg )
+init model node page =
+    let
+        offset =
+            case page of
+                Just page ->
+                    (page - 1) * 10
 
-        _ ->
-            ( { model | nodeReportList = RemoteData.Loading }
-            , PuppetDB.queryPQL
-                model.config.serverUrl
-                (PuppetDB.pql "reports"
-                    [ "receive_time"
-                    , "status"
+                Nothing ->
+                    0
+    in
+        case model.nodeReportList of
+            RemoteData.Loading ->
+                ( model, Cmd.none )
+
+            _ ->
+                ( { model | nodeReportList = RemoteData.Loading }
+                , Cmd.batch
+                    [ PuppetDB.queryPQL
+                        model.config.serverUrl
+                        (PuppetDB.pql "reports"
+                            [ "receive_time"
+                            , "status"
+                            ]
+                            ("order by receive_time desc offset "
+                                ++ toString offset
+                                ++ " limit 10"
+                            )
+                        )
+                        reportListDecoder
+                        UpdateNodeReportListMsg
+                    , PuppetDB.queryPQL
+                        model.config.serverUrl
+                        (PuppetDB.pql "reports"
+                            [ "count()" ]
+                            ("")
+                        )
+                        reportListCountDecoder
+                        UpdateNodeReportListCountMsg
                     ]
-                    "order by receive_time desc limit 10"
                 )
-                reportListDecoder
-                UpdateNodeReportListMsg
-            )
 
 
-view : Model -> String -> Html.Html Msg
-view model node =
+view : Model -> String -> Maybe Int -> Html.Html Msg
+view model node page =
     Html.div []
         [ Html.h1 [] [ Html.text node ]
         , Grid.simpleRow
             [ Grid.col
                 [ Col.md6 ]
-                [ reportList model.date model.nodeReportList ]
+                [ reportList model.date model.nodeReportList
+                , Pagination.config ChangePageMsg |> Pagination.items 20 |> Pagination.view
+                ]
             ]
         ]
 
@@ -110,6 +135,11 @@ reportListItemView date report =
 reportListDecoder : Json.Decode.Decoder (List NodeReportListItem)
 reportListDecoder =
     Json.Decode.list reportListItemDecoder
+
+
+reportListCountDecoder : Json.Decode.Decoder Int
+reportListCountDecoder =
+    Json.Decode.index 0 (Json.Decode.field "count" Json.Decode.int)
 
 
 reportListItemDecoder : Json.Decode.Decoder NodeReportListItem
