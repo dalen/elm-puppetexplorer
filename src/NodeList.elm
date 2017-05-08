@@ -14,7 +14,6 @@ import Date
 import Date.Distance
 import Status
 import Routing
-import Navigation
 import Config
 
 
@@ -66,7 +65,7 @@ update msg model =
             ( { model | nodeList = response }, Cmd.none )
 
         NewUrlMsg route ->
-            ( model, Navigation.newUrl (Routing.toString route) )
+            ( model, Routing.newUrl route )
 
 
 view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Msg

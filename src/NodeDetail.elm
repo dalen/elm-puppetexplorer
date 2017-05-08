@@ -8,6 +8,7 @@ import Json.Decode.Extra
 import Json.Decode.Pipeline
 import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
+import Bootstrap.Alert as Alert
 import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
 import Bootstrap.Grid as Grid
@@ -17,7 +18,6 @@ import Date.Distance
 import Pagination
 import Status exposing (Status)
 import Config exposing (Config)
-import Navigation
 import Routing
 
 
@@ -111,10 +111,7 @@ update msg model =
                     model.routeParams
             in
                 ( model
-                , Navigation.newUrl
-                    (Routing.toString
-                        (Routing.NodeDetailRoute { routeParams | page = Just page })
-                    )
+                , Routing.newUrl (Routing.NodeDetailRoute { routeParams | page = Just page })
                 )
 
 
@@ -126,10 +123,7 @@ view model routeParams date =
             [ Grid.col
                 [ Col.md6 ]
                 [ reportList date model.reportList
-                , Pagination.config ChangePage
-                    |> Pagination.activePage (Maybe.withDefault 1 model.routeParams.page)
-                    |> Pagination.items 20
-                    |> Pagination.view
+                , pagination model
                 ]
             ]
         ]
@@ -190,6 +184,26 @@ reportListItemView date report =
                     Table.td [] [ Icon.question_circle ]
     in
         Table.tr [] [ timeAgo, status ]
+
+
+pagination : Model -> Html.Html Msg
+pagination model =
+    case model.reportCount of
+        RemoteData.Success count ->
+            Pagination.config ChangePage
+                |> Pagination.activePage (Maybe.withDefault 1 model.routeParams.page)
+                |> Pagination.items (count // perPage + 1)
+                |> Pagination.view
+
+        RemoteData.Failure error ->
+            Alert.warning [ Html.text (toString error) ]
+
+        _ ->
+            Progress.progress
+                [ Progress.label "Loading reports..."
+                , Progress.animated
+                , Progress.value 100
+                ]
 
 
 reportListDecoder : Json.Decode.Decoder (List ReportListItem)

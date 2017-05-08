@@ -79,6 +79,11 @@ toString route =
     Erl.toString (routeToErlUrl route)
 
 
+newUrl : Route -> Cmd msg
+newUrl route =
+    Navigation.newUrl (toString route)
+
+
 link : Route -> (Route -> msg) -> List (Html.Html msg) -> Html.Html msg
 link route msg =
     Html.a (linkAttributes route msg)

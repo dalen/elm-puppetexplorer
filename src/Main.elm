@@ -141,14 +141,12 @@ update msg model =
 
                     Routing.NodeDetailRoute params ->
                         ( model
-                        , Navigation.newUrl
-                            (Routing.toString
-                                (Routing.NodeDetailRoute { params | query = Just query })
-                            )
+                        , Routing.newUrl
+                            (Routing.NodeDetailRoute { params | query = Just query })
                         )
 
             NewUrlMsg route ->
-                ( model, Navigation.newUrl (Routing.toString route) )
+                ( model, Routing.newUrl route )
 
             LocationChangeMsg location ->
                 initRoute { model | route = Routing.parse location }
