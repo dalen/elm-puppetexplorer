@@ -51,7 +51,7 @@ initRoute route model =
             Dashboard.init model
 
         NodeListRoute query ->
-            NodeList.init model
+            NodeList.init model query
 
         NodeDetailRoute node query ->
             NodeDetail.init model node

@@ -16,27 +16,22 @@ import Date.Distance
 import Link
 
 
-init : Model -> ( Model, Cmd Msg )
-init model =
-    case model.route of
-        NodeListRoute query ->
-            ( { model | nodeList = RemoteData.Loading }
-            , PuppetDB.queryPQL
-                model.config.serverUrl
-                (PuppetDB.pqlInventory "nodes"
-                    [ "certname"
-                    , "report_timestamp"
-                    , "latest_report_status"
-                    ]
-                    "order by certname"
-                    query
-                )
-                nodeListDecoder
-                UpdateNodeListMsg
-            )
-
-        _ ->
-            ( model, Cmd.none )
+init : Model -> Maybe String -> ( Model, Cmd Msg )
+init model query =
+    ( { model | nodeList = RemoteData.Loading }
+    , PuppetDB.queryPQL
+        model.config.serverUrl
+        (PuppetDB.pqlInventory "nodes"
+            [ "certname"
+            , "report_timestamp"
+            , "latest_report_status"
+            ]
+            "order by certname"
+            query
+        )
+        nodeListDecoder
+        UpdateNodeListMsg
+    )
 
 
 view : Model -> Maybe String -> Html.Html Msg
