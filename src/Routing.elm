@@ -1,9 +1,17 @@
-module Routing exposing (parse, toString)
+module Routing exposing (..)
 
 import Navigation exposing (Location)
-import Types exposing (..)
 import UrlParser exposing (..)
 import Erl
+import Html
+import Html.Attributes
+import Events
+
+
+type Route
+    = DashboardRoute (Maybe String)
+    | NodeListRoute (Maybe String)
+    | NodeDetailRoute String (Maybe Int) (Maybe String)
 
 
 parse : Location -> Route
@@ -51,3 +59,18 @@ addParam key value url =
 toString : Route -> String
 toString route =
     Erl.toString (routeToErlUrl route)
+
+
+link : Route -> (Route -> msg) -> List (Html.Html msg) -> Html.Html msg
+link route msg =
+    Html.a (linkAttributes route msg)
+
+
+{-| List of attributes for a link that has a href and an onClick handler
+that creates a NewUrl message
+-}
+linkAttributes : Route -> (Route -> msg) -> List (Html.Attribute msg)
+linkAttributes route msg =
+    [ Html.Attributes.href (toString route)
+    , (Events.onClickPreventDefault (msg route))
+    ]

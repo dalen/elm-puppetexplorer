@@ -2,7 +2,6 @@ module NodeList exposing (..)
 
 import Html
 import Html.Attributes
-import Types exposing (..)
 import PuppetDB
 import Json.Decode
 import Json.Decode.Extra
@@ -13,15 +12,42 @@ import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
 import Date
 import Date.Distance
-import Link
 import Status
+import Routing
+import Navigation
+import Config
 
 
-init : Model -> Maybe String -> ( Model, Cmd Msg )
-init model query =
+type alias NodeListItem =
+    { certname : String
+    , reportTimestamp : Maybe Date.Date
+    , latestReportStatus : Status.Status
+    }
+
+
+type alias Model =
+    { nodeList : WebData (List NodeListItem)
+    }
+
+
+type Msg
+    = UpdateNodeListMsg (WebData (List NodeListItem))
+    | NewUrlMsg Routing.Route
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { nodeList = RemoteData.NotAsked
+      }
+    , Cmd.none
+    )
+
+
+load : Config.Config -> Model -> Maybe String -> ( Model, Cmd Msg )
+load config model query =
     ( { model | nodeList = RemoteData.Loading }
     , PuppetDB.queryPQL
-        model.config.serverUrl
+        config.serverUrl
         (PuppetDB.pqlInventory "nodes"
             [ "certname"
             , "report_timestamp"
@@ -35,8 +61,18 @@ init model query =
     )
 
 
-view : Model -> Maybe String -> Html.Html Msg
-view model query =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        UpdateNodeListMsg response ->
+            ( { model | nodeList = response }, Cmd.none )
+
+        NewUrlMsg route ->
+            ( model, Navigation.newUrl (Routing.toString route) )
+
+
+view : Model -> Maybe String -> Date.Date -> Html.Html Msg
+view model query date =
     case model.nodeList of
         RemoteData.Success nodes ->
             Table.table
@@ -47,7 +83,7 @@ view model query =
                         , Table.th [] [ Html.text "Last run" ]
                         , Table.th [] [ Html.text "Status" ]
                         ]
-                , tbody = Table.tbody [] (List.map (nodeListItemView model.date query) nodes)
+                , tbody = Table.tbody [] (List.map (nodeListItemView date query) nodes)
                 }
 
         _ ->
@@ -90,7 +126,7 @@ nodeListItemView date query node =
                 Nothing ->
                     Table.td [] [ Icon.question_circle ]
     in
-        Table.tr [] [ Table.td [] [ Link.link (NodeDetailRoute node.certname Nothing query) [ Html.text node.certname ] ], timeAgo, status ]
+        Table.tr [] [ Table.td [] [ (Routing.link (Routing.NodeDetailRoute node.certname Nothing query) NewUrlMsg) [ Html.text node.certname ] ], timeAgo, status ]
 
 
 nodeListDecoder : Json.Decode.Decoder (List NodeListItem)

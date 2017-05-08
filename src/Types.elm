@@ -7,8 +7,10 @@ import Date
 import Time
 import RemoteData exposing (WebData)
 import NodeDetail
+import NodeList
 import Status exposing (Status)
 import Config exposing (Config, DashboardPanelConfig)
+import Routing exposing (Route)
 
 
 type alias Model =
@@ -17,26 +19,20 @@ type alias Model =
     , menubar : Bootstrap.Navbar.State
     , route : Route
     , dashboardPanels : DashboardPanelValues
-    , nodeList : WebData (List NodeListItem)
+    , nodeList : NodeList.Model
     , nodeDetail : NodeDetail.Model
     , date : Date.Date
     }
 
 
-type Route
-    = DashboardRoute (Maybe String)
-    | NodeListRoute (Maybe String)
-    | NodeDetailRoute String (Maybe Int) (Maybe String)
-
-
 type Msg
     = NavbarMsg Bootstrap.Navbar.State
+    | TimeMsg Time.Time
     | UpdateQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | UpdateDashboardPanel Int Int (WebData Float)
-    | UpdateNodeListMsg (WebData (List NodeListItem))
-    | TimeMsg Time.Time
+    | NodeListMsg NodeList.Msg
     | NodeDetailMsg NodeDetail.Msg
     | NoopMsg
 
@@ -49,13 +45,6 @@ type alias DashboardPanel =
 
 type alias DashboardPanelValues =
     Dict.Dict ( Int, Int ) (WebData Float)
-
-
-type alias NodeListItem =
-    { certname : String
-    , reportTimestamp : Maybe Date.Date
-    , latestReportStatus : Status
-    }
 
 
 type alias NodeReportListItem =

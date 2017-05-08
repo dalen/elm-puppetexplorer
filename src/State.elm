@@ -28,6 +28,9 @@ init config location =
         ( nodeDetailModel, nodeDetailCmd ) =
             NodeDetail.init
 
+        ( nodeListModel, nodeListCmd ) =
+            NodeList.init
+
         ( model, routeCmd ) =
             initRoute route
                 { config = config
@@ -35,29 +38,38 @@ init config location =
                 , menubar = navbarState
                 , route = route
                 , dashboardPanels = Dict.empty
-                , nodeList = RemoteData.NotAsked
+                , nodeList = nodeListModel
                 , nodeDetail = nodeDetailModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 }
     in
         ( model
-        , Cmd.batch [ routeCmd, navbarCmd, Cmd.map NodeDetailMsg nodeDetailCmd ]
+        , Cmd.batch
+            [ routeCmd
+            , navbarCmd
+            , Cmd.map NodeListMsg nodeListCmd
+            , Cmd.map NodeDetailMsg nodeDetailCmd
+            ]
         )
 
 
 {-| Initialize the current route
 Can update (initialize) the model for the route as well
 -}
-initRoute : Route -> Model -> ( Model, Cmd Msg )
+initRoute : Routing.Route -> Model -> ( Model, Cmd Msg )
 initRoute route model =
     case route of
-        DashboardRoute _ ->
+        Routing.DashboardRoute _ ->
             Dashboard.init model
 
-        NodeListRoute query ->
-            NodeList.init model query
+        Routing.NodeListRoute query ->
+            let
+                ( subModel, subCmd ) =
+                    NodeList.load model.config model.nodeList query
+            in
+                ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
 
-        NodeDetailRoute node page query ->
+        Routing.NodeDetailRoute node page query ->
             let
                 ( subModel, subCmd ) =
                     NodeDetail.load model.config model.nodeDetail node page
@@ -82,14 +94,29 @@ update msg model =
 
             UpdateQueryMsg query ->
                 case model.route of
-                    DashboardRoute _ ->
-                        ( model, Navigation.newUrl (Routing.toString (DashboardRoute (Just query))) )
+                    Routing.DashboardRoute _ ->
+                        ( model
+                        , Navigation.newUrl
+                            (Routing.toString
+                                (Routing.DashboardRoute (Just query))
+                            )
+                        )
 
-                    NodeListRoute _ ->
-                        ( model, Navigation.newUrl (Routing.toString (NodeListRoute (Just query))) )
+                    Routing.NodeListRoute _ ->
+                        ( model
+                        , Navigation.newUrl
+                            (Routing.toString
+                                (Routing.NodeListRoute (Just query))
+                            )
+                        )
 
-                    NodeDetailRoute node page _ ->
-                        ( model, Navigation.newUrl (Routing.toString (NodeDetailRoute node page (Just query))) )
+                    Routing.NodeDetailRoute node page _ ->
+                        ( model
+                        , Navigation.newUrl
+                            (Routing.toString
+                                (Routing.NodeDetailRoute node page (Just query))
+                            )
+                        )
 
             NewUrlMsg route ->
                 ( model, Navigation.newUrl (Routing.toString route) )
@@ -107,8 +134,12 @@ update msg model =
             UpdateDashboardPanel rowIndex panelIndex response ->
                 ( Dashboard.setPanelMetric response rowIndex panelIndex model, Cmd.none )
 
-            UpdateNodeListMsg response ->
-                ( { model | nodeList = response }, Cmd.none )
+            NodeListMsg msg ->
+                let
+                    ( subModel, subCmd ) =
+                        NodeList.update msg model.nodeList
+                in
+                    ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
 
             NodeDetailMsg msg ->
                 let
