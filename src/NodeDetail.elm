@@ -119,9 +119,9 @@ update msg model =
 
 
 view : Model -> Routing.NodeDetailRouteParams -> Date.Date -> Html.Html Msg
-view model params date =
+view model routeParams date =
     Html.div []
-        [ Html.h1 [] [ Html.text params.node ]
+        [ Html.h1 [] [ Html.text routeParams.node ]
         , Grid.simpleRow
             [ Grid.col
                 [ Col.md6 ]
