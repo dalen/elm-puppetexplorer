@@ -2,7 +2,6 @@ module NodeDetail exposing (..)
 
 import Html
 import Html.Attributes
-import Types exposing (..)
 import PuppetDB
 import Json.Decode
 import Json.Decode.Extra
@@ -16,10 +15,39 @@ import Bootstrap.Grid.Col as Col
 import Date
 import Date.Distance
 import Pagination
+import Status exposing (Status)
+import Config exposing (Config)
 
 
-init : Model -> String -> Maybe Int -> ( Model, Cmd Msg )
-init model node page =
+type Msg
+    = ChangePage Int
+    | UpdateReportList (WebData (List ReportListItem))
+    | UpdateReportListCount (WebData Int)
+
+
+type alias Model =
+    { reportList : WebData (List ReportListItem)
+    , reportCount : WebData Int
+    }
+
+
+type alias ReportListItem =
+    { reportTimestamp : Maybe Date.Date
+    , status : Status
+    }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { reportList = RemoteData.NotAsked
+      , reportCount = RemoteData.NotAsked
+      }
+    , Cmd.none
+    )
+
+
+load : Config -> Model -> String -> Maybe Int -> ( Model, Cmd Msg )
+load config model node page =
     let
         offset =
             case page of
@@ -29,53 +57,61 @@ init model node page =
                 Nothing ->
                     0
     in
-        case model.nodeReportList of
-            RemoteData.Loading ->
-                ( model, Cmd.none )
-
-            _ ->
-                ( { model | nodeReportList = RemoteData.Loading }
-                , Cmd.batch
-                    [ PuppetDB.queryPQL
-                        model.config.serverUrl
-                        (PuppetDB.pql "reports"
-                            [ "receive_time"
-                            , "status"
-                            ]
-                            ("order by receive_time desc offset "
-                                ++ toString offset
-                                ++ " limit 10"
-                            )
-                        )
-                        reportListDecoder
-                        UpdateNodeReportListMsg
-                    , PuppetDB.queryPQL
-                        model.config.serverUrl
-                        (PuppetDB.pql "reports"
-                            [ "count()" ]
-                            ("")
-                        )
-                        reportListCountDecoder
-                        UpdateNodeReportListCountMsg
+        ( { reportList = RemoteData.Loading, reportCount = RemoteData.Loading }
+        , Cmd.batch
+            [ PuppetDB.queryPQL
+                config.serverUrl
+                (PuppetDB.pql "reports"
+                    [ "receive_time"
+                    , "status"
                     ]
+                    ("order by receive_time desc offset "
+                        ++ toString offset
+                        ++ " limit 10"
+                    )
                 )
+                reportListDecoder
+                UpdateReportList
+            , PuppetDB.queryPQL
+                config.serverUrl
+                (PuppetDB.pql "reports"
+                    [ "count()" ]
+                    ("")
+                )
+                reportListCountDecoder
+                UpdateReportListCount
+            ]
+        )
 
 
-view : Model -> String -> Maybe Int -> Html.Html Msg
-view model node page =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        UpdateReportList response ->
+            ( { model | reportList = response }, Cmd.none )
+
+        UpdateReportListCount response ->
+            ( { model | reportCount = response }, Cmd.none )
+
+        ChangePage page ->
+            ( model, Cmd.none )
+
+
+view : Model -> String -> Maybe Int -> Date.Date -> Html.Html Msg
+view model node page date =
     Html.div []
         [ Html.h1 [] [ Html.text node ]
         , Grid.simpleRow
             [ Grid.col
                 [ Col.md6 ]
-                [ reportList model.date model.nodeReportList
-                , Pagination.config ChangePageMsg |> Pagination.items 20 |> Pagination.view
+                [ reportList date model.reportList
+                , Pagination.config ChangePage |> Pagination.items 20 |> Pagination.view
                 ]
             ]
         ]
 
 
-reportList : Date.Date -> WebData (List NodeReportListItem) -> Html.Html Msg
+reportList : Date.Date -> WebData (List ReportListItem) -> Html.Html Msg
 reportList date reports =
     case reports of
         RemoteData.Success reports ->
@@ -97,27 +133,27 @@ reportList date reports =
                 ]
 
 
-reportListItemView : Date.Date -> NodeReportListItem -> Table.Row Msg
+reportListItemView : Date.Date -> ReportListItem -> Table.Row Msg
 reportListItemView date report =
     let
         status =
             case report.status of
-                Changed ->
+                Status.Changed ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.exclamation_circle ]
                         ]
 
-                Unchanged ->
+                Status.Unchanged ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-success" ] [ Icon.exclamation_circle ]
                         ]
 
-                Failed ->
+                Status.Failed ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-danger" ] [ Icon.warning ]
                         ]
 
-                Unknown ->
+                Status.Unknown ->
                     Table.td [] [ Icon.question_circle ]
 
         timeAgo =
@@ -132,7 +168,7 @@ reportListItemView date report =
         Table.tr [] [ timeAgo, status ]
 
 
-reportListDecoder : Json.Decode.Decoder (List NodeReportListItem)
+reportListDecoder : Json.Decode.Decoder (List ReportListItem)
 reportListDecoder =
     Json.Decode.list reportListItemDecoder
 
@@ -142,30 +178,8 @@ reportListCountDecoder =
     Json.Decode.index 0 (Json.Decode.field "count" Json.Decode.int)
 
 
-reportListItemDecoder : Json.Decode.Decoder NodeReportListItem
+reportListItemDecoder : Json.Decode.Decoder ReportListItem
 reportListItemDecoder =
-    Json.Decode.Pipeline.decode NodeReportListItem
+    Json.Decode.Pipeline.decode ReportListItem
         |> Json.Decode.Pipeline.required "receive_time" (Json.Decode.nullable Json.Decode.Extra.date)
-        |> Json.Decode.Pipeline.required "status"
-            (Json.Decode.oneOf
-                [ Json.Decode.string
-                    |> Json.Decode.andThen
-                        (Json.Decode.Extra.fromResult
-                            << (\val ->
-                                    case val of
-                                        "changed" ->
-                                            Ok Changed
-
-                                        "unchanged" ->
-                                            Ok Unchanged
-
-                                        "failed" ->
-                                            Ok Failed
-
-                                        _ ->
-                                            Err "Unknown value"
-                               )
-                        )
-                , Json.Decode.null Unknown
-                ]
-            )
+        |> Json.Decode.Pipeline.required "status" Status.decoder

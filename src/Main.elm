@@ -4,9 +4,10 @@ import Navigation exposing (Location)
 import Types
 import State
 import View
+import Config
 
 
-main : Program Types.Config Types.Model Types.Msg
+main : Program Config.Config Types.Model Types.Msg
 main =
     Navigation.programWithFlags Types.LocationChangeMsg
         { init = State.init

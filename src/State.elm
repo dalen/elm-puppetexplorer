@@ -13,6 +13,7 @@ import RemoteData
 import Time
 import Date
 import Date.Extra
+import Config exposing (Config)
 
 
 init : Config -> Location -> ( Model, Cmd Msg )
@@ -24,6 +25,9 @@ init config location =
         route =
             Routing.parse location
 
+        ( nodeDetailModel, nodeDetailCmd ) =
+            NodeDetail.init
+
         ( model, routeCmd ) =
             initRoute route
                 { config = config
@@ -32,12 +36,12 @@ init config location =
                 , route = route
                 , dashboardPanels = Dict.empty
                 , nodeList = RemoteData.NotAsked
-                , nodeReportList = RemoteData.NotAsked
+                , nodeDetail = nodeDetailModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 }
     in
         ( model
-        , Cmd.batch [ routeCmd, navbarCmd ]
+        , Cmd.batch [ routeCmd, navbarCmd, Cmd.map NodeDetailMsg nodeDetailCmd ]
         )
 
 
@@ -54,7 +58,11 @@ initRoute route model =
             NodeList.init model query
 
         NodeDetailRoute node page query ->
-            NodeDetail.init model node page
+            let
+                ( subModel, subCmd ) =
+                    NodeDetail.load model.config model.nodeDetail node page
+            in
+                ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,14 +110,12 @@ update msg model =
             UpdateNodeListMsg response ->
                 ( { model | nodeList = response }, Cmd.none )
 
-            UpdateNodeReportListMsg response ->
-                ( { model | nodeReportList = response }, Cmd.none )
-
-            UpdateNodeReportListCountMsg response ->
-                ( model, Cmd.none )
-
-            ChangePageMsg page ->
-                ( model, Cmd.none )
+            NodeDetailMsg msg ->
+                let
+                    ( subModel, subCmd ) =
+                        NodeDetail.update msg model.nodeDetail
+                in
+                    ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
 
             TimeMsg time ->
                 ( { model | date = Date.fromTime time }, Cmd.none )

@@ -6,6 +6,9 @@ import Dict
 import Date
 import Time
 import RemoteData exposing (WebData)
+import NodeDetail
+import Status exposing (Status)
+import Config exposing (Config, DashboardPanelConfig)
 
 
 type alias Model =
@@ -15,7 +18,7 @@ type alias Model =
     , route : Route
     , dashboardPanels : DashboardPanelValues
     , nodeList : WebData (List NodeListItem)
-    , nodeReportList : WebData (List NodeReportListItem)
+    , nodeDetail : NodeDetail.Model
     , date : Date.Date
     }
 
@@ -33,28 +36,9 @@ type Msg
     | LocationChangeMsg Location
     | UpdateDashboardPanel Int Int (WebData Float)
     | UpdateNodeListMsg (WebData (List NodeListItem))
-    | UpdateNodeReportListMsg (WebData (List NodeReportListItem))
-    | UpdateNodeReportListCountMsg (WebData Int)
-    | ChangePageMsg Int
     | TimeMsg Time.Time
+    | NodeDetailMsg NodeDetail.Msg
     | NoopMsg
-
-
-type alias Config =
-    { serverUrl : String
-    , nodeFacts : List String
-    , unresponsiveHours : Int
-    , dashboardPanels : List (List DashboardPanelConfig)
-    }
-
-
-type alias DashboardPanelConfig =
-    { title : String
-    , bean : String
-    , style : String
-    , multiply : Maybe Float
-    , unit : Maybe String
-    }
 
 
 type alias DashboardPanel =
@@ -70,18 +54,11 @@ type alias DashboardPanelValues =
 type alias NodeListItem =
     { certname : String
     , reportTimestamp : Maybe Date.Date
-    , latestReportStatus : NodeItemStatus
+    , latestReportStatus : Status
     }
-
-
-type NodeItemStatus
-    = Changed
-    | Failed
-    | Unchanged
-    | Unknown
 
 
 type alias NodeReportListItem =
     { reportTimestamp : Maybe Date.Date
-    , status : NodeItemStatus
+    , status : Status
     }

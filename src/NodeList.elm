@@ -14,6 +14,7 @@ import Bootstrap.Table as Table
 import Date
 import Date.Distance
 import Link
+import Status
 
 
 init : Model -> Maybe String -> ( Model, Cmd Msg )
@@ -62,22 +63,22 @@ nodeListItemView date query node =
     let
         status =
             case node.latestReportStatus of
-                Changed ->
+                Status.Changed ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.exclamation_circle ]
                         ]
 
-                Unchanged ->
+                Status.Unchanged ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-success" ] [ Icon.exclamation_circle ]
                         ]
 
-                Failed ->
+                Status.Failed ->
                     Table.td []
                         [ Html.span [ Html.Attributes.class "text-danger" ] [ Icon.warning ]
                         ]
 
-                Unknown ->
+                Status.Unknown ->
                     Table.td [] [ Icon.question_circle ]
 
         timeAgo =
@@ -102,26 +103,4 @@ nodeListItemDecoder =
     Json.Decode.Pipeline.decode NodeListItem
         |> Json.Decode.Pipeline.required "certname" Json.Decode.string
         |> Json.Decode.Pipeline.required "report_timestamp" (Json.Decode.nullable Json.Decode.Extra.date)
-        |> Json.Decode.Pipeline.required "latest_report_status"
-            (Json.Decode.oneOf
-                [ Json.Decode.string
-                    |> Json.Decode.andThen
-                        (Json.Decode.Extra.fromResult
-                            << (\val ->
-                                    case val of
-                                        "changed" ->
-                                            Ok Changed
-
-                                        "unchanged" ->
-                                            Ok Unchanged
-
-                                        "failed" ->
-                                            Ok Failed
-
-                                        _ ->
-                                            Err "Unknown value"
-                               )
-                        )
-                , Json.Decode.null Unknown
-                ]
-            )
+        |> Json.Decode.Pipeline.required "latest_report_status" Status.decoder

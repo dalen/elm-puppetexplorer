@@ -7,6 +7,7 @@ import Html exposing (..)
 import Types exposing (..)
 import Dict
 import RemoteData exposing (WebData)
+import Config
 
 
 init : Model -> ( Model, Cmd Msg )
@@ -42,7 +43,7 @@ panelRow panels =
 
 {-| Get a list of DashboardPanel instances from DashboardPanelConfigs and values
 -}
-panels : List (List DashboardPanelConfig) -> DashboardPanelValues -> List (List DashboardPanel)
+panels : List (List Config.DashboardPanelConfig) -> DashboardPanelValues -> List (List DashboardPanel)
 panels panelConfigs values =
     (List.indexedMap
         (\rowIndex row ->

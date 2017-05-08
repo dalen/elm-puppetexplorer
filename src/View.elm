@@ -38,4 +38,4 @@ view model =
         NodeDetailRoute node page query ->
             header query
                 model
-                (NodeDetail.view model node page)
+                (Html.map NodeDetailMsg (NodeDetail.view model.nodeDetail node page model.date))
