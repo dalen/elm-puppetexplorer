@@ -15,17 +15,23 @@
       {
         "title": "Nodes",
         "style": "primary",
-        "bean": "puppetlabs.puppetdb.population:name=num-nodes"
+        "bean": "puppetlabs.puppetdb.population:name=num-nodes",
+        "multiply": null,
+        "unit": null
       },
       {
         "title": "Resources",
         "style": "primary",
-        "bean": "puppetlabs.puppetdb.population:name=num-resources"
+        "bean": "puppetlabs.puppetdb.population:name=num-resources",
+        "multiply": null,
+        "unit": null
       },
       {
         "title": "Avg Resources/Node",
         "style": "primary",
-        "bean": "puppetlabs.puppetdb.population:name=avg-resources-per-node"
+        "bean": "puppetlabs.puppetdb.population:name=avg-resources-per-node",
+        "multiply": null,
+        "unit": null
       },
       {
         "title": "Resource Duplication",

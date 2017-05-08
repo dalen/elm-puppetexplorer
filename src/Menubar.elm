@@ -4,7 +4,6 @@ import Bootstrap.Navbar as Navbar
 import FontAwesome.Web as Icon
 import Html exposing (Html, text)
 import Types exposing (..)
-import Routing
 import Link
 
 

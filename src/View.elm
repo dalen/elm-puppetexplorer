@@ -8,9 +8,7 @@ import Dashboard
 import NodeList
 import NodeDetail
 import Bootstrap.Alert as Alert
-import Bootstrap.Progress as Progress
 import Bootstrap.Grid as Grid
-import RemoteData
 
 
 header : Maybe String -> Model -> Html Msg -> Html Msg
@@ -26,41 +24,18 @@ header query model page =
 
 view : Model -> Html Msg
 view model =
-    case model.config of
-        RemoteData.Failure err ->
-            -- FIXME: Skip header perhaps?
-            header Nothing
+    case model.route of
+        DashboardRoute query ->
+            header query
                 model
-                (Progress.progress
-                    [ Progress.label ("Failed to load configuration: " ++ (toString err))
-                    , Progress.animated
-                    , Progress.value 100
-                    ]
-                )
+                (Dashboard.view model)
 
-        RemoteData.Success config ->
-            case model.route of
-                DashboardRoute query ->
-                    header query
-                        model
-                        (Dashboard.view config model)
-
-                NodeListRoute query ->
-                    header query
-                        model
-                        (NodeList.view config query model)
-
-                NodeDetailRoute node query ->
-                    header query
-                        model
-                        (NodeDetail.view config node model)
-
-        _ ->
-            -- FIXME: Skip header perhaps?
-            header Nothing
+        NodeListRoute query ->
+            header query
                 model
-                (Progress.progress
-                    [ Progress.label "Loading configuration..."
-                    , Progress.animated
-                    ]
-                )
+                (NodeList.view model query)
+
+        NodeDetailRoute node query ->
+            header query
+                model
+                (NodeDetail.view model node)

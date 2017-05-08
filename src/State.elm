@@ -8,7 +8,6 @@ import Routing
 import Dashboard
 import NodeList
 import NodeDetail
-import Config
 import Dict
 import RemoteData
 import Time
@@ -16,42 +15,46 @@ import Date
 import Date.Extra
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
+init : Config -> Location -> ( Model, Cmd Msg )
+init config location =
     let
         ( navbarState, navbarCmd ) =
             Bootstrap.Navbar.initialState NavbarMsg
 
         route =
             Routing.parse location
+
+        ( model, routeCmd ) =
+            initRoute route
+                { config = config
+                , messages = []
+                , menubar = navbarState
+                , route = route
+                , dashboardPanels = Dict.empty
+                , nodeList = RemoteData.NotAsked
+                , nodeReportList = RemoteData.NotAsked
+                , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
+                }
     in
-        ( { config = RemoteData.NotAsked
-          , messages = []
-          , menubar = navbarState
-          , route = route
-          , dashboardPanels = Dict.empty
-          , nodeList = RemoteData.NotAsked
-          , nodeReportList = RemoteData.NotAsked
-          , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
-          }
-        , Cmd.batch [ Config.fetch, navbarCmd ]
+        ( model
+        , Cmd.batch [ routeCmd, navbarCmd ]
         )
 
 
 {-| Initialize the current route
 Can update (initialize) the model for the route as well
 -}
-initRoute : Route -> Config -> Model -> ( Model, Cmd Msg )
-initRoute route config model =
+initRoute : Route -> Model -> ( Model, Cmd Msg )
+initRoute route model =
     case route of
         DashboardRoute _ ->
-            Dashboard.init config model
+            Dashboard.init model
 
         NodeListRoute query ->
-            NodeList.init config model
+            NodeList.init model
 
         NodeDetailRoute node query ->
-            NodeDetail.init config node model
+            NodeDetail.init model node
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,21 +71,6 @@ update msg model =
         case msg of
             NavbarMsg state ->
                 ( { model | menubar = state }, Cmd.none )
-
-            UpdateConfigMsg response ->
-                let
-                    configModel =
-                        { model | config = response }
-                in
-                    case response of
-                        RemoteData.Success config ->
-                            initRoute model.route config configModel
-
-                        RemoteData.Failure _ ->
-                            ( configModel, Config.fetch )
-
-                        _ ->
-                            ( configModel, Cmd.none )
 
             UpdateQueryMsg query ->
                 case model.route of
@@ -106,12 +94,7 @@ update msg model =
                     routeModel =
                         { model | route = route }
                 in
-                    case model.config of
-                        RemoteData.Success config ->
-                            initRoute route config routeModel
-
-                        _ ->
-                            ( routeModel, Cmd.none )
+                    initRoute route routeModel
 
             UpdateDashboardPanel rowIndex panelIndex response ->
                 ( Dashboard.setPanelMetric response rowIndex panelIndex model, Cmd.none )

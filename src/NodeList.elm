@@ -16,13 +16,13 @@ import Date.Distance
 import Link
 
 
-init : Config -> Model -> ( Model, Cmd Msg )
-init config model =
+init : Model -> ( Model, Cmd Msg )
+init model =
     case model.route of
         NodeListRoute query ->
             ( { model | nodeList = RemoteData.Loading }
             , PuppetDB.queryPQL
-                config.serverUrl
+                model.config.serverUrl
                 (PuppetDB.pqlInventory "nodes"
                     [ "certname"
                     , "report_timestamp"
@@ -39,8 +39,8 @@ init config model =
             ( model, Cmd.none )
 
 
-view : Config -> Maybe String -> Model -> Html.Html Msg
-view config query model =
+view : Model -> Maybe String -> Html.Html Msg
+view model query =
     case model.nodeList of
         RemoteData.Success nodes ->
             Table.table

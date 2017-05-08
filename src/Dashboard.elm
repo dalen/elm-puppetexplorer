@@ -9,8 +9,8 @@ import Dict
 import RemoteData exposing (WebData)
 
 
-init : Config -> Model -> ( Model, Cmd Msg )
-init config model =
+init : Model -> ( Model, Cmd Msg )
+init model =
     ( { model | dashboardPanels = Dict.empty }
     , Cmd.batch
         (List.indexedMap
@@ -18,12 +18,12 @@ init config model =
                 Cmd.batch
                     (List.indexedMap
                         (\panelIndex panel ->
-                            Dashboard.Panel.fetch config.serverUrl panel (UpdateDashboardPanel rowIndex panelIndex)
+                            Dashboard.Panel.fetch model.config.serverUrl panel (UpdateDashboardPanel rowIndex panelIndex)
                         )
                         row
                     )
             )
-            config.dashboardPanels
+            model.config.dashboardPanels
         )
     )
 
@@ -59,13 +59,13 @@ panels panelConfigs values =
     )
 
 
-view : Config -> Model -> Html Msg
-view config model =
+view : Model -> Html Msg
+view model =
     div []
         (List.append
             (List.map
                 (\row -> panelRow row)
-                (panels config.dashboardPanels model.dashboardPanels)
+                (panels model.config.dashboardPanels model.dashboardPanels)
             )
             [ usage ]
         )

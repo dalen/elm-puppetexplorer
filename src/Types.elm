@@ -10,7 +10,7 @@ import RemoteData exposing (WebData)
 
 
 type alias Model =
-    { config : WebData Config
+    { config : Config
     , messages : List String
     , menubar : Bootstrap.Navbar.State
     , route : Route
@@ -32,7 +32,6 @@ type Msg
     | UpdateQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
-    | UpdateConfigMsg (WebData Config)
     | UpdateDashboardPanel Int Int (WebData Float)
     | UpdateNodeListMsg (WebData (List NodeListItem))
     | UpdateNodeReportListMsg (WebData (List NodeReportListItem))
@@ -51,10 +50,9 @@ type alias Config =
 type alias DashboardPanelConfig =
     { title : String
     , bean : String
-    , style : Bootstrap.Card.CardOption Msg
+    , style : String
     , multiply : Maybe Float
     , unit : Maybe String
-    , value : Maybe Float
     }
 
 

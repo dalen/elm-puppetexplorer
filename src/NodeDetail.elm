@@ -17,8 +17,8 @@ import Date
 import Date.Distance
 
 
-init : Config -> String -> Model -> ( Model, Cmd Msg )
-init config node model =
+init : Model -> String -> ( Model, Cmd Msg )
+init model node =
     case model.nodeReportList of
         RemoteData.Loading ->
             ( model, Cmd.none )
@@ -26,7 +26,7 @@ init config node model =
         _ ->
             ( { model | nodeReportList = RemoteData.Loading }
             , PuppetDB.queryPQL
-                config.serverUrl
+                model.config.serverUrl
                 (PuppetDB.pql "reports"
                     [ "receive_time"
                     , "status"
@@ -38,8 +38,8 @@ init config node model =
             )
 
 
-view : Config -> String -> Model -> Html.Html Msg
-view config node model =
+view : Model -> String -> Html.Html Msg
+view model node =
     Html.div []
         [ Html.h1 [] [ Html.text node ]
         , Grid.simpleRow
