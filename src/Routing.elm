@@ -1,4 +1,4 @@
-module Routing exposing (parse, getQueryParam, toString)
+module Routing exposing (parse, toString)
 
 import Navigation exposing (Location)
 import Types exposing (..)
@@ -9,19 +9,6 @@ import Erl
 parse : Location -> Route
 parse location =
     Maybe.withDefault (DashboardRoute Nothing) (parsePath route location)
-
-
-getQueryParam : Route -> Maybe String
-getQueryParam route =
-    case route of
-        DashboardRoute query ->
-            query
-
-        NodeListRoute query ->
-            query
-
-        NodeDetailRoute _ query ->
-            query
 
 
 route : Parser (Route -> a) a
