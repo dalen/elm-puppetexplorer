@@ -2,12 +2,17 @@ module Dashboard.Panel exposing (..)
 
 import Html
 import Html.Attributes
-import Types exposing (DashboardPanel, Msg)
 import Config
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
 import PuppetDB
 import RemoteData exposing (WebData)
+
+
+type alias DashboardPanel =
+    { config : Config.DashboardPanelConfig
+    , value : Maybe (WebData Float) -- FIXME: Maybe WebData is pretty convoluted
+    }
 
 
 {-| Return a new empty panel config
@@ -50,7 +55,7 @@ panelStyle styleString =
 
 {-| Render a panel
 -}
-view : DashboardPanel -> Card.Config Msg
+view : DashboardPanel -> Card.Config msg
 view panel =
     Card.config [ panelStyle panel.config.style ]
         |> Card.headerH4 [] [ Html.text panel.config.title ]

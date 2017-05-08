@@ -8,7 +8,6 @@ import Routing
 import Dashboard
 import NodeList
 import NodeDetail
-import Dict
 import Time
 import Date
 import Date.Extra
@@ -25,12 +24,12 @@ init config location =
             Routing.parse location
 
         ( model, routeCmd ) =
-            initRoute route
+            initRoute
                 { config = config
                 , messages = []
                 , menubar = navbarState
                 , route = route
-                , dashboardPanels = Dict.empty
+                , dashboard = Dashboard.initModel
                 , nodeList = NodeList.initModel
                 , nodeDetail = NodeDetail.initModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
@@ -47,11 +46,15 @@ init config location =
 {-| Initialize the current route
 Can update (initialize) the model for the route as well
 -}
-initRoute : Routing.Route -> Model -> ( Model, Cmd Msg )
-initRoute route model =
-    case route of
+initRoute : Model -> ( Model, Cmd Msg )
+initRoute model =
+    case model.route of
         Routing.DashboardRoute _ ->
-            Dashboard.init model
+            let
+                ( subModel, subCmd ) =
+                    Dashboard.load model.config model.dashboard
+            in
+                ( { model | dashboard = subModel }, Cmd.map DashboardMsg subCmd )
 
         Routing.NodeListRoute query ->
             let
@@ -113,17 +116,14 @@ update msg model =
                 ( model, Navigation.newUrl (Routing.toString route) )
 
             LocationChangeMsg location ->
+                initRoute { model | route = Routing.parse location }
+
+            DashboardMsg msg ->
                 let
-                    route =
-                        Routing.parse location
-
-                    routeModel =
-                        { model | route = route }
+                    ( subModel, subCmd ) =
+                        Dashboard.update msg model.dashboard
                 in
-                    initRoute route routeModel
-
-            UpdateDashboardPanel rowIndex panelIndex response ->
-                ( Dashboard.setPanelMetric response rowIndex panelIndex model, Cmd.none )
+                    ( { model | dashboard = subModel }, Cmd.map DashboardMsg subCmd )
 
             NodeListMsg msg ->
                 let

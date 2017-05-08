@@ -29,7 +29,7 @@ view model =
         Routing.DashboardRoute query ->
             header query
                 model
-                (Dashboard.view model)
+                (Html.map DashboardMsg (Dashboard.view model.config model.dashboard))
 
         Routing.NodeListRoute query ->
             header query
