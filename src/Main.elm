@@ -97,10 +97,10 @@ initRoute model =
             in
                 ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
 
-        Routing.NodeDetailRoute node page query ->
+        Routing.NodeDetailRoute params ->
             let
                 ( subModel, subCmd ) =
-                    NodeDetail.load model.config model.nodeDetail node page
+                    NodeDetail.load model.config model.nodeDetail params
             in
                 ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
 
@@ -138,11 +138,11 @@ update msg model =
                             )
                         )
 
-                    Routing.NodeDetailRoute node page _ ->
+                    Routing.NodeDetailRoute params ->
                         ( model
                         , Navigation.newUrl
                             (Routing.toString
-                                (Routing.NodeDetailRoute node page (Just query))
+                                (Routing.NodeDetailRoute { params | query = Just query })
                             )
                         )
 
@@ -236,10 +236,10 @@ view model =
                 model
                 (Html.map NodeListMsg (NodeList.view model.nodeList query model.date))
 
-        Routing.NodeDetailRoute node page query ->
-            header query
+        Routing.NodeDetailRoute params ->
+            header params.query
                 model
-                (Html.map NodeDetailMsg (NodeDetail.view model.nodeDetail node page model.date))
+                (Html.map NodeDetailMsg (NodeDetail.view model.nodeDetail params model.date))
 
 
 main : Program Config.Config Model Msg

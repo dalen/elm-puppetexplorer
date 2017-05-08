@@ -8,10 +8,17 @@ import Html.Attributes
 import Events
 
 
+type alias NodeDetailRouteParams =
+    { node : String
+    , page : Maybe Int
+    , query : Maybe String
+    }
+
+
 type Route
     = DashboardRoute (Maybe String)
     | NodeListRoute (Maybe String)
-    | NodeDetailRoute String (Maybe Int) (Maybe String)
+    | NodeDetailRoute NodeDetailRouteParams
 
 
 parse : Location -> Route
@@ -24,7 +31,7 @@ route =
     oneOf
         [ map DashboardRoute (s "" <?> stringParam "query")
         , map NodeListRoute (s "nodes" <?> stringParam "query")
-        , map NodeDetailRoute (s "nodes" </> string <?> intParam "page" <?> stringParam "query")
+        , map NodeDetailRoute (map NodeDetailRouteParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
         ]
 
 
@@ -39,18 +46,19 @@ routeToErlUrl route =
             Erl.parse "/nodes"
                 |> addParam "query" query
 
-        NodeDetailRoute node page query ->
+        NodeDetailRoute params ->
             Erl.parse "/nodes"
-                |> Erl.appendPathSegments [ node ]
-                |> addParam "query" query
+                |> Erl.appendPathSegments [ params.node ]
+                |> addParam "page" params.page
+                |> addParam "query" params.query
 
 
-addParam : String -> Maybe String -> Erl.Url -> Erl.Url
+addParam : String -> Maybe a -> Erl.Url -> Erl.Url
 addParam key value url =
     case value of
         Just p ->
             url
-                |> Erl.addQuery key p
+                |> Erl.addQuery key (Basics.toString p)
 
         Nothing ->
             url

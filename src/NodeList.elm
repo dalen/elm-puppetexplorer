@@ -124,7 +124,13 @@ nodeListItemView date query node =
                 Nothing ->
                     Table.td [] [ Icon.question_circle ]
     in
-        Table.tr [] [ Table.td [] [ (Routing.link (Routing.NodeDetailRoute node.certname Nothing query) NewUrlMsg) [ Html.text node.certname ] ], timeAgo, status ]
+        Table.tr []
+            [ Table.td []
+                [ (Routing.link (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing query)) NewUrlMsg) [ Html.text node.certname ]
+                ]
+            , timeAgo
+            , status
+            ]
 
 
 nodeListDecoder : Json.Decode.Decoder (List NodeListItem)

@@ -17,6 +17,8 @@ import Date.Distance
 import Pagination
 import Status exposing (Status)
 import Config exposing (Config)
+import Navigation
+import Routing
 
 
 type Msg
@@ -26,7 +28,8 @@ type Msg
 
 
 type alias Model =
-    { reportList : WebData (List ReportListItem)
+    { routeParams : Routing.NodeDetailRouteParams
+    , reportList : WebData (List ReportListItem)
     , reportCount : WebData Int
     }
 
@@ -37,25 +40,35 @@ type alias ReportListItem =
     }
 
 
+perPage : Int
+perPage =
+    10
+
+
 initModel : Model
 initModel =
-    { reportList = RemoteData.NotAsked
+    { routeParams = Routing.NodeDetailRouteParams "" Nothing Nothing
+    , reportList = RemoteData.NotAsked
     , reportCount = RemoteData.NotAsked
     }
 
 
-load : Config -> Model -> String -> Maybe Int -> ( Model, Cmd Msg )
-load config model node page =
+load : Config -> Model -> Routing.NodeDetailRouteParams -> ( Model, Cmd Msg )
+load config model routeParams =
     let
         offset =
-            case page of
+            case routeParams.page of
                 Just page ->
-                    (page - 1) * 10
+                    (page - 1) * perPage
 
                 Nothing ->
                     0
     in
-        ( { reportList = RemoteData.Loading, reportCount = RemoteData.Loading }
+        ( { model
+            | reportList = RemoteData.Loading
+            , reportCount = RemoteData.Loading
+            , routeParams = routeParams
+          }
         , Cmd.batch
             [ PuppetDB.queryPQL
                 config.serverUrl
@@ -65,7 +78,8 @@ load config model node page =
                     ]
                     ("order by receive_time desc offset "
                         ++ toString offset
-                        ++ " limit 10"
+                        ++ " limit "
+                        ++ toString perPage
                     )
                 )
                 reportListDecoder
@@ -92,18 +106,30 @@ update msg model =
             ( { model | reportCount = response }, Cmd.none )
 
         ChangePage page ->
-            ( model, Cmd.none )
+            let
+                routeParams =
+                    model.routeParams
+            in
+                ( model
+                , Navigation.newUrl
+                    (Routing.toString
+                        (Routing.NodeDetailRoute { routeParams | page = Just page })
+                    )
+                )
 
 
-view : Model -> String -> Maybe Int -> Date.Date -> Html.Html Msg
-view model node page date =
+view : Model -> Routing.NodeDetailRouteParams -> Date.Date -> Html.Html Msg
+view model params date =
     Html.div []
-        [ Html.h1 [] [ Html.text node ]
+        [ Html.h1 [] [ Html.text params.node ]
         , Grid.simpleRow
             [ Grid.col
                 [ Col.md6 ]
                 [ reportList date model.reportList
-                , Pagination.config ChangePage |> Pagination.items 20 |> Pagination.view
+                , Pagination.config ChangePage
+                    |> Pagination.activePage (Maybe.withDefault 1 model.routeParams.page)
+                    |> Pagination.items 20
+                    |> Pagination.view
                 ]
             ]
         ]
