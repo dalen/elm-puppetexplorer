@@ -35,12 +35,10 @@ type Msg
     | NewUrlMsg Routing.Route
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { nodeList = RemoteData.NotAsked
-      }
-    , Cmd.none
-    )
+initModel : Model
+initModel =
+    { nodeList = RemoteData.NotAsked
+    }
 
 
 load : Config.Config -> Model -> Maybe String -> ( Model, Cmd Msg )

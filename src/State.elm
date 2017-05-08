@@ -9,7 +9,6 @@ import Dashboard
 import NodeList
 import NodeDetail
 import Dict
-import RemoteData
 import Time
 import Date
 import Date.Extra
@@ -25,12 +24,6 @@ init config location =
         route =
             Routing.parse location
 
-        ( nodeDetailModel, nodeDetailCmd ) =
-            NodeDetail.init
-
-        ( nodeListModel, nodeListCmd ) =
-            NodeList.init
-
         ( model, routeCmd ) =
             initRoute route
                 { config = config
@@ -38,8 +31,8 @@ init config location =
                 , menubar = navbarState
                 , route = route
                 , dashboardPanels = Dict.empty
-                , nodeList = nodeListModel
-                , nodeDetail = nodeDetailModel
+                , nodeList = NodeList.initModel
+                , nodeDetail = NodeDetail.initModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 }
     in
@@ -47,8 +40,6 @@ init config location =
         , Cmd.batch
             [ routeCmd
             , navbarCmd
-            , Cmd.map NodeListMsg nodeListCmd
-            , Cmd.map NodeDetailMsg nodeDetailCmd
             ]
         )
 

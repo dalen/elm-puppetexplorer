@@ -37,13 +37,11 @@ type alias ReportListItem =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { reportList = RemoteData.NotAsked
-      , reportCount = RemoteData.NotAsked
-      }
-    , Cmd.none
-    )
+initModel : Model
+initModel =
+    { reportList = RemoteData.NotAsked
+    , reportCount = RemoteData.NotAsked
+    }
 
 
 load : Config -> Model -> String -> Maybe Int -> ( Model, Cmd Msg )
