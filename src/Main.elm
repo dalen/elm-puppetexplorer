@@ -83,17 +83,17 @@ Can update (initialize) the model for the route as well
 initRoute : Model -> ( Model, Cmd Msg )
 initRoute model =
     case model.route of
-        Routing.DashboardRoute _ ->
+        Routing.DashboardRoute params ->
             let
                 ( subModel, subCmd ) =
-                    Dashboard.load model.config model.dashboard
+                    Dashboard.load model.config model.dashboard params
             in
                 ( { model | dashboard = subModel }, Cmd.map DashboardMsg subCmd )
 
-        Routing.NodeListRoute query ->
+        Routing.NodeListRoute params ->
             let
                 ( subModel, subCmd ) =
-                    NodeList.load model.config model.nodeList query
+                    NodeList.load model.config model.nodeList params
             in
                 ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
 
@@ -121,20 +121,21 @@ update msg model =
                 ( { model | menubar = state }, Cmd.none )
 
             UpdateQueryMsg query ->
+                -- Can this be simplified?
                 case model.route of
-                    Routing.DashboardRoute _ ->
+                    Routing.DashboardRoute params ->
                         ( model
                         , Navigation.newUrl
                             (Routing.toString
-                                (Routing.DashboardRoute (Just query))
+                                (Routing.DashboardRoute { params | query = Just query })
                             )
                         )
 
-                    Routing.NodeListRoute _ ->
+                    Routing.NodeListRoute params ->
                         ( model
                         , Navigation.newUrl
                             (Routing.toString
-                                (Routing.NodeListRoute (Just query))
+                                (Routing.NodeListRoute { params | query = Just query })
                             )
                         )
 
@@ -226,15 +227,15 @@ searchField query =
 view : Model -> Html.Html Msg
 view model =
     case model.route of
-        Routing.DashboardRoute query ->
-            header query
+        Routing.DashboardRoute params ->
+            header params.query
                 model
                 (Html.map DashboardMsg (Dashboard.view model.config model.dashboard))
 
-        Routing.NodeListRoute query ->
-            header query
+        Routing.NodeListRoute params ->
+            header params.query
                 model
-                (Html.map NodeListMsg (NodeList.view model.nodeList query model.date))
+                (Html.map NodeListMsg (NodeList.view model.nodeList params model.date))
 
         Routing.NodeDetailRoute params ->
             header params.query

@@ -7,6 +7,7 @@ import Html exposing (..)
 import Dict
 import RemoteData exposing (WebData)
 import Config
+import Routing
 
 
 type alias Model =
@@ -27,8 +28,8 @@ initModel =
     { panels = Dict.empty }
 
 
-load : Config.Config -> Model -> ( Model, Cmd Msg )
-load config model =
+load : Config.Config -> Model -> Routing.DashboardRouteParams -> ( Model, Cmd Msg )
+load config model routeParams =
     ( { model | panels = Dict.empty }
     , Cmd.batch
         (List.indexedMap

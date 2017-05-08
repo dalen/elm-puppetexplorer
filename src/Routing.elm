@@ -8,6 +8,16 @@ import Html.Attributes
 import Events
 
 
+type alias DashboardRouteParams =
+    { query : Maybe String
+    }
+
+
+type alias NodeListRouteParams =
+    { query : Maybe String
+    }
+
+
 type alias NodeDetailRouteParams =
     { node : String
     , page : Maybe Int
@@ -16,21 +26,21 @@ type alias NodeDetailRouteParams =
 
 
 type Route
-    = DashboardRoute (Maybe String)
-    | NodeListRoute (Maybe String)
+    = DashboardRoute DashboardRouteParams
+    | NodeListRoute DashboardRouteParams
     | NodeDetailRoute NodeDetailRouteParams
 
 
 parse : Location -> Route
 parse location =
-    Maybe.withDefault (DashboardRoute Nothing) (parsePath route location)
+    Maybe.withDefault (DashboardRoute (DashboardRouteParams Nothing)) (parsePath route location)
 
 
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map DashboardRoute (s "" <?> stringParam "query")
-        , map NodeListRoute (s "nodes" <?> stringParam "query")
+        [ map DashboardRoute (map DashboardRouteParams (s "" <?> stringParam "query"))
+        , map NodeListRoute (map NodeListRouteParams (s "nodes" <?> stringParam "query"))
         , map NodeDetailRoute (map NodeDetailRouteParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
         ]
 
@@ -38,13 +48,13 @@ route =
 routeToErlUrl : Route -> Erl.Url
 routeToErlUrl route =
     case route of
-        DashboardRoute query ->
+        DashboardRoute params ->
             Erl.parse "/"
-                |> addParam "query" query
+                |> addParam "query" params.query
 
-        NodeListRoute query ->
+        NodeListRoute params ->
             Erl.parse "/nodes"
-                |> addParam "query" query
+                |> addParam "query" params.query
 
         NodeDetailRoute params ->
             Erl.parse "/nodes"

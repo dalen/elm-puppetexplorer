@@ -20,7 +20,7 @@ view query route routeMsg menuModel navbarMsg =
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (Routing.linkAttributes (Routing.DashboardRoute query) routeMsg)
+                itemLink (Routing.linkAttributes (Routing.DashboardRoute (Routing.DashboardRouteParams query)) routeMsg)
                     [ Icon.tachometer, text " ", text "Dashboard" ]
 
             -- Nodes
@@ -33,7 +33,7 @@ view query route routeMsg menuModel navbarMsg =
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (Routing.linkAttributes (Routing.NodeListRoute query) routeMsg)
+                itemLink (Routing.linkAttributes (Routing.NodeListRoute (Routing.NodeListRouteParams query)) routeMsg)
                     [ Icon.server, text " ", text "Nodes" ]
             ]
         |> Navbar.view menuModel

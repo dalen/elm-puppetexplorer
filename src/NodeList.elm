@@ -41,8 +41,8 @@ initModel =
     }
 
 
-load : Config.Config -> Model -> Maybe String -> ( Model, Cmd Msg )
-load config model query =
+load : Config.Config -> Model -> Routing.NodeListRouteParams -> ( Model, Cmd Msg )
+load config model routeParams =
     ( { model | nodeList = RemoteData.Loading }
     , PuppetDB.queryPQL
         config.serverUrl
@@ -52,7 +52,7 @@ load config model query =
             , "latest_report_status"
             ]
             "order by certname"
-            query
+            routeParams.query
         )
         nodeListDecoder
         UpdateNodeListMsg
@@ -69,8 +69,8 @@ update msg model =
             ( model, Navigation.newUrl (Routing.toString route) )
 
 
-view : Model -> Maybe String -> Date.Date -> Html.Html Msg
-view model query date =
+view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Msg
+view model routeParams date =
     case model.nodeList of
         RemoteData.Success nodes ->
             Table.table
@@ -81,7 +81,7 @@ view model query date =
                         , Table.th [] [ Html.text "Last run" ]
                         , Table.th [] [ Html.text "Status" ]
                         ]
-                , tbody = Table.tbody [] (List.map (nodeListItemView date query) nodes)
+                , tbody = Table.tbody [] (List.map (nodeListItemView date routeParams) nodes)
                 }
 
         _ ->
@@ -92,8 +92,8 @@ view model query date =
                 ]
 
 
-nodeListItemView : Date.Date -> Maybe String -> NodeListItem -> Table.Row Msg
-nodeListItemView date query node =
+nodeListItemView : Date.Date -> Routing.NodeListRouteParams -> NodeListItem -> Table.Row Msg
+nodeListItemView date routeParams node =
     let
         status =
             case node.latestReportStatus of
@@ -126,7 +126,7 @@ nodeListItemView date query node =
     in
         Table.tr []
             [ Table.td []
-                [ (Routing.link (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing query)) NewUrlMsg) [ Html.text node.certname ]
+                [ (Routing.link (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing routeParams.query)) NewUrlMsg) [ Html.text node.certname ]
                 ]
             , timeAgo
             , status
