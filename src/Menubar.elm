@@ -2,7 +2,7 @@ module Menubar exposing (view)
 
 import Bootstrap.Navbar as Navbar
 import FontAwesome.Web as Icon
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Routing
 
 
@@ -21,7 +21,7 @@ view query route routeMsg menuModel navbarMsg =
                             Navbar.itemLink
               in
                 itemLink (Routing.linkAttributes (Routing.DashboardRoute (Routing.DashboardRouteParams query)) routeMsg)
-                    [ Icon.tachometer, text " ", text "Dashboard" ]
+                    [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
 
             -- Nodes
             , let
@@ -34,6 +34,6 @@ view query route routeMsg menuModel navbarMsg =
                             Navbar.itemLink
               in
                 itemLink (Routing.linkAttributes (Routing.NodeListRoute (Routing.NodeListRouteParams query)) routeMsg)
-                    [ Icon.server, text " ", text "Nodes" ]
+                    [ Icon.server, Html.text " ", Html.text "Nodes" ]
             ]
         |> Navbar.view menuModel
