@@ -73,10 +73,10 @@ load config model routeParams =
             [ PuppetDB.queryPQL
                 config.serverUrl
                 (PuppetDB.pql "reports"
-                    [ "receive_time"
-                    , "status"
-                    ]
-                    ("order by receive_time desc offset "
+                    [ "receive_time", "status" ]
+                    ("certname=\""
+                        ++ routeParams.node
+                        ++ "\" order by receive_time desc offset "
                         ++ toString offset
                         ++ " limit "
                         ++ toString perPage
@@ -88,7 +88,10 @@ load config model routeParams =
                 config.serverUrl
                 (PuppetDB.pql "reports"
                     [ "count()" ]
-                    ("")
+                    ("certname=\""
+                        ++ routeParams.node
+                        ++ "\""
+                    )
                 )
                 reportListCountDecoder
                 UpdateReportListCount
