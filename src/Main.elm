@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Navigation exposing (Location)
 import Bootstrap.Navbar
+import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Alert as Alert
 import Bootstrap.Grid as Grid
@@ -235,13 +236,19 @@ header query model page =
 
 searchField : String -> Html.Html Msg
 searchField query =
-    Html.div [ Attributes.class "input-group" ]
-        [ Html.span [ Attributes.class "input-group-addon" ] [ Icon.search ]
-        , Input.search
-            [ Input.value query
-            , Input.attrs [ Html.Events.onInput UpdateQueryMsg, Events.onChange SubmitQueryMsg ]
+    InputGroup.config
+        (InputGroup.search
+            [ Input.attrs [ Html.Events.onInput UpdateQueryMsg, Events.onChange SubmitQueryMsg ]
             ]
-        ]
+        )
+        |> InputGroup.predecessors
+            [ InputGroup.span [] [ Icon.search ]
+            , InputGroup.span [] [ Html.text "inventory {" ]
+            ]
+        |> InputGroup.successors
+            [ InputGroup.span [] [ Html.text "}" ]
+            ]
+        |> InputGroup.view
 
 
 view : Model -> Html.Html Msg
