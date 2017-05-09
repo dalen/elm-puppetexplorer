@@ -45,13 +45,14 @@ load config model routeParams =
     ( { model | nodeList = RemoteData.Loading }
     , PuppetDB.queryPQL
         config.serverUrl
-        (PuppetDB.pqlInventory "nodes"
+        (PuppetDB.pql "nodes"
             [ "certname"
             , "report_timestamp"
             , "latest_report_status"
             ]
-            "order by certname"
-            routeParams.query
+            ((PuppetDB.subquery "inventory" routeParams.query)
+                ++ "order by certname"
+            )
         )
         nodeListDecoder
         UpdateNodeListMsg

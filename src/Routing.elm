@@ -59,16 +59,16 @@ routeToErlUrl route =
         NodeDetailRoute params ->
             Erl.parse "/nodes"
                 |> Erl.appendPathSegments [ params.node ]
-                |> addParam "page" params.page
+                |> addParam "page" (Maybe.map Basics.toString params.page)
                 |> addParam "query" params.query
 
 
-addParam : String -> Maybe a -> Erl.Url -> Erl.Url
+addParam : String -> Maybe String -> Erl.Url -> Erl.Url
 addParam key value url =
     case value of
         Just p ->
             url
-                |> Erl.addQuery key (Basics.toString p)
+                |> Erl.addQuery key p
 
         Nothing ->
             url
