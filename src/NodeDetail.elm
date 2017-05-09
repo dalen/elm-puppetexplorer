@@ -199,11 +199,7 @@ pagination model =
             Alert.warning [ Html.text (toString error) ]
 
         _ ->
-            Progress.progress
-                [ Progress.label "Loading reports..."
-                , Progress.animated
-                , Progress.value 100
-                ]
+            Icon.spinner
 
 
 reportListDecoder : Json.Decode.Decoder (List ReportListItem)

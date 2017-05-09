@@ -14,6 +14,7 @@ import NodeDetail
 import NodeList
 import Html
 import Html.Attributes as Attributes
+import Html.Events
 import Events
 import Date
 import Date.Extra
@@ -24,6 +25,7 @@ type alias Model =
     { config : Config
     , messages : List String
     , menubar : Bootstrap.Navbar.State
+    , queryField : String
     , route : Route
     , dashboard : Dashboard.Model
     , nodeList : NodeList.Model
@@ -36,6 +38,7 @@ type Msg
     = NavbarMsg Bootstrap.Navbar.State
     | TimeMsg Time.Time
     | UpdateQueryMsg String
+    | SubmitQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardMsg Dashboard.Msg
@@ -62,6 +65,7 @@ init config location =
                 { config = config
                 , messages = []
                 , menubar = navbarState
+                , queryField = ""
                 , route = route
                 , dashboard = Dashboard.initModel
                 , nodeList = NodeList.initModel
@@ -88,21 +92,36 @@ initRoute model =
                 ( subModel, subCmd ) =
                     Dashboard.load model.config model.dashboard params
             in
-                ( { model | dashboard = subModel }, Cmd.map DashboardMsg subCmd )
+                ( { model
+                    | queryField = Maybe.withDefault "" params.query
+                    , dashboard = subModel
+                  }
+                , Cmd.map DashboardMsg subCmd
+                )
 
         Routing.NodeListRoute params ->
             let
                 ( subModel, subCmd ) =
                     NodeList.load model.config model.nodeList params
             in
-                ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
+                ( { model
+                    | queryField = Maybe.withDefault "" params.query
+                    , nodeList = subModel
+                  }
+                , Cmd.map NodeListMsg subCmd
+                )
 
         Routing.NodeDetailRoute params ->
             let
                 ( subModel, subCmd ) =
                     NodeDetail.load model.config model.nodeDetail params
             in
-                ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
+                ( { model
+                    | queryField = Maybe.withDefault "" params.query
+                    , nodeDetail = subModel
+                  }
+                , Cmd.map NodeDetailMsg subCmd
+                )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,13 +140,16 @@ update msg model =
                 ( { model | menubar = state }, Cmd.none )
 
             UpdateQueryMsg query ->
+                ( { model | queryField = query }, Cmd.none )
+
+            SubmitQueryMsg query ->
                 -- Can this be simplified?
                 case model.route of
                     Routing.DashboardRoute params ->
                         ( model
                         , Navigation.newUrl
                             (Routing.toString
-                                (Routing.DashboardRoute { params | query = Just query })
+                                (Routing.DashboardRoute { params | query = Just model.queryField })
                             )
                         )
 
@@ -135,14 +157,14 @@ update msg model =
                         ( model
                         , Navigation.newUrl
                             (Routing.toString
-                                (Routing.NodeListRoute { params | query = Just query })
+                                (Routing.NodeListRoute { params | query = Just model.queryField })
                             )
                         )
 
                     Routing.NodeDetailRoute params ->
                         ( model
                         , Routing.newUrl
-                            (Routing.NodeDetailRoute { params | query = Just query })
+                            (Routing.NodeDetailRoute { params | query = Just model.queryField })
                         )
 
             NewUrlMsg route ->
@@ -203,7 +225,7 @@ andThen advance ( beginModel, cmd1 ) =
 header : Maybe String -> Model -> Html.Html Msg -> Html.Html Msg
 header query model page =
     Html.div []
-        [ searchField query
+        [ searchField model.queryField
         , Menubar.view query model.route NewUrlMsg model.menubar NavbarMsg
         , Grid.containerFluid []
             (List.map (\message -> Alert.warning [ Html.text message ]) model.messages)
@@ -211,13 +233,13 @@ header query model page =
         ]
 
 
-searchField : Maybe String -> Html.Html Msg
+searchField : String -> Html.Html Msg
 searchField query =
     Html.div [ Attributes.class "input-group" ]
         [ Html.span [ Attributes.class "input-group-addon" ] [ Icon.search ]
         , Input.search
-            [ Input.value (Maybe.withDefault "" query)
-            , Input.attrs [ Events.onChange UpdateQueryMsg ]
+            [ Input.value query
+            , Input.attrs [ Html.Events.onInput UpdateQueryMsg, Events.onChange SubmitQueryMsg ]
             ]
         ]
 
