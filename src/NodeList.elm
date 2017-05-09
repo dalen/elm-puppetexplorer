@@ -10,11 +10,13 @@ import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
 import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
+import Bootstrap.Alert as Alert
 import Date
 import Date.Distance
 import Status
 import Routing
 import Config
+import Error
 
 
 type alias NodeListItem =
@@ -83,6 +85,9 @@ view model routeParams date =
                         ]
                 , tbody = Table.tbody [] (List.map (nodeListItemView date routeParams) nodes)
                 }
+
+        RemoteData.Failure httpError ->
+            Error.alert "list of nodes" httpError
 
         _ ->
             Progress.progress
