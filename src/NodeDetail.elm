@@ -2,6 +2,7 @@ module NodeDetail exposing (..)
 
 import Html
 import Html.Attributes
+import Html.Events
 import PuppetDB
 import Json.Decode
 import Json.Decode.Extra
@@ -25,6 +26,7 @@ type Msg
     = ChangePage Int
     | UpdateReportList (WebData (List ReportListItem))
     | UpdateReportListCount (WebData Int)
+    | ViewReport String
 
 
 type alias Model =
@@ -35,7 +37,8 @@ type alias Model =
 
 
 type alias ReportListItem =
-    { reportTimestamp : Maybe Date.Date
+    { hash : String
+    , reportTimestamp : Maybe Date.Date
     , status : Status
     }
 
@@ -73,7 +76,7 @@ load config model routeParams =
             [ PuppetDB.queryPQL
                 config.serverUrl
                 (PuppetDB.pql "reports"
-                    [ "receive_time", "status" ]
+                    [ "hash", "receive_time", "status" ]
                     ("certname=\""
                         ++ routeParams.node
                         ++ "\" order by receive_time desc offset "
@@ -116,6 +119,11 @@ update msg model =
                 ( model
                 , Routing.newUrl (Routing.NodeDetailRoute { routeParams | page = Just page })
                 )
+
+        ViewReport hash ->
+            ( model
+            , Routing.newUrl (Routing.ReportRoute { hash = hash, page = Nothing, query = model.routeParams.query })
+            )
 
 
 view : Model -> Routing.NodeDetailRouteParams -> Date.Date -> Html.Html Msg
@@ -186,7 +194,7 @@ reportListItemView date report =
                 Nothing ->
                     Table.td [] [ Icon.question_circle ]
     in
-        Table.tr [] [ timeAgo, status ]
+        Table.tr [ Table.rowAttr (Html.Events.onClick (ViewReport report.hash)) ] [ timeAgo, status ]
 
 
 pagination : Model -> Html.Html Msg
@@ -218,5 +226,6 @@ reportListCountDecoder =
 reportListItemDecoder : Json.Decode.Decoder ReportListItem
 reportListItemDecoder =
     Json.Decode.Pipeline.decode ReportListItem
+        |> Json.Decode.Pipeline.required "hash" Json.Decode.string
         |> Json.Decode.Pipeline.required "receive_time" (Json.Decode.nullable Json.Decode.Extra.date)
         |> Json.Decode.Pipeline.required "status" Status.decoder

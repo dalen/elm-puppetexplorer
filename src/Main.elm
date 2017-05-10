@@ -13,6 +13,7 @@ import Config exposing (Config, DashboardPanelConfig)
 import Dashboard
 import NodeDetail
 import NodeList
+import Report
 import Html
 import Html.Attributes as Attributes
 import Html.Events
@@ -31,6 +32,7 @@ type alias Model =
     , dashboard : Dashboard.Model
     , nodeList : NodeList.Model
     , nodeDetail : NodeDetail.Model
+    , report : Report.Model
     , date : Date.Date
     }
 
@@ -45,6 +47,7 @@ type Msg
     | DashboardMsg Dashboard.Msg
     | NodeListMsg NodeList.Msg
     | NodeDetailMsg NodeDetail.Msg
+    | ReportMsg Report.Msg
     | NoopMsg
 
 
@@ -71,6 +74,7 @@ init config location =
                 , dashboard = Dashboard.initModel
                 , nodeList = NodeList.initModel
                 , nodeDetail = NodeDetail.initModel
+                , report = Report.initModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 }
     in
@@ -124,6 +128,18 @@ initRoute model =
                 , Cmd.map NodeDetailMsg subCmd
                 )
 
+        Routing.ReportRoute params ->
+            let
+                ( subModel, subCmd ) =
+                    Report.load model.config model.report params
+            in
+                ( { model
+                    | queryField = Maybe.withDefault "" params.query
+                    , report = subModel
+                  }
+                , Cmd.map ReportMsg subCmd
+                )
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -168,6 +184,12 @@ update msg model =
                             (Routing.NodeDetailRoute { params | query = Just model.queryField })
                         )
 
+                    Routing.ReportRoute params ->
+                        ( model
+                        , Routing.newUrl
+                            (Routing.ReportRoute { params | query = Just model.queryField })
+                        )
+
             NewUrlMsg route ->
                 ( model, Routing.newUrl route )
 
@@ -194,6 +216,13 @@ update msg model =
                         NodeDetail.update msg model.nodeDetail
                 in
                     ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
+
+            ReportMsg msg ->
+                let
+                    ( subModel, subCmd ) =
+                        Report.update msg model.report
+                in
+                    ( { model | report = subModel }, Cmd.map ReportMsg subCmd )
 
             TimeMsg time ->
                 ( { model | date = Date.fromTime time }, Cmd.none )
@@ -268,6 +297,11 @@ view model =
             header params.query
                 model
                 (Html.map NodeDetailMsg (NodeDetail.view model.nodeDetail params model.date))
+
+        Routing.ReportRoute params ->
+            header params.query
+                model
+                (Html.map ReportMsg (Report.view model.report params model.date))
 
 
 main : Program Config.Config Model Msg

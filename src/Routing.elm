@@ -25,10 +25,18 @@ type alias NodeDetailRouteParams =
     }
 
 
+type alias ReportRouteParams =
+    { hash : String
+    , page : Maybe Int
+    , query : Maybe String
+    }
+
+
 type Route
     = DashboardRoute DashboardRouteParams
     | NodeListRoute DashboardRouteParams
     | NodeDetailRoute NodeDetailRouteParams
+    | ReportRoute ReportRouteParams
 
 
 parse : Location -> Route
@@ -42,6 +50,7 @@ route =
         [ map DashboardRoute (map DashboardRouteParams (s "" <?> stringParam "query"))
         , map NodeListRoute (map NodeListRouteParams (s "nodes" <?> stringParam "query"))
         , map NodeDetailRoute (map NodeDetailRouteParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
+        , map ReportRoute (map ReportRouteParams (s "report" </> string <?> intParam "page" <?> stringParam "query"))
         ]
 
 
@@ -59,6 +68,12 @@ routeToErlUrl route =
         NodeDetailRoute params ->
             Erl.parse "/nodes"
                 |> Erl.appendPathSegments [ params.node ]
+                |> addParam "page" (Maybe.map Basics.toString params.page)
+                |> addParam "query" params.query
+
+        ReportRoute params ->
+            Erl.parse "/report"
+                |> Erl.appendPathSegments [ params.hash ]
                 |> addParam "page" (Maybe.map Basics.toString params.page)
                 |> addParam "query" params.query
 
