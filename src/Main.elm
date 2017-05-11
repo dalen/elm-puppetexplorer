@@ -4,11 +4,8 @@ import Navigation exposing (Location)
 import Bootstrap.Navbar
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
-import Bootstrap.Alert as Alert
-import Bootstrap.Grid as Grid
 import FontAwesome.Web as Icon
 import Routing exposing (Route)
-import Menubar
 import Config exposing (Config, DashboardPanelConfig)
 import Dashboard
 import NodeDetail
@@ -43,7 +40,6 @@ type PageState
 
 type alias Model =
     { config : Config
-    , messages : List String
     , menubar : Bootstrap.Navbar.State
     , queryField : String
     , date : Date.Date
@@ -60,7 +56,6 @@ init config location =
         ( model, routeCmd ) =
             setRoute (Routing.parse location)
                 { config = config
-                , messages = []
                 , menubar = navbarState
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
