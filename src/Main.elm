@@ -40,7 +40,7 @@ type PageState
 
 type alias Model =
     { config : Config
-    , menubar : Bootstrap.Navbar.State
+    , navbarState : Bootstrap.Navbar.State
     , queryField : String
     , date : Date.Date
     , pageState : Page
@@ -56,7 +56,7 @@ init config location =
         ( model, routeCmd ) =
             setRoute (Routing.parse location)
                 { config = config
-                , menubar = navbarState
+                , navbarState = navbarState
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Blank
@@ -138,7 +138,7 @@ updatePage page msg model =
     in
         case ( msg, page ) of
             ( NavbarMsg state, _ ) ->
-                ( { model | menubar = state }, Cmd.none )
+                ( { model | navbarState = state }, Cmd.none )
 
             ( UpdateQueryMsg query, _ ) ->
                 ( { model | queryField = query }, Cmd.none )
@@ -210,7 +210,7 @@ updatePage page msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Bootstrap.Navbar.subscriptions model.menubar NavbarMsg
+        [ Bootstrap.Navbar.subscriptions model.navbarState NavbarMsg
         , Time.every Time.second TimeMsg
         ]
 
@@ -249,7 +249,7 @@ viewPage : Model -> Page -> Html.Html Msg
 viewPage model page =
     let
         frame =
-            Page.frame (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.menubar NavbarMsg
+            Page.frame (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.navbarState NavbarMsg
     in
         case page of
             Blank ->
