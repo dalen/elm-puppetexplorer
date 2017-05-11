@@ -39,9 +39,9 @@ type Route
     | ReportRoute ReportRouteParams
 
 
-parse : Location -> Route
+parse : Location -> Maybe Route
 parse location =
-    Maybe.withDefault (DashboardRoute (DashboardRouteParams Nothing)) (parsePath route location)
+    parsePath route location
 
 
 route : Parser (Route -> a) a
@@ -112,3 +112,8 @@ linkAttributes route msg =
     [ Html.Attributes.href (toString route)
     , (Events.onClickPreventDefault (msg route))
     ]
+
+
+href : Route -> Html.Attribute msg
+href route =
+    Html.Attributes.href (toString route)

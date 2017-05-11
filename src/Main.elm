@@ -15,12 +15,30 @@ import NodeDetail
 import NodeList
 import Report
 import Html
-import Html.Attributes as Attributes
 import Html.Events
 import Events
 import Date
 import Date.Extra
 import Time
+import View.Page as Page
+
+
+type Page
+    = Blank
+    | NotFound
+    | Dashboard Routing.DashboardRouteParams Dashboard.Model
+    | NodeList Routing.NodeListRouteParams NodeList.Model
+    | NodeDetail Routing.NodeDetailRouteParams NodeDetail.Model
+    | Report Routing.ReportRouteParams Report.Model
+
+
+type PageState
+    = Loaded Page
+    | TransitioningFrom Page
+
+
+
+-- Model
 
 
 type alias Model =
@@ -28,31 +46,9 @@ type alias Model =
     , messages : List String
     , menubar : Bootstrap.Navbar.State
     , queryField : String
-    , route : Route
-    , dashboard : Dashboard.Model
-    , nodeList : NodeList.Model
-    , nodeDetail : NodeDetail.Model
-    , report : Report.Model
     , date : Date.Date
+    , pageState : Page
     }
-
-
-type Msg
-    = NavbarMsg Bootstrap.Navbar.State
-    | TimeMsg Time.Time
-    | UpdateQueryMsg String
-    | SubmitQueryMsg String
-    | NewUrlMsg Route
-    | LocationChangeMsg Location
-    | DashboardMsg Dashboard.Msg
-    | NodeListMsg NodeList.Msg
-    | NodeDetailMsg NodeDetail.Msg
-    | ReportMsg Report.Msg
-    | NoopMsg
-
-
-
--- Init & Update
 
 
 init : Config -> Location -> ( Model, Cmd Msg )
@@ -61,21 +57,14 @@ init config location =
         ( navbarState, navbarCmd ) =
             Bootstrap.Navbar.initialState NavbarMsg
 
-        route =
-            Routing.parse location
-
         ( model, routeCmd ) =
-            initRoute
+            setRoute (Routing.parse location)
                 { config = config
                 , messages = []
                 , menubar = navbarState
                 , queryField = ""
-                , route = route
-                , dashboard = Dashboard.initModel
-                , nodeList = NodeList.initModel
-                , nodeDetail = NodeDetail.initModel
-                , report = Report.initModel
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
+                , pageState = Blank
                 }
     in
         ( model
@@ -89,60 +78,53 @@ init config location =
 {-| Initialize the current route
 Can update (initialize) the model for the route as well
 -}
-initRoute : Model -> ( Model, Cmd Msg )
-initRoute model =
-    case model.route of
-        Routing.DashboardRoute params ->
-            let
-                ( subModel, subCmd ) =
-                    Dashboard.load model.config model.dashboard params
-            in
-                ( { model
-                    | queryField = Maybe.withDefault "" params.query
-                    , dashboard = subModel
-                  }
-                , Cmd.map DashboardMsg subCmd
-                )
+setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setRoute maybeRoute model =
+    let
+        transition toMsg page ( pageModel, pageCmd ) =
+            ( { model | pageState = page pageModel }, Cmd.map toMsg pageCmd )
+    in
+        case maybeRoute of
+            Nothing ->
+                transition DashboardMsg (Dashboard { query = Nothing }) (Dashboard.load model.config Dashboard.initModel { query = Nothing })
 
-        Routing.NodeListRoute params ->
-            let
-                ( subModel, subCmd ) =
-                    NodeList.load model.config model.nodeList params
-            in
-                ( { model
-                    | queryField = Maybe.withDefault "" params.query
-                    , nodeList = subModel
-                  }
-                , Cmd.map NodeListMsg subCmd
-                )
+            Just (Routing.DashboardRoute params) ->
+                transition DashboardMsg (Dashboard params) (Dashboard.load model.config Dashboard.initModel params)
 
-        Routing.NodeDetailRoute params ->
-            let
-                ( subModel, subCmd ) =
-                    NodeDetail.load model.config model.nodeDetail params
-            in
-                ( { model
-                    | queryField = Maybe.withDefault "" params.query
-                    , nodeDetail = subModel
-                  }
-                , Cmd.map NodeDetailMsg subCmd
-                )
+            Just (Routing.NodeListRoute params) ->
+                transition NodeListMsg (NodeList params) (NodeList.load model.config NodeList.initModel params)
 
-        Routing.ReportRoute params ->
-            let
-                ( subModel, subCmd ) =
-                    Report.load model.config model.report params
-            in
-                ( { model
-                    | queryField = Maybe.withDefault "" params.query
-                    , report = subModel
-                  }
-                , Cmd.map ReportMsg subCmd
-                )
+            Just (Routing.NodeDetailRoute params) ->
+                transition NodeDetailMsg (NodeDetail params) (NodeDetail.load model.config NodeDetail.initModel params)
+
+            Just (Routing.ReportRoute params) ->
+                transition ReportMsg (Report params) (Report.load model.config Report.initModel params)
+
+
+
+-- Update
+
+
+type Msg
+    = NavbarMsg Bootstrap.Navbar.State
+    | TimeMsg Time.Time
+    | UpdateQueryMsg String
+    | SubmitQueryMsg String
+    | NewUrlMsg Route
+    | LocationChangeMsg Location
+    | DashboardMsg Dashboard.Msg
+    | NodeListMsg NodeList.Msg
+    | NodeDetailMsg NodeDetail.Msg
+    | ReportMsg Report.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    updatePage model.pageState msg model
+
+
+updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
+updatePage page msg model =
     let
         _ =
             case msg of
@@ -151,83 +133,82 @@ update msg model =
 
                 _ ->
                     Debug.log "update" msg
+
+        toPage toModel toMsg subUpdate subMsg subModel =
+            let
+                ( newModel, newCmd ) =
+                    subUpdate subMsg subModel
+            in
+                ( { model | pageState = toModel newModel }, Cmd.map toMsg newCmd )
     in
-        case msg of
-            NavbarMsg state ->
+        case ( msg, page ) of
+            ( NavbarMsg state, _ ) ->
                 ( { model | menubar = state }, Cmd.none )
 
-            UpdateQueryMsg query ->
+            ( UpdateQueryMsg query, _ ) ->
                 ( { model | queryField = query }, Cmd.none )
 
-            SubmitQueryMsg query ->
-                -- Can this be simplified?
-                case model.route of
-                    Routing.DashboardRoute params ->
-                        ( model
-                        , Navigation.newUrl
-                            (Routing.toString
-                                (Routing.DashboardRoute { params | query = Just model.queryField })
-                            )
-                        )
+            ( SubmitQueryMsg query, _ ) ->
+                ( model, Cmd.none )
 
-                    Routing.NodeListRoute params ->
-                        ( model
-                        , Navigation.newUrl
-                            (Routing.toString
-                                (Routing.NodeListRoute { params | query = Just model.queryField })
-                            )
-                        )
+            -- Can this be simplified?
+            {- case model.route of
+               Routing.DashboardRoute params ->
+                   ( model
+                   , Navigation.newUrl
+                       (Routing.toString
+                           (Routing.DashboardRoute { params | query = Just model.queryField })
+                       )
+                   )
 
-                    Routing.NodeDetailRoute params ->
-                        ( model
-                        , Routing.newUrl
-                            (Routing.NodeDetailRoute { params | query = Just model.queryField })
-                        )
+               Routing.NodeListRoute params ->
+                   ( model
+                   , Navigation.newUrl
+                       (Routing.toString
+                           (Routing.NodeListRoute { params | query = Just model.queryField })
+                       )
+                   )
 
-                    Routing.ReportRoute params ->
-                        ( model
-                        , Routing.newUrl
-                            (Routing.ReportRoute { params | query = Just model.queryField })
-                        )
+               Routing.NodeDetailRoute params ->
+                   ( model
+                   , Routing.newUrl
+                       (Routing.NodeDetailRoute { params | query = Just model.queryField })
+                   )
 
-            NewUrlMsg route ->
+               Routing.ReportRoute params ->
+                   ( model
+                   , Routing.newUrl
+                       (Routing.ReportRoute { params | query = Just model.queryField })
+                   )
+            -}
+            ( NewUrlMsg route, _ ) ->
                 ( model, Routing.newUrl route )
 
-            LocationChangeMsg location ->
-                initRoute { model | route = Routing.parse location }
+            ( LocationChangeMsg location, _ ) ->
+                setRoute (Routing.parse location) model
 
-            DashboardMsg msg ->
-                let
-                    ( subModel, subCmd ) =
-                        Dashboard.update msg model.dashboard
-                in
-                    ( { model | dashboard = subModel }, Cmd.map DashboardMsg subCmd )
+            ( DashboardMsg subMsg, Dashboard params subModel ) ->
+                toPage (Dashboard params) DashboardMsg Dashboard.update subMsg subModel
 
-            NodeListMsg msg ->
-                let
-                    ( subModel, subCmd ) =
-                        NodeList.update msg model.nodeList
-                in
-                    ( { model | nodeList = subModel }, Cmd.map NodeListMsg subCmd )
+            ( NodeListMsg subMsg, NodeList params subModel ) ->
+                toPage (NodeList params) NodeListMsg NodeList.update subMsg subModel
 
-            NodeDetailMsg msg ->
-                let
-                    ( subModel, subCmd ) =
-                        NodeDetail.update msg model.nodeDetail
-                in
-                    ( { model | nodeDetail = subModel }, Cmd.map NodeDetailMsg subCmd )
+            ( NodeDetailMsg subMsg, NodeDetail params subModel ) ->
+                toPage (NodeDetail params) NodeDetailMsg NodeDetail.update subMsg subModel
 
-            ReportMsg msg ->
-                let
-                    ( subModel, subCmd ) =
-                        Report.update msg model.report
-                in
-                    ( { model | report = subModel }, Cmd.map ReportMsg subCmd )
+            ( ReportMsg subMsg, Report params subModel ) ->
+                toPage (Report params) ReportMsg Report.update subMsg subModel
 
-            TimeMsg time ->
+            ( TimeMsg time, _ ) ->
                 ( { model | date = Date.fromTime time }, Cmd.none )
 
-            NoopMsg ->
+            ( _, NotFound ) ->
+                -- Disregard incoming messages when we're on the
+                -- NotFound page.
+                ( model, Cmd.none )
+
+            ( _, _ ) ->
+                -- Disregard incoming messages that arrived for the wrong page
                 ( model, Cmd.none )
 
 
@@ -252,17 +233,6 @@ andThen advance ( beginModel, cmd1 ) =
 -- View
 
 
-header : Maybe String -> Model -> Html.Html Msg -> Html.Html Msg
-header query model page =
-    Html.div []
-        [ searchField model.queryField
-        , Menubar.view query model.route NewUrlMsg model.menubar NavbarMsg
-        , Grid.containerFluid []
-            (List.map (\message -> Alert.warning [ Html.text message ]) model.messages)
-        , Grid.containerFluid [] [ page ]
-        ]
-
-
 searchField : String -> Html.Html Msg
 searchField query =
     InputGroup.config
@@ -280,28 +250,47 @@ searchField query =
         |> InputGroup.view
 
 
+viewPage : Model -> Page -> Html.Html Msg
+viewPage model page =
+    let
+        frame =
+            Page.frame (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.menubar NavbarMsg
+    in
+        case page of
+            Blank ->
+                Dashboard.view model.config Dashboard.initModel
+                    |> Html.map DashboardMsg
+                    |> frame Page.Dashboard
+
+            NotFound ->
+                Dashboard.view model.config Dashboard.initModel
+                    |> Html.map DashboardMsg
+                    |> frame Page.Dashboard
+
+            Dashboard params subModel ->
+                Dashboard.view model.config subModel
+                    |> Html.map DashboardMsg
+                    |> frame Page.Dashboard
+
+            NodeList params subModel ->
+                NodeList.view subModel params model.date
+                    |> Html.map NodeListMsg
+                    |> frame Page.Nodes
+
+            NodeDetail params subModel ->
+                NodeDetail.view subModel params model.date
+                    |> Html.map NodeDetailMsg
+                    |> frame Page.Nodes
+
+            Report params subModel ->
+                Report.view subModel params model.date
+                    |> Html.map ReportMsg
+                    |> frame Page.Nodes
+
+
 view : Model -> Html.Html Msg
 view model =
-    case model.route of
-        Routing.DashboardRoute params ->
-            header params.query
-                model
-                (Html.map DashboardMsg (Dashboard.view model.config model.dashboard))
-
-        Routing.NodeListRoute params ->
-            header params.query
-                model
-                (Html.map NodeListMsg (NodeList.view model.nodeList params model.date))
-
-        Routing.NodeDetailRoute params ->
-            header params.query
-                model
-                (Html.map NodeDetailMsg (NodeDetail.view model.nodeDetail params model.date))
-
-        Routing.ReportRoute params ->
-            header params.query
-                model
-                (Html.map ReportMsg (Report.view model.report params model.date))
+    viewPage model model.pageState
 
 
 main : Program Config.Config Model Msg
