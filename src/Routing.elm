@@ -41,7 +41,7 @@ type Route
 
 parse : Location -> Maybe Route
 parse location =
-    parsePath route location
+    parseHash route location
 
 
 route : Parser (Route -> a) a
@@ -52,30 +52,6 @@ route =
         , map NodeDetailRoute (map NodeDetailRouteParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
         , map ReportRoute (map ReportRouteParams (s "report" </> string <?> intParam "page" <?> stringParam "query"))
         ]
-
-
-routeToErlUrl : Route -> Erl.Url
-routeToErlUrl route =
-    case route of
-        DashboardRoute params ->
-            Erl.parse "/"
-                |> addParam "query" params.query
-
-        NodeListRoute params ->
-            Erl.parse "/nodes"
-                |> addParam "query" params.query
-
-        NodeDetailRoute params ->
-            Erl.parse "/nodes"
-                |> Erl.appendPathSegments [ params.node ]
-                |> addParam "page" (Maybe.map Basics.toString params.page)
-                |> addParam "query" params.query
-
-        ReportRoute params ->
-            Erl.parse "/report"
-                |> Erl.appendPathSegments [ params.hash ]
-                |> addParam "page" (Maybe.map Basics.toString params.page)
-                |> addParam "query" params.query
 
 
 addParam : String -> Maybe String -> Erl.Url -> Erl.Url
@@ -91,7 +67,25 @@ addParam key value url =
 
 toString : Route -> String
 toString route =
-    Erl.toString (routeToErlUrl route)
+    (case route of
+        DashboardRoute params ->
+            Erl.parse "#"
+
+        NodeListRoute params ->
+            Erl.parse "#/nodes"
+                |> addParam "query" params.query
+
+        NodeDetailRoute params ->
+            Erl.parse ("#/nodes/" ++ params.node)
+                |> addParam "page" (Maybe.map Basics.toString params.page)
+                |> addParam "query" params.query
+
+        ReportRoute params ->
+            Erl.parse ("#/report/" ++ params.hash)
+                |> addParam "page" (Maybe.map Basics.toString params.page)
+                |> addParam "query" params.query
+    )
+        |> Erl.toString
 
 
 newUrl : Route -> Cmd msg
@@ -99,21 +93,26 @@ newUrl route =
     Navigation.newUrl (toString route)
 
 
+modifyUrl : Route -> Cmd msg
+modifyUrl route =
+    Navigation.modifyUrl (toString route)
+
+
+{-| }
 link : Route -> (Route -> msg) -> List (Html.Html msg) -> Html.Html msg
 link route msg =
-    Html.a (linkAttributes route msg)
-
+Html.a (linkAttributes route msg)
 
 {-| List of attributes for a link that has a href and an onClick handler
 that creates a NewUrl message
 -}
 linkAttributes : Route -> (Route -> msg) -> List (Html.Attribute msg)
 linkAttributes route msg =
-    [ Html.Attributes.href (toString route)
-    , (Events.onClickPreventDefault (msg route))
-    ]
+[ Html.Attributes.href (toString route)
+, (Events.onClickPreventDefault (msg route))
+]
 
-
+-}
 href : Route -> Html.Attribute msg
 href route =
     Html.Attributes.href (toString route)

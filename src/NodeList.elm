@@ -10,7 +10,6 @@ import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
 import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
-import Bootstrap.Alert as Alert
 import Date
 import Date.Distance
 import Status
@@ -131,7 +130,7 @@ nodeListItemView date routeParams node =
     in
         Table.tr []
             [ Table.td []
-                [ (Routing.link (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing routeParams.query)) NewUrlMsg) [ Html.text node.certname ]
+                [ Html.a [ Routing.href (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing routeParams.query)) ] [ Html.text node.certname ]
                 ]
             , timeAgo
             , status
