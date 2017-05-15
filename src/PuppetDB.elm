@@ -76,7 +76,10 @@ subquery : String -> Maybe String -> String
 subquery endpoint inner =
     case inner of
         Just s ->
-            endpoint ++ "{" ++ s ++ "}"
+            if String.isEmpty s then
+                ""
+            else
+                endpoint ++ "{" ++ s ++ "}"
 
         Nothing ->
             ""
