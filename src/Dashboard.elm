@@ -8,6 +8,9 @@ import Dict
 import RemoteData exposing (WebData)
 import Config
 import Routing
+import Task exposing (Task)
+import View.Page as Page
+import Page.Errored as Errored exposing (PageLoadError)
 
 
 type alias Model =
@@ -21,6 +24,16 @@ type Msg
 
 type alias DashboardPanelValues =
     Dict.Dict ( Int, Int ) (WebData Float)
+
+
+init : Config.Config -> Routing.DashboardRouteParams -> Task PageLoadError Model
+init config params =
+    let
+        handleLoadError _ =
+            Errored.pageLoadError Page.Dashboard "Article is currently unavailable."
+    in
+        Task.map Model (Task.succeed Dict.empty)
+            |> Task.mapError handleLoadError
 
 
 initModel : Model

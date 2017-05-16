@@ -12,6 +12,7 @@ import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
 import FontAwesome.Web as Icon
+import View.Spinner
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -21,27 +22,36 @@ have links for every page.
 type ActivePage
     = Dashboard
     | Nodes
+    | Other
 
 
 
 -- FIXME: WAY too many parameters
 
 
-frame : Maybe String -> (String -> msg) -> (String -> msg) -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> ActivePage -> Html.Html msg -> Html.Html msg
-frame query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMsg page content =
+frame : Bool -> Maybe String -> (String -> msg) -> (String -> msg) -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> ActivePage -> Html.Html msg -> Html.Html msg
+frame loading query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMsg page content =
     Html.div []
         [ searchField query updateQueryMsg submitQueryMsg
-        , navbar query page newUrlMsg navbarState navbarMsg
+        , navbar loading query page newUrlMsg navbarState navbarMsg
         , Grid.containerFluid [] [ content ]
         ]
 
 
-navbar : Maybe String -> ActivePage -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html.Html msg
-navbar query page routeMsg navbarState navbarMsg =
+navbar : Bool -> Maybe String -> ActivePage -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html.Html msg
+navbar loading query page routeMsg navbarState navbarMsg =
     Navbar.config navbarMsg
         |> Navbar.items
             [ navbarLink (page == Dashboard) (Routing.DashboardRoute (Routing.DashboardRouteParams query)) [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
             , navbarLink (page == Nodes) (Routing.NodeListRoute (Routing.NodeListRouteParams query)) [ Icon.server, Html.text " ", Html.text "Nodes" ]
+            ]
+        |> Navbar.customItems
+            [ Navbar.textItem []
+                (if loading then
+                    [ View.Spinner.view ]
+                 else
+                    []
+                )
             ]
         |> Navbar.view navbarState
 

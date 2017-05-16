@@ -11,18 +11,22 @@ import Dashboard
 import NodeDetail
 import NodeList
 import Report
+import Page.Errored as Errored exposing (PageLoadError)
 import Html
 import Html.Events
+import Html.Attributes as Attributes
 import Events
 import Date
 import Date.Extra
 import Time
 import View.Page as Page
+import Task
 
 
 type Page
     = Blank
     | NotFound
+    | Errored PageLoadError
     | Dashboard Routing.DashboardRouteParams Dashboard.Model
     | NodeList Routing.NodeListRouteParams NodeList.Model
     | NodeDetail Routing.NodeDetailRouteParams NodeDetail.Model
@@ -43,7 +47,7 @@ type alias Model =
     , navbarState : Bootstrap.Navbar.State
     , queryField : String
     , date : Date.Date
-    , pageState : Page
+    , pageState : PageState
     }
 
 
@@ -59,7 +63,7 @@ init config location =
                 , navbarState = navbarState
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
-                , pageState = Blank
+                , pageState = Loaded Blank
                 }
     in
         ( model
@@ -76,24 +80,30 @@ Can update (initialize) the model for the route as well
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
-        transition toMsg page ( pageModel, pageCmd ) =
-            ( { model | pageState = page pageModel }, Cmd.map toMsg pageCmd )
+        transitionOld toMsg page ( pageModel, pageCmd ) =
+            ( { model | pageState = TransitioningFrom (page pageModel) }, Cmd.map toMsg pageCmd )
+
+        transition toMsg task =
+            ( { model | pageState = TransitioningFrom (getPage model.pageState) }
+            , Task.attempt toMsg task
+            )
     in
         case maybeRoute of
             Nothing ->
-                transition DashboardMsg (Dashboard { query = Nothing }) (Dashboard.load model.config Dashboard.initModel { query = Nothing })
+                ( { model | pageState = Loaded NotFound }, Cmd.none )
 
             Just (Routing.DashboardRoute params) ->
-                transition DashboardMsg (Dashboard params) (Dashboard.load model.config Dashboard.initModel params)
+                transition DashboardLoaded (Dashboard.init model.config params)
 
+            --transitionOld DashboardMsg (Dashboard params) (Dashboard.load model.config Dashboard.initModel params)
             Just (Routing.NodeListRoute params) ->
-                transition NodeListMsg (NodeList params) (NodeList.load model.config NodeList.initModel params)
+                transitionOld NodeListMsg (NodeList params) (NodeList.load model.config NodeList.initModel params)
 
             Just (Routing.NodeDetailRoute params) ->
-                transition NodeDetailMsg (NodeDetail params) (NodeDetail.load model.config NodeDetail.initModel params)
+                transitionOld NodeDetailMsg (NodeDetail params) (NodeDetail.load model.config NodeDetail.initModel params)
 
             Just (Routing.ReportRoute params) ->
-                transition ReportMsg (Report params) (Report.load model.config Report.initModel params)
+                transitionOld ReportMsg (Report params) (Report.load model.config Report.initModel params)
 
 
 
@@ -107,6 +117,7 @@ type Msg
     | SubmitQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
+    | DashboardLoaded (Result PageLoadError Dashboard.Model)
     | DashboardMsg Dashboard.Msg
     | NodeListMsg NodeList.Msg
     | NodeDetailMsg NodeDetail.Msg
@@ -115,7 +126,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    updatePage model.pageState msg model
+    updatePage (getPage model.pageState) msg model
 
 
 updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
@@ -134,7 +145,7 @@ updatePage page msg model =
                 ( newModel, newCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { model | pageState = toModel newModel }, Cmd.map toMsg newCmd )
+                ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
             ( NavbarMsg state, _ ) ->
@@ -176,6 +187,13 @@ updatePage page msg model =
                        (Routing.ReportRoute { params | query = Just model.queryField })
                    )
             -}
+            ( DashboardLoaded (Ok subModel), _ ) ->
+                -- TODO: handle the params
+                ( { model | pageState = Loaded (Dashboard { query = Nothing } subModel) }, Cmd.none )
+
+            ( DashboardLoaded (Err error), _ ) ->
+                ( { model | pageState = Loaded (Errored error) }, Cmd.none )
+
             ( NewUrlMsg route, _ ) ->
                 ( model, Routing.newUrl route )
 
@@ -245,22 +263,25 @@ searchField query =
         |> InputGroup.view
 
 
-viewPage : Model -> Page -> Html.Html Msg
-viewPage model page =
+viewPage : Model -> Bool -> Page -> Html.Html Msg
+viewPage model loading page =
     let
         frame =
-            Page.frame (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.navbarState NavbarMsg
+            Page.frame loading (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.navbarState NavbarMsg
     in
         case page of
             Blank ->
-                Dashboard.view model.config Dashboard.initModel
-                    |> Html.map DashboardMsg
+                Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
                     |> frame Page.Dashboard
 
             NotFound ->
                 Dashboard.view model.config Dashboard.initModel
                     |> Html.map DashboardMsg
                     |> frame Page.Dashboard
+
+            Errored subModel ->
+                Errored.view subModel
+                    |> frame Page.Other
 
             Dashboard params subModel ->
                 Dashboard.view model.config subModel
@@ -285,7 +306,22 @@ viewPage model page =
 
 view : Model -> Html.Html Msg
 view model =
-    viewPage model model.pageState
+    case model.pageState of
+        Loaded page ->
+            viewPage model False page
+
+        TransitioningFrom page ->
+            viewPage model True page
+
+
+getPage : PageState -> Page
+getPage pageState =
+    case pageState of
+        Loaded page ->
+            page
+
+        TransitioningFrom page ->
+            page
 
 
 main : Program Config.Config Model Msg

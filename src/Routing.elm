@@ -69,7 +69,7 @@ toString : Route -> String
 toString route =
     (case route of
         DashboardRoute params ->
-            Erl.parse "#"
+            Erl.parse "#/"
 
         NodeListRoute params ->
             Erl.parse "#/nodes"
