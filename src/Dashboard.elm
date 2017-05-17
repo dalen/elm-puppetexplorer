@@ -2,10 +2,8 @@ module Dashboard exposing (..)
 
 import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
-import Dashboard.Panel
+import Dashboard.Panel as Panel
 import Html exposing (..)
-import Dict
-import RemoteData exposing (WebData)
 import Config
 import Routing
 import Task exposing (Task)
@@ -14,101 +12,72 @@ import Page.Errored as Errored exposing (PageLoadError)
 
 
 type alias Model =
-    { panels : DashboardPanelValues
+    { panels : DashboardPanels
     }
 
 
-type Msg
-    = UpdateDashboardPanel Int Int (WebData Float)
+type alias DashboardPanels =
+    List (List Panel.DashboardPanel)
 
 
-type alias DashboardPanelValues =
-    Dict.Dict ( Int, Int ) (WebData Float)
+type alias PanelConfigs =
+    List (List Config.DashboardPanelConfig)
 
 
 init : Config.Config -> Routing.DashboardRouteParams -> Task PageLoadError Model
 init config params =
     let
         handleLoadError _ =
-            Errored.pageLoadError Page.Dashboard "Article is currently unavailable."
+            Errored.pageLoadError Page.Dashboard "Failed to load dashboard."
     in
-        Task.map Model (Task.succeed Dict.empty)
+        Task.map Model (getPanels config.serverUrl config.dashboardPanels)
             |> Task.mapError handleLoadError
 
 
-initModel : Model
-initModel =
-    { panels = Dict.empty }
+getPanels : String -> PanelConfigs -> Task PageLoadError DashboardPanels
+getPanels serverUrl panelConfigs =
+    List.map (getPanelRow serverUrl) panelConfigs
+        |> Task.sequence
 
 
-load : Config.Config -> Model -> Routing.DashboardRouteParams -> ( Model, Cmd Msg )
-load config model routeParams =
-    ( { model | panels = Dict.empty }
-    , Cmd.batch
-        (List.indexedMap
-            (\rowIndex row ->
-                Cmd.batch
-                    (List.indexedMap
-                        (\panelIndex panel ->
-                            Dashboard.Panel.fetch config.serverUrl panel (UpdateDashboardPanel rowIndex panelIndex)
-                        )
-                        row
-                    )
-            )
-            config.dashboardPanels
+getPanelRow : String -> List Config.DashboardPanelConfig -> Task PageLoadError (List Panel.DashboardPanel)
+getPanelRow serverUrl panelConfigRow =
+    List.map (Panel.get serverUrl) panelConfigRow
+        |> Task.sequence
+
+
+{-| Transform panel matching rowIndex and panelIndex using supplied function
+-}
+updatePanel : (Panel.DashboardPanel -> Panel.DashboardPanel) -> Int -> Int -> DashboardPanels -> DashboardPanels
+updatePanel function rowIndex panelIndex dashboardPanels =
+    List.indexedMap
+        (\r row ->
+            List.indexedMap
+                (\p panel ->
+                    if rowIndex == r && panelIndex == p then
+                        function panel
+                    else
+                        panel
+                )
+                row
         )
-    )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        UpdateDashboardPanel rowIndex panelIndex response ->
-            ( setPanelMetric response rowIndex panelIndex model, Cmd.none )
-
-
-setPanelMetric : WebData Float -> Int -> Int -> Model -> Model
-setPanelMetric value rowIndex panelIndex model =
-    { model | panels = Dict.insert ( rowIndex, panelIndex ) value model.panels }
+        dashboardPanels
 
 
 {-| Render a row of metrics
 -}
-panelRow : List Dashboard.Panel.DashboardPanel -> Html Msg
+panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Card.deck (List.map (\panel -> Dashboard.Panel.view panel) panels)
+    Card.deck (List.map Panel.view panels)
 
 
-{-| Get a list of DashboardPanel instances from DashboardPanelConfigs and values
--}
-panels : List (List Config.DashboardPanelConfig) -> DashboardPanelValues -> List (List Dashboard.Panel.DashboardPanel)
-panels panelConfigs values =
-    (List.indexedMap
-        (\rowIndex row ->
-            (List.indexedMap
-                (\panelIndex panelConfig ->
-                    { config = panelConfig
-                    , value = Dict.get ( rowIndex, panelIndex ) values
-                    }
-                )
-                row
-            )
-        )
-        panelConfigs
-    )
-
-
-
--- FIXME Put panel config into the dashboard state instead and don't pass config here
-
-
-view : Config.Config -> Model -> Html Msg
-view config model =
+view : Model -> Html Never
+view model =
     div []
         (List.append
             (List.map
-                (\row -> panelRow row)
-                (panels config.dashboardPanels model.panels)
+                panelRow
+                model.panels
             )
             [ usage ]
         )
@@ -116,7 +85,7 @@ view config model =
 
 {-| The usage Instructions
 -}
-usage : Html Msg
+usage : Html Never
 usage =
     Grid.containerFluid []
         [ Grid.simpleRow

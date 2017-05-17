@@ -118,10 +118,11 @@ type Msg
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
-    | DashboardMsg Dashboard.Msg
+    | DashboardMsg Never
     | NodeListMsg NodeList.Msg
     | NodeDetailMsg NodeDetail.Msg
     | ReportMsg Report.Msg
+    | Noop
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -200,9 +201,6 @@ updatePage page msg model =
             ( LocationChangeMsg location, _ ) ->
                 setRoute (Routing.parse location) model
 
-            ( DashboardMsg subMsg, Dashboard params subModel ) ->
-                toPage (Dashboard params) DashboardMsg Dashboard.update subMsg subModel
-
             ( NodeListMsg subMsg, NodeList params subModel ) ->
                 toPage (NodeList params) NodeListMsg NodeList.update subMsg subModel
 
@@ -275,16 +273,15 @@ viewPage model loading page =
                     |> frame Page.Dashboard
 
             NotFound ->
-                Dashboard.view model.config Dashboard.initModel
-                    |> Html.map DashboardMsg
-                    |> frame Page.Dashboard
+                Html.div [] [ Html.text "Page not found" ]
+                    |> frame Page.Other
 
             Errored subModel ->
                 Errored.view subModel
                     |> frame Page.Other
 
             Dashboard params subModel ->
-                Dashboard.view model.config subModel
+                Dashboard.view subModel
                     |> Html.map DashboardMsg
                     |> frame Page.Dashboard
 

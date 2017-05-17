@@ -1,17 +1,20 @@
 module Dashboard.Panel exposing (..)
 
 import Html
-import Html.Attributes
 import Config
 import Bootstrap.Card as Card
-import FontAwesome.Web as Icon
 import PuppetDB
 import RemoteData exposing (WebData)
+import PuppetDB.Bean
+import Http
+import Page.Errored as Errored exposing (PageLoadError)
+import View.Page as Page
+import Task exposing (Task)
 
 
 type alias DashboardPanel =
     { config : Config.DashboardPanelConfig
-    , value : Maybe (WebData Float) -- FIXME: Maybe WebData is pretty convoluted
+    , value : Float
     }
 
 
@@ -20,6 +23,11 @@ type alias DashboardPanel =
 new : Config.DashboardPanelConfig
 new =
     { title = "", bean = "", style = "primary", multiply = Nothing, unit = Nothing }
+
+
+fromConfig : Config.DashboardPanelConfig -> Float -> DashboardPanel
+fromConfig config value =
+    { config = config, value = value }
 
 
 title : String -> Config.DashboardPanelConfig -> Config.DashboardPanelConfig
@@ -32,15 +40,22 @@ bean str panel =
     { panel | bean = str }
 
 
-
---value : Float -> DashboardPanelConfig -> DashboardPanelConfig
---value value panel =
---    { panel | value = Just value }
+value : DashboardPanel -> Float -> DashboardPanel
+value panel value =
+    { panel | value = value }
 
 
 fetch : String -> Config.DashboardPanelConfig -> (WebData Float -> msg) -> Cmd msg
 fetch serverUrl panel msg =
     PuppetDB.fetchBean serverUrl panel.bean msg
+
+
+get : String -> Config.DashboardPanelConfig -> Task PageLoadError DashboardPanel
+get serverUrl config =
+    PuppetDB.Bean.get serverUrl config.bean
+        |> Http.toTask
+        |> Task.mapError (\_ -> Errored.pageLoadError Page.Dashboard "Article is currently unavailable.")
+        |> Task.map (fromConfig config)
 
 
 panelStyle : String -> Card.CardOption msg
@@ -60,16 +75,5 @@ view panel =
     Card.config [ panelStyle panel.config.style ]
         |> Card.headerH4 [] [ Html.text panel.config.title ]
         |> Card.block []
-            [ case panel.value of
-                Just (RemoteData.Success value) ->
-                    Card.text [] [ Html.text (toString value) ]
-
-                Just RemoteData.Loading ->
-                    Card.text [] [ Icon.spinner ]
-
-                Just (RemoteData.Failure err) ->
-                    Card.text [ Html.Attributes.title (toString err) ] [ Icon.exclamation_circle ]
-
-                _ ->
-                    Card.text [] []
+            [ Card.text [] [ Html.text (toString panel.value) ]
             ]
