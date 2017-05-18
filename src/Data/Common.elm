@@ -10,18 +10,20 @@ type alias Common =
     { config : Config
     , menubar : Navbar.State
     , queryField : String
+    , date : Date.Date
     }
 
 
-init : Config -> ( Common, Cmd msg )
-init config =
+init : Config -> (Navbar.State -> msg) -> ( Common, Cmd msg )
+init config navbarMsg =
     let
         ( navbarState, navbarCmd ) =
-            Navbar.initialState NavbarMsg
+            Navbar.initialState navbarMsg
     in
-        ( { date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
+        ( { config = config
           , menubar = navbarState
           , queryField = ""
+          , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
           }
         , navbarCmd
         )

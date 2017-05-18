@@ -4,19 +4,18 @@ import PuppetDB
 import PuppetDB.Report
 import Html
 import Date
-import Routing
+import Route
 import RemoteData exposing (WebData)
 import Config exposing (Config)
 import Json.Decode
 import Error
 import Bootstrap.Progress as Progress
-import Bootstrap.Table as Table
 import Bootstrap.Card as Card
 import FontAwesome.Web as Icon
 
 
 type alias Model =
-    { routeParams : Routing.ReportRouteParams
+    { routeParams : Route.ReportParams
     , report : WebData PuppetDB.Report.Report
     }
 
@@ -28,7 +27,7 @@ type Msg
 
 initModel : Model
 initModel =
-    { routeParams = Routing.ReportRouteParams "" Nothing Nothing
+    { routeParams = Route.ReportParams "" Nothing Nothing
     , report = RemoteData.NotAsked
     }
 
@@ -37,7 +36,7 @@ initModel =
 -- FIXME: Don't reload if already loaded the report
 
 
-load : Config -> Model -> Routing.ReportRouteParams -> ( Model, Cmd Msg )
+load : Config -> Model -> Route.ReportParams -> ( Model, Cmd Msg )
 load config model routeParams =
     ( { model
         | report = RemoteData.Loading
@@ -68,11 +67,11 @@ update msg model =
                     model.routeParams
             in
                 ( model
-                , Routing.newUrl (Routing.ReportRoute { routeParams | page = Just page })
+                , Route.newUrl (Route.Report { routeParams | page = Just page })
                 )
 
 
-view : Model -> Routing.ReportRouteParams -> Date.Date -> Html.Html Msg
+view : Model -> Route.ReportParams -> Date.Date -> Html.Html Msg
 view model routeParams date =
     case model.report of
         RemoteData.Success report ->
@@ -90,7 +89,7 @@ view model routeParams date =
                         |> Card.block [] [ Card.text [] [ Html.text report.configurationVersion ] ]
                     , Card.config []
                         |> Card.headerH6 [] [ Html.text "Start time" ]
-                        |> Card.block [] [ Card.text [] [ Html.text report.startTime ] ]
+                        |> Card.block [] [ Card.text [] [ Html.text (toString report.startTime) ] ]
                     ]
                 , Card.deck
                     [ Card.config []
@@ -113,7 +112,7 @@ view model routeParams date =
                             ]
                     , Card.config []
                         |> Card.headerH6 [] [ Html.text "End time" ]
-                        |> Card.block [] [ Card.text [] [ Html.text report.endTime ] ]
+                        |> Card.block [] [ Card.text [] [ Html.text (toString report.endTime) ] ]
                     ]
                 ]
 

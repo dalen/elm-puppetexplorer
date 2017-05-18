@@ -1,31 +1,30 @@
-module Routing exposing (..)
+module Route exposing (..)
 
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Erl
 import Html
 import Html.Attributes
-import Events
 
 
-type alias DashboardRouteParams =
+type alias DashboardParams =
     { query : Maybe String
     }
 
 
-type alias NodeListRouteParams =
+type alias NodeListParams =
     { query : Maybe String
     }
 
 
-type alias NodeDetailRouteParams =
+type alias NodeDetailParams =
     { node : String
     , page : Maybe Int
     , query : Maybe String
     }
 
 
-type alias ReportRouteParams =
+type alias ReportParams =
     { hash : String
     , page : Maybe Int
     , query : Maybe String
@@ -33,10 +32,10 @@ type alias ReportRouteParams =
 
 
 type Route
-    = DashboardRoute DashboardRouteParams
-    | NodeListRoute DashboardRouteParams
-    | NodeDetailRoute NodeDetailRouteParams
-    | ReportRoute ReportRouteParams
+    = Dashboard DashboardParams
+    | NodeList DashboardParams
+    | NodeDetail NodeDetailParams
+    | Report ReportParams
 
 
 parse : Location -> Maybe Route
@@ -47,10 +46,10 @@ parse location =
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map DashboardRoute (map DashboardRouteParams (s "" <?> stringParam "query"))
-        , map NodeListRoute (map NodeListRouteParams (s "nodes" <?> stringParam "query"))
-        , map NodeDetailRoute (map NodeDetailRouteParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
-        , map ReportRoute (map ReportRouteParams (s "report" </> string <?> intParam "page" <?> stringParam "query"))
+        [ map Dashboard (map DashboardParams (s "" <?> stringParam "query"))
+        , map NodeList (map NodeListParams (s "nodes" <?> stringParam "query"))
+        , map NodeDetail (map NodeDetailParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
+        , map Report (map ReportParams (s "report" </> string <?> intParam "page" <?> stringParam "query"))
         ]
 
 
@@ -68,19 +67,19 @@ addParam key value url =
 toString : Route -> String
 toString route =
     (case route of
-        DashboardRoute params ->
+        Dashboard params ->
             Erl.parse "#/"
 
-        NodeListRoute params ->
+        NodeList params ->
             Erl.parse "#/nodes"
                 |> addParam "query" params.query
 
-        NodeDetailRoute params ->
+        NodeDetail params ->
             Erl.parse ("#/nodes/" ++ params.node)
                 |> addParam "page" (Maybe.map Basics.toString params.page)
                 |> addParam "query" params.query
 
-        ReportRoute params ->
+        Report params ->
             Erl.parse ("#/report/" ++ params.hash)
                 |> addParam "page" (Maybe.map Basics.toString params.page)
                 |> addParam "query" params.query

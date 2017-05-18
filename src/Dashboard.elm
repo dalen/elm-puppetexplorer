@@ -5,7 +5,7 @@ import Bootstrap.Grid as Grid
 import Dashboard.Panel as Panel
 import Html exposing (..)
 import Config
-import Routing
+import Route
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
@@ -24,7 +24,7 @@ type alias PanelConfigs =
     List (List Config.DashboardPanelConfig)
 
 
-init : Config.Config -> Routing.DashboardRouteParams -> Task PageLoadError Model
+init : Config.Config -> Route.DashboardParams -> Task PageLoadError Model
 init config params =
     let
         handleLoadError _ =

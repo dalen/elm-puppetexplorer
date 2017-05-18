@@ -8,7 +8,7 @@ import Bootstrap.Table as Table
 import Date
 import Date.Distance
 import Status
-import Routing
+import Route
 import Config
 import Task exposing (Task)
 import View.Page as Page
@@ -22,7 +22,7 @@ type alias Model =
     }
 
 
-init : Config.Config -> Routing.NodeListRouteParams -> Task PageLoadError Model
+init : Config.Config -> Route.NodeListParams -> Task PageLoadError Model
 init config params =
     let
         handleLoadError _ =
@@ -50,7 +50,7 @@ getNodeList serverUrl query =
         |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load list of nodes")
 
 
-view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Never
+view : Model -> Route.NodeListParams -> Date.Date -> Html.Html Never
 view model routeParams date =
     Table.table
         { options = [ Table.striped ]
@@ -64,7 +64,7 @@ view model routeParams date =
         }
 
 
-nodeListView : Date.Date -> Routing.NodeListRouteParams -> Node -> Table.Row Never
+nodeListView : Date.Date -> Route.NodeListParams -> Node -> Table.Row Never
 nodeListView date routeParams node =
     let
         status =
@@ -98,7 +98,7 @@ nodeListView date routeParams node =
     in
         Table.tr []
             [ Table.td []
-                [ Html.a [ Routing.href (Routing.NodeDetailRoute (Routing.NodeDetailRouteParams node.certname Nothing routeParams.query)) ] [ Html.text node.certname ]
+                [ Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ] [ Html.text node.certname ]
                 ]
             , timeAgo
             , status

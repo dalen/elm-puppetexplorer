@@ -1,4 +1,4 @@
-module Page.Errored exposing (view, pageLoadError, PageLoadError)
+module Page.Errored exposing (view, httpError, pageLoadError, PageLoadError)
 
 {-| The page that renders when there was an error trying to load another page,
 for example a Page Not Found error.
@@ -9,6 +9,7 @@ for example a Page Not Found error.
 import View.Page as Page exposing (ActivePage)
 import Html
 import Html.Attributes as Attributes
+import Http
 
 
 type PageLoadError
@@ -28,6 +29,33 @@ type alias Model =
 pageLoadError : ActivePage -> String -> PageLoadError
 pageLoadError activePage errorMessage =
     PageLoadError { activePage = activePage, errorMessage = errorMessage }
+
+
+httpError : ActivePage -> String -> Http.Error -> PageLoadError
+httpError activePage context error =
+    let
+        message =
+            "Error when "
+                ++ context
+                ++ ": "
+                ++ (case error of
+                        Http.BadStatus resp ->
+                            "Error " ++ (toString resp.status.code) ++ " : " ++ resp.body
+
+                        Http.BadUrl url ->
+                            "The URL " ++ url ++ " is malformed"
+
+                        Http.Timeout ->
+                            "Request timed out"
+
+                        Http.NetworkError ->
+                            "Network error"
+
+                        Http.BadPayload str resp ->
+                            "Could not parse response from PuppetDB: " ++ str
+                   )
+    in
+        PageLoadError { activePage = activePage, errorMessage = message }
 
 
 

@@ -5,7 +5,7 @@ import Bootstrap.Navbar
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import FontAwesome.Web as Icon
-import Routing exposing (Route)
+import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
 import Dashboard
 import NodeDetail
@@ -27,10 +27,10 @@ type Page
     = Blank
     | NotFound
     | Errored PageLoadError
-    | Dashboard Routing.DashboardRouteParams Dashboard.Model
-    | NodeList Routing.NodeListRouteParams NodeList.Model
-    | NodeDetail Routing.NodeDetailRouteParams NodeDetail.Model
-    | Report Routing.ReportRouteParams Report.Model
+    | Dashboard Route.DashboardParams Dashboard.Model
+    | NodeList Route.NodeListParams NodeList.Model
+    | NodeDetail Route.NodeDetailParams NodeDetail.Model
+    | Report Route.ReportParams Report.Model
 
 
 type PageState
@@ -58,7 +58,7 @@ init config location =
             Bootstrap.Navbar.initialState NavbarMsg
 
         ( model, routeCmd ) =
-            setRoute (Routing.parse location)
+            setRoute (Route.parse location)
                 { config = config
                 , navbarState = navbarState
                 , queryField = ""
@@ -92,16 +92,16 @@ setRoute maybeRoute model =
             Nothing ->
                 ( { model | pageState = Loaded NotFound }, Cmd.none )
 
-            Just (Routing.DashboardRoute params) ->
+            Just (Route.Dashboard params) ->
                 transition DashboardLoaded (Dashboard.init model.config params)
 
-            Just (Routing.NodeListRoute params) ->
-                transition NodeListLoaded (NodeList.init model.config params)
+            Just (Route.NodeList params) ->
+                transition (NodeListLoaded params) (NodeList.init model.config params)
 
-            Just (Routing.NodeDetailRoute params) ->
-                transitionOld NodeDetailMsg (NodeDetail params) (NodeDetail.load model.config NodeDetail.initModel params)
+            Just (Route.NodeDetail params) ->
+                transition (NodeDetailLoaded params) (NodeDetail.init model.config params)
 
-            Just (Routing.ReportRoute params) ->
+            Just (Route.Report params) ->
                 transitionOld ReportMsg (Report params) (Report.load model.config Report.initModel params)
 
 
@@ -117,7 +117,8 @@ type Msg
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
-    | NodeListLoaded (Result PageLoadError NodeList.Model)
+    | NodeListLoaded Route.NodeListParams (Result PageLoadError NodeList.Model)
+    | NodeDetailLoaded Route.NodeDetailParams (Result PageLoadError NodeDetail.Model)
     | DashboardMsg Never
     | NodeListMsg Never
     | NodeDetailMsg NodeDetail.Msg
@@ -160,32 +161,32 @@ updatePage page msg model =
 
             -- Can this be simplified?
             {- case model.route of
-               Routing.DashboardRoute params ->
+               Route.Dashboard params ->
                    ( model
                    , Navigation.newUrl
-                       (Routing.toString
-                           (Routing.DashboardRoute { params | query = Just model.queryField })
+                       (Route.toString
+                           (Route.Dashboard { params | query = Just model.queryField })
                        )
                    )
 
-               Routing.NodeListRoute params ->
+               Route.NodeList params ->
                    ( model
                    , Navigation.newUrl
-                       (Routing.toString
-                           (Routing.NodeListRoute { params | query = Just model.queryField })
+                       (Route.toString
+                           (Route.NodeList { params | query = Just model.queryField })
                        )
                    )
 
-               Routing.NodeDetailRoute params ->
+               Route.NodeDetail params ->
                    ( model
-                   , Routing.newUrl
-                       (Routing.NodeDetailRoute { params | query = Just model.queryField })
+                   , Route.newUrl
+                       (Route.NodeDetail { params | query = Just model.queryField })
                    )
 
-               Routing.ReportRoute params ->
+               Route.Report params ->
                    ( model
-                   , Routing.newUrl
-                       (Routing.ReportRoute { params | query = Just model.queryField })
+                   , Route.newUrl
+                       (Route.Report { params | query = Just model.queryField })
                    )
             -}
             ( DashboardLoaded (Ok subModel), _ ) ->
@@ -195,18 +196,23 @@ updatePage page msg model =
             ( DashboardLoaded (Err error), _ ) ->
                 ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
-            ( NodeListLoaded (Ok subModel), _ ) ->
-                -- TODO: handle the params
-                ( { model | pageState = Loaded (NodeList { query = Nothing } subModel) }, Cmd.none )
+            ( NodeListLoaded params (Ok subModel), _ ) ->
+                ( { model | pageState = Loaded (NodeList params subModel) }, Cmd.none )
 
-            ( NodeListLoaded (Err error), _ ) ->
+            ( NodeListLoaded _ (Err error), _ ) ->
+                ( { model | pageState = Loaded (Errored error) }, Cmd.none )
+
+            ( NodeDetailLoaded params (Ok subModel), _ ) ->
+                ( { model | pageState = Loaded (NodeDetail params subModel) }, Cmd.none )
+
+            ( NodeDetailLoaded _ (Err error), _ ) ->
                 ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
             ( NewUrlMsg route, _ ) ->
-                ( model, Routing.newUrl route )
+                ( model, Route.newUrl route )
 
             ( LocationChangeMsg location, _ ) ->
-                setRoute (Routing.parse location) model
+                setRoute (Route.parse location) model
 
             ( NodeDetailMsg subMsg, NodeDetail params subModel ) ->
                 toPage (NodeDetail params) NodeDetailMsg NodeDetail.update subMsg subModel

@@ -6,7 +6,7 @@ module View.Page exposing (ActivePage(..), frame)
 import Html
 import Html.Attributes as Attributes
 import Html.Events
-import Routing
+import Route
 import Events
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.InputGroup as InputGroup
@@ -30,7 +30,7 @@ type ActivePage
 -- FIXME: WAY too many parameters
 
 
-frame : Bool -> Maybe String -> (String -> msg) -> (String -> msg) -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> ActivePage -> Html.Html msg -> Html.Html msg
+frame : Bool -> Maybe String -> (String -> msg) -> (String -> msg) -> (Route.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> ActivePage -> Html.Html msg -> Html.Html msg
 frame loading query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMsg page content =
     Html.div []
         [ searchField query updateQueryMsg submitQueryMsg
@@ -39,12 +39,12 @@ frame loading query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMs
         ]
 
 
-navbar : Bool -> Maybe String -> ActivePage -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html.Html msg
+navbar : Bool -> Maybe String -> ActivePage -> (Route.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html.Html msg
 navbar loading query page routeMsg navbarState navbarMsg =
     Navbar.config navbarMsg
         |> Navbar.items
-            [ navbarLink (page == Dashboard) (Routing.DashboardRoute (Routing.DashboardRouteParams query)) [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
-            , navbarLink (page == Nodes) (Routing.NodeListRoute (Routing.NodeListRouteParams query)) [ Icon.server, Html.text " ", Html.text "Nodes" ]
+            [ navbarLink (page == Dashboard) (Route.Dashboard (Route.DashboardParams query)) [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
+            , navbarLink (page == Nodes) (Route.NodeList (Route.NodeListParams query)) [ Icon.server, Html.text " ", Html.text "Nodes" ]
             ]
         |> Navbar.customItems
             [ Navbar.textItem []
@@ -57,7 +57,7 @@ navbar loading query page routeMsg navbarState navbarMsg =
         |> Navbar.view navbarState
 
 
-navbarLink : Bool -> Routing.Route -> List (Html.Html msg) -> Navbar.Item msg
+navbarLink : Bool -> Route.Route -> List (Html.Html msg) -> Navbar.Item msg
 navbarLink isActive route content =
     (case isActive of
         True ->
@@ -66,7 +66,7 @@ navbarLink isActive route content =
         False ->
             Navbar.itemLink
     )
-        [ Routing.href route ]
+        [ Route.href route ]
         content
 
 

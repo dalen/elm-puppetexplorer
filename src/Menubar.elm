@@ -3,10 +3,10 @@ module Menubar exposing (view)
 import Bootstrap.Navbar as Navbar
 import FontAwesome.Web as Icon
 import Html exposing (Html)
-import Routing
+import Route
 
 
-view : Maybe String -> Routing.Route -> (Routing.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html msg
+view : Maybe String -> Route.Route -> (Route.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html msg
 view query route routeMsg menuModel navbarMsg =
     Navbar.config navbarMsg
         |> Navbar.items
@@ -14,26 +14,26 @@ view query route routeMsg menuModel navbarMsg =
             [ let
                 itemLink =
                     case route of
-                        Routing.DashboardRoute _ ->
+                        Route.Dashboard _ ->
                             Navbar.itemLinkActive
 
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (Routing.linkAttributes (Routing.DashboardRoute (Routing.DashboardRouteParams query)) routeMsg)
+                itemLink (Route.linkAttributes (Route.Dashboard (Route.DashboardParams query)) routeMsg)
                     [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
 
             -- Nodes
             , let
                 itemLink =
                     case route of
-                        Routing.NodeListRoute _ ->
+                        Route.NodeList _ ->
                             Navbar.itemLinkActive
 
                         _ ->
                             Navbar.itemLink
               in
-                itemLink (Routing.linkAttributes (Routing.NodeListRoute (Routing.NodeListRouteParams query)) routeMsg)
+                itemLink (Route.linkAttributes (Route.NodeList (Route.NodeListParams query)) routeMsg)
                     [ Icon.server, Html.text " ", Html.text "Nodes" ]
             ]
         |> Navbar.view menuModel

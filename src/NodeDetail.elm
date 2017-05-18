@@ -4,13 +4,9 @@ import Html
 import Html.Attributes
 import Html.Events
 import PuppetDB
+import PuppetDB.Report exposing (Report)
 import Json.Decode
-import Json.Decode.Extra
-import Json.Decode.Pipeline
-import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
-import Bootstrap.Alert as Alert
-import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -19,28 +15,28 @@ import Date.Distance
 import Pagination
 import Status exposing (Status)
 import Config exposing (Config)
-import Routing
-
-
-type Msg
-    = ChangePage Int
-    | UpdateReportList (WebData (List ReportListItem))
-    | UpdateReportListCount (WebData Int)
-    | ViewReport String
+import Route
+import Task exposing (Task)
+import Page.Errored as Errored exposing (PageLoadError)
+import View.Page as Page
+import Http
 
 
 type alias Model =
-    { routeParams : Routing.NodeDetailRouteParams
-    , reportList : WebData (List ReportListItem)
-    , reportCount : WebData Int
+    { routeParams : Route.NodeDetailParams
+    , reportList : List Report
+    , reportCount : Int
     }
 
 
-type alias ReportListItem =
-    { hash : String
-    , reportTimestamp : Maybe Date.Date
-    , status : Status
-    }
+
+{-
+   type alias ReportListItem =
+       { hash : String
+       , reportTimestamp : Maybe Date.Date
+       , status : Status
+       }
+-}
 
 
 perPage : Int
@@ -48,85 +44,82 @@ perPage =
     10
 
 
-initModel : Model
-initModel =
-    { routeParams = Routing.NodeDetailRouteParams "" Nothing Nothing
-    , reportList = RemoteData.NotAsked
-    , reportCount = RemoteData.NotAsked
-    }
+offset : Maybe Int -> Int
+offset page =
+    case page of
+        Just page ->
+            (page - 1) * perPage
+
+        Nothing ->
+            0
 
 
-load : Config -> Model -> Routing.NodeDetailRouteParams -> ( Model, Cmd Msg )
-load config model routeParams =
-    let
-        offset =
-            case routeParams.page of
-                Just page ->
-                    (page - 1) * perPage
+init : Config.Config -> Route.NodeDetailParams -> Task PageLoadError Model
+init config params =
+    Task.map2 (Model params)
+        (getReportList config.serverUrl params.node (offset params.page))
+        (getReportCount config.serverUrl params.node)
 
-                Nothing ->
-                    0
-    in
-        ( { model
-            | reportList = RemoteData.Loading
-            , reportCount = RemoteData.Loading
-            , routeParams = routeParams
-          }
-        , Cmd.batch
-            [ PuppetDB.queryPQL
-                config.serverUrl
-                (PuppetDB.pql "reports"
-                    [ "hash", "receive_time", "status" ]
-                    ("certname=\""
-                        ++ routeParams.node
-                        ++ "\" order by receive_time desc offset "
-                        ++ toString offset
-                        ++ " limit "
-                        ++ toString perPage
-                    )
-                )
-                reportListDecoder
-                UpdateReportList
-            , PuppetDB.queryPQL
-                config.serverUrl
-                (PuppetDB.pql "reports"
-                    [ "count()" ]
-                    ("certname=\""
-                        ++ routeParams.node
-                        ++ "\""
-                    )
-                )
-                reportListCountDecoder
-                UpdateReportListCount
-            ]
+
+getReportList : String -> String -> Int -> Task PageLoadError (List Report)
+getReportList serverUrl node offset =
+    PuppetDB.request
+        serverUrl
+        (PuppetDB.pql "reports"
+            []
+            ("certname=\""
+                ++ node
+                ++ "\" order by receive_time desc offset "
+                ++ toString offset
+                ++ " limit "
+                ++ toString perPage
+            )
         )
+        PuppetDB.Report.listDecoder
+        |> Http.toTask
+        |> Task.mapError (Errored.httpError Page.Nodes "loading list of reports")
+
+
+getReportCount : String -> String -> Task PageLoadError Int
+getReportCount serverUrl node =
+    PuppetDB.request
+        serverUrl
+        (PuppetDB.pql "reports"
+            [ "count()" ]
+            ("certname=\""
+                ++ node
+                ++ "\""
+            )
+        )
+        reportListCountDecoder
+        |> Http.toTask
+        |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load count of nodes")
+
+
+type Msg
+    = ChangePage Int
+    | ViewReport String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateReportList response ->
-            ( { model | reportList = response }, Cmd.none )
-
-        UpdateReportListCount response ->
-            ( { model | reportCount = response }, Cmd.none )
-
         ChangePage page ->
             let
                 routeParams =
                     model.routeParams
             in
                 ( model
-                , Routing.newUrl (Routing.NodeDetailRoute { routeParams | page = Just page })
+                , Route.newUrl (Route.NodeDetail { routeParams | page = Just page })
                 )
 
         ViewReport hash ->
             ( model
-            , Routing.newUrl (Routing.ReportRoute { hash = hash, page = Nothing, query = model.routeParams.query })
+            , Route.newUrl (Route.Report { hash = hash, page = Nothing, query = model.routeParams.query })
             )
 
 
-view : Model -> Routing.NodeDetailRouteParams -> Date.Date -> Html.Html Msg
+view : Model -> Route.NodeDetailParams -> Date.Date -> Html.Html Msg
 view model routeParams date =
     Html.div []
         [ Html.h1 [] [ Html.text routeParams.node ]
@@ -140,29 +133,20 @@ view model routeParams date =
         ]
 
 
-reportList : Date.Date -> WebData (List ReportListItem) -> Html.Html Msg
+reportList : Date.Date -> List Report -> Html.Html Msg
 reportList date reports =
-    case reports of
-        RemoteData.Success reports ->
-            Table.table
-                { options = [ Table.striped ]
-                , thead =
-                    Table.simpleThead
-                        [ Table.th [] [ Html.text "Last run" ]
-                        , Table.th [] [ Html.text "Status" ]
-                        ]
-                , tbody = Table.tbody [] (List.map (reportListItemView date) reports)
-                }
-
-        _ ->
-            Progress.progress
-                [ Progress.label "Loading reports..."
-                , Progress.animated
-                , Progress.value 100
+    Table.table
+        { options = [ Table.striped ]
+        , thead =
+            Table.simpleThead
+                [ Table.th [] [ Html.text "Last run" ]
+                , Table.th [] [ Html.text "Status" ]
                 ]
+        , tbody = Table.tbody [] (List.map (reportListItemView date) reports)
+        }
 
 
-reportListItemView : Date.Date -> ReportListItem -> Table.Row Msg
+reportListItemView : Date.Date -> Report -> Table.Row Msg
 reportListItemView date report =
     let
         status =
@@ -185,47 +169,31 @@ reportListItemView date report =
                 Status.Unknown ->
                     Table.td [] [ Icon.question_circle ]
 
-        timeAgo =
-            case report.reportTimestamp of
-                Just reportDate ->
-                    Table.td []
-                        [ Html.text (Date.Distance.inWords date reportDate) ]
+        {- }
+           timeAgo =
+               case report.receiveTime of
+                   Just reportDate ->
+                       Table.td []
+                           [ Html.text (Date.Distance.inWords date reportDate) ]
 
-                Nothing ->
-                    Table.td [] [ Icon.question_circle ]
+                   Nothing ->
+                       Table.td [] [ Icon.question_circle ]
+        -}
+        timeAgo =
+            Table.td []
+                [ Html.text (Date.Distance.inWords date report.receiveTime) ]
     in
         Table.tr [ Table.rowAttr (Html.Events.onClick (ViewReport report.hash)) ] [ timeAgo, status ]
 
 
 pagination : Model -> Html.Html Msg
 pagination model =
-    case model.reportCount of
-        RemoteData.Success count ->
-            Pagination.config ChangePage
-                |> Pagination.activePage (Maybe.withDefault 1 model.routeParams.page)
-                |> Pagination.items (count // perPage + 1)
-                |> Pagination.view
-
-        RemoteData.Failure error ->
-            Alert.warning [ Html.text (toString error) ]
-
-        _ ->
-            Icon.spinner
-
-
-reportListDecoder : Json.Decode.Decoder (List ReportListItem)
-reportListDecoder =
-    Json.Decode.list reportListItemDecoder
+    Pagination.config ChangePage
+        |> Pagination.activePage (Maybe.withDefault 1 model.routeParams.page)
+        |> Pagination.items (model.reportCount // perPage + 1)
+        |> Pagination.view
 
 
 reportListCountDecoder : Json.Decode.Decoder Int
 reportListCountDecoder =
     Json.Decode.index 0 (Json.Decode.field "count" Json.Decode.int)
-
-
-reportListItemDecoder : Json.Decode.Decoder ReportListItem
-reportListItemDecoder =
-    Json.Decode.Pipeline.decode ReportListItem
-        |> Json.Decode.Pipeline.required "hash" Json.Decode.string
-        |> Json.Decode.Pipeline.required "receive_time" (Json.Decode.nullable Json.Decode.Extra.date)
-        |> Json.Decode.Pipeline.required "status" Status.decoder
