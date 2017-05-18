@@ -80,9 +80,6 @@ Can update (initialize) the model for the route as well
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
-        transitionOld toMsg page ( pageModel, pageCmd ) =
-            ( { model | pageState = TransitioningFrom (page pageModel) }, Cmd.map toMsg pageCmd )
-
         transition toMsg task =
             ( { model | pageState = TransitioningFrom (getPage model.pageState) }
             , Task.attempt toMsg task
@@ -102,7 +99,7 @@ setRoute maybeRoute model =
                 transition (NodeDetailLoaded params) (NodeDetail.init model.config params)
 
             Just (Route.Report params) ->
-                transitionOld ReportMsg (Report params) (Report.load model.config Report.initModel params)
+                transition (ReportLoaded params) (Report.init model.config params)
 
 
 
@@ -119,6 +116,7 @@ type Msg
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
     | NodeListLoaded Route.NodeListParams (Result PageLoadError NodeList.Model)
     | NodeDetailLoaded Route.NodeDetailParams (Result PageLoadError NodeDetail.Model)
+    | ReportLoaded Route.ReportParams (Result PageLoadError Report.Model)
     | DashboardMsg Never
     | NodeListMsg Never
     | NodeDetailMsg NodeDetail.Msg
@@ -206,6 +204,12 @@ updatePage page msg model =
                 ( { model | pageState = Loaded (NodeDetail params subModel) }, Cmd.none )
 
             ( NodeDetailLoaded _ (Err error), _ ) ->
+                ( { model | pageState = Loaded (Errored error) }, Cmd.none )
+
+            ( ReportLoaded params (Ok subModel), _ ) ->
+                ( { model | pageState = Loaded (Report params subModel) }, Cmd.none )
+
+            ( ReportLoaded _ (Err error), _ ) ->
                 ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
             ( NewUrlMsg route, _ ) ->
