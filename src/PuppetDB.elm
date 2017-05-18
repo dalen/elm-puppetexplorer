@@ -1,4 +1,4 @@
-module PuppetDB exposing (fetch, fetchBean, queryPQL, pql, subquery)
+module PuppetDB exposing (fetch, fetchBean, queryPQL, pql, subquery, request)
 
 import Http
 import Json.Decode
@@ -55,6 +55,21 @@ queryPQL serverUrl pql decoder msg =
         Http.get url decoder
             |> RemoteData.sendRequest
             |> Cmd.map msg
+
+
+{-| New replacement query function that returns a request
+-}
+request : String -> String -> Json.Decode.Decoder a -> Http.Request a
+request serverUrl pql decoder =
+    let
+        url =
+            Erl.toString
+                (Erl.parse serverUrl
+                    |> Erl.appendPathSegments [ "pdb", "query", "v4" ]
+                    |> Erl.addQuery "query" pql
+                )
+    in
+        Http.get url decoder
 
 
 {-| Generic function to fetch data from PuppetDB

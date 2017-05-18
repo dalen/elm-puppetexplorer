@@ -3,9 +3,6 @@ module NodeList exposing (..)
 import Html
 import Html.Attributes
 import PuppetDB
-import Json.Decode
-import Json.Decode.Extra
-import Json.Decode.Pipeline
 import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
 import Bootstrap.Progress as Progress
@@ -16,88 +13,103 @@ import Status
 import Routing
 import Config
 import Error
-
-
-type alias NodeListItem =
-    { certname : String
-    , reportTimestamp : Maybe Date.Date
-    , latestReportStatus : Status.Status
-    }
+import Task exposing (Task)
+import View.Page as Page
+import Page.Errored as Errored exposing (PageLoadError)
+import PuppetDB.Node exposing (Node)
+import Http
 
 
 type alias Model =
-    { nodeList : WebData (List NodeListItem)
+    { nodeList : List Node
     }
 
 
-type Msg
-    = UpdateNodeListMsg (WebData (List NodeListItem))
-    | NewUrlMsg Routing.Route
+init : Config.Config -> Routing.NodeListRouteParams -> Task PageLoadError Model
+init config params =
+    let
+        handleLoadError _ =
+            Errored.pageLoadError Page.Nodes "Failed to load list of nodes."
+    in
+        Task.map Model (getNodeList config.serverUrl params.query)
+            |> Task.mapError handleLoadError
 
 
-initModel : Model
-initModel =
-    { nodeList = RemoteData.NotAsked
-    }
-
-
-load : Config.Config -> Model -> Routing.NodeListRouteParams -> ( Model, Cmd Msg )
-load config model routeParams =
-    ( { model | nodeList = RemoteData.Loading }
-    , PuppetDB.queryPQL
-        config.serverUrl
+getNodeList : String -> Maybe String -> Task PageLoadError (List Node)
+getNodeList serverUrl query =
+    PuppetDB.request
+        serverUrl
         (PuppetDB.pql "nodes"
             [ "certname"
             , "report_timestamp"
             , "latest_report_status"
             ]
-            ((PuppetDB.subquery "inventory" routeParams.query)
+            ((PuppetDB.subquery "inventory" query)
                 ++ "order by certname"
             )
         )
-        nodeListDecoder
-        UpdateNodeListMsg
-    )
+        PuppetDB.Node.listDecoder
+        |> Http.toTask
+        |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load list of nodes")
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        UpdateNodeListMsg response ->
-            ( { model | nodeList = response }, Cmd.none )
 
-        NewUrlMsg route ->
-            ( model, Routing.newUrl route )
+{-
+   initModel : Model
+   initModel =
+       { nodeList = RemoteData.NotAsked
+       }
 
 
-view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Msg
+   load : Config.Config -> Model -> Routing.NodeListRouteParams -> ( Model, Cmd Msg )
+   load config model routeParams =
+       ( { model | nodeList = RemoteData.Loading }
+       , PuppetDB.queryPQL
+           config.serverUrl
+           (PuppetDB.pql "nodes"
+               [ "certname"
+               , "report_timestamp"
+               , "latest_report_status"
+               ]
+               ((PuppetDB.subquery "inventory" routeParams.query)
+                   ++ "order by certname"
+               )
+           )
+           PuppetDB.Node.listDecoder
+           UpdateNodeListMsg
+       )
+
+   type Msg
+       = UpdateNodeListMsg (WebData (List Node))
+       | NewUrlMsg Routing.Route
+
+   update : Msg -> Model -> ( Model, Cmd Msg )
+   update msg model =
+       case msg of
+           UpdateNodeListMsg response ->
+               ( { model | nodeList = response }, Cmd.none )
+
+           NewUrlMsg route ->
+               ( model, Routing.newUrl route )
+-}
+
+
+view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Never
 view model routeParams date =
-    case model.nodeList of
-        RemoteData.Success nodes ->
-            Table.table
-                { options = [ Table.striped ]
-                , thead =
-                    Table.simpleThead
-                        [ Table.th [] []
-                        , Table.th [] [ Html.text "Last run" ]
-                        , Table.th [] [ Html.text "Status" ]
-                        ]
-                , tbody = Table.tbody [] (List.map (nodeListItemView date routeParams) nodes)
-                }
-
-        RemoteData.Failure httpError ->
-            Error.alert "list of nodes" httpError
-
-        _ ->
-            Progress.progress
-                [ Progress.label "Loading nodes..."
-                , Progress.animated
-                , Progress.value 100
+    Table.table
+        { options = [ Table.striped ]
+        , thead =
+            Table.simpleThead
+                [ Table.th [] []
+                , Table.th [] [ Html.text "Last run" ]
+                , Table.th [] [ Html.text "Status" ]
                 ]
+        , tbody = Table.tbody [] (List.map (nodeListView date routeParams) model.nodeList)
+        }
 
 
-nodeListItemView : Date.Date -> Routing.NodeListRouteParams -> NodeListItem -> Table.Row Msg
-nodeListItemView date routeParams node =
+nodeListView : Date.Date -> Routing.NodeListRouteParams -> Node -> Table.Row Never
+nodeListView date routeParams node =
     let
         status =
             case node.latestReportStatus of
@@ -135,16 +147,3 @@ nodeListItemView date routeParams node =
             , timeAgo
             , status
             ]
-
-
-nodeListDecoder : Json.Decode.Decoder (List NodeListItem)
-nodeListDecoder =
-    Json.Decode.list nodeListItemDecoder
-
-
-nodeListItemDecoder : Json.Decode.Decoder NodeListItem
-nodeListItemDecoder =
-    Json.Decode.Pipeline.decode NodeListItem
-        |> Json.Decode.Pipeline.required "certname" Json.Decode.string
-        |> Json.Decode.Pipeline.required "report_timestamp" (Json.Decode.nullable Json.Decode.Extra.date)
-        |> Json.Decode.Pipeline.required "latest_report_status" Status.decoder

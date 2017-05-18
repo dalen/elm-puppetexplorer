@@ -4,9 +4,6 @@ import Http
 import Json.Decode
 
 
---get : String -> String -> -> Http.Request a
-
-
 get : String -> String -> Http.Request Float
 get serverUrl bean =
     Http.get

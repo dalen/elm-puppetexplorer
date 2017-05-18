@@ -95,9 +95,8 @@ setRoute maybeRoute model =
             Just (Routing.DashboardRoute params) ->
                 transition DashboardLoaded (Dashboard.init model.config params)
 
-            --transitionOld DashboardMsg (Dashboard params) (Dashboard.load model.config Dashboard.initModel params)
             Just (Routing.NodeListRoute params) ->
-                transitionOld NodeListMsg (NodeList params) (NodeList.load model.config NodeList.initModel params)
+                transition NodeListLoaded (NodeList.init model.config params)
 
             Just (Routing.NodeDetailRoute params) ->
                 transitionOld NodeDetailMsg (NodeDetail params) (NodeDetail.load model.config NodeDetail.initModel params)
@@ -118,8 +117,9 @@ type Msg
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
+    | NodeListLoaded (Result PageLoadError NodeList.Model)
     | DashboardMsg Never
-    | NodeListMsg NodeList.Msg
+    | NodeListMsg Never
     | NodeDetailMsg NodeDetail.Msg
     | ReportMsg Report.Msg
     | Noop
@@ -195,14 +195,18 @@ updatePage page msg model =
             ( DashboardLoaded (Err error), _ ) ->
                 ( { model | pageState = Loaded (Errored error) }, Cmd.none )
 
+            ( NodeListLoaded (Ok subModel), _ ) ->
+                -- TODO: handle the params
+                ( { model | pageState = Loaded (NodeList { query = Nothing } subModel) }, Cmd.none )
+
+            ( NodeListLoaded (Err error), _ ) ->
+                ( { model | pageState = Loaded (Errored error) }, Cmd.none )
+
             ( NewUrlMsg route, _ ) ->
                 ( model, Routing.newUrl route )
 
             ( LocationChangeMsg location, _ ) ->
                 setRoute (Routing.parse location) model
-
-            ( NodeListMsg subMsg, NodeList params subModel ) ->
-                toPage (NodeList params) NodeListMsg NodeList.update subMsg subModel
 
             ( NodeDetailMsg subMsg, NodeDetail params subModel ) ->
                 toPage (NodeDetail params) NodeDetailMsg NodeDetail.update subMsg subModel

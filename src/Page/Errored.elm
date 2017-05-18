@@ -15,9 +15,13 @@ type PageLoadError
     = PageLoadError Model
 
 
+type alias ErrorMessage =
+    String
+
+
 type alias Model =
     { activePage : ActivePage
-    , errorMessage : String
+    , errorMessage : ErrorMessage
     }
 
 

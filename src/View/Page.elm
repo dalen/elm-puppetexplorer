@@ -4,6 +4,7 @@ module View.Page exposing (ActivePage(..), frame)
 -}
 
 import Html
+import Html.Attributes as Attributes
 import Html.Events
 import Routing
 import Events
@@ -34,7 +35,7 @@ frame loading query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMs
     Html.div []
         [ searchField query updateQueryMsg submitQueryMsg
         , navbar loading query page newUrlMsg navbarState navbarMsg
-        , Grid.containerFluid [] [ content ]
+        , Grid.containerFluid [ Attributes.class "pt-2" ] [ content ]
         ]
 
 
