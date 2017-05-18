@@ -59,8 +59,13 @@ type alias Metric =
     }
 
 
-decodeReport : Json.Decode.Decoder Report
-decodeReport =
+listDecoder : Json.Decode.Decoder (List Report)
+listDecoder =
+    list decoder
+
+
+decoder : Json.Decode.Decoder Report
+decoder =
     Json.Decode.Pipeline.decode Report
         |> Json.Decode.Pipeline.required "receive_time" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "hash" (Json.Decode.string)

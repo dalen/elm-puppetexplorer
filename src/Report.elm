@@ -51,7 +51,7 @@ load config model routeParams =
                 ++ "\""
             )
         )
-        (Json.Decode.index 0 PuppetDB.Report.decodeReport)
+        (Json.Decode.index 0 PuppetDB.Report.decoder)
         UpdateReport
     )
 
