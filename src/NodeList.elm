@@ -3,16 +3,13 @@ module NodeList exposing (..)
 import Html
 import Html.Attributes
 import PuppetDB
-import RemoteData exposing (WebData)
 import FontAwesome.Web as Icon
-import Bootstrap.Progress as Progress
 import Bootstrap.Table as Table
 import Date
 import Date.Distance
 import Status
 import Routing
 import Config
-import Error
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
@@ -51,47 +48,6 @@ getNodeList serverUrl query =
         PuppetDB.Node.listDecoder
         |> Http.toTask
         |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load list of nodes")
-
-
-
-{-
-   initModel : Model
-   initModel =
-       { nodeList = RemoteData.NotAsked
-       }
-
-
-   load : Config.Config -> Model -> Routing.NodeListRouteParams -> ( Model, Cmd Msg )
-   load config model routeParams =
-       ( { model | nodeList = RemoteData.Loading }
-       , PuppetDB.queryPQL
-           config.serverUrl
-           (PuppetDB.pql "nodes"
-               [ "certname"
-               , "report_timestamp"
-               , "latest_report_status"
-               ]
-               ((PuppetDB.subquery "inventory" routeParams.query)
-                   ++ "order by certname"
-               )
-           )
-           PuppetDB.Node.listDecoder
-           UpdateNodeListMsg
-       )
-
-   type Msg
-       = UpdateNodeListMsg (WebData (List Node))
-       | NewUrlMsg Routing.Route
-
-   update : Msg -> Model -> ( Model, Cmd Msg )
-   update msg model =
-       case msg of
-           UpdateNodeListMsg response ->
-               ( { model | nodeList = response }, Cmd.none )
-
-           NewUrlMsg route ->
-               ( model, Routing.newUrl route )
--}
 
 
 view : Model -> Routing.NodeListRouteParams -> Date.Date -> Html.Html Never
