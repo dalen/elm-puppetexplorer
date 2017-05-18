@@ -3,8 +3,6 @@ module Dashboard.Panel exposing (..)
 import Html
 import Config
 import Bootstrap.Card as Card
-import PuppetDB
-import RemoteData exposing (WebData)
 import PuppetDB.Bean
 import Http
 import Page.Errored as Errored exposing (PageLoadError)
@@ -45,16 +43,11 @@ value panel value =
     { panel | value = value }
 
 
-fetch : String -> Config.DashboardPanelConfig -> (WebData Float -> msg) -> Cmd msg
-fetch serverUrl panel msg =
-    PuppetDB.fetchBean serverUrl panel.bean msg
-
-
 get : String -> Config.DashboardPanelConfig -> Task PageLoadError DashboardPanel
 get serverUrl config =
     PuppetDB.Bean.get serverUrl config.bean
         |> Http.toTask
-        |> Task.mapError (\_ -> Errored.pageLoadError Page.Dashboard "Article is currently unavailable.")
+        |> Task.mapError (Errored.httpError Page.Dashboard config.title)
         |> Task.map (fromConfig config)
 
 
