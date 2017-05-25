@@ -1,12 +1,11 @@
 module NodeList exposing (..)
 
-import Html
-import Html.Attributes
+import Html exposing (Html)
 import PuppetDB
+import Material.List as Lists
+import Material.Color as Color
 import FontAwesome.Web as Icon
-import Bootstrap.Table as Table
 import Date
-import Date.Distance
 import Status
 import Route
 import Config
@@ -15,6 +14,7 @@ import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
 import PuppetDB.Node exposing (Node)
 import Http
+import Util
 
 
 type alias Model =
@@ -52,54 +52,41 @@ getNodeList serverUrl query =
 
 view : Model -> Route.NodeListParams -> Date.Date -> Html.Html Never
 view model routeParams date =
-    Table.table
-        { options = [ Table.striped ]
-        , thead =
-            Table.simpleThead
-                [ Table.th [] []
-                , Table.th [] [ Html.text "Last run" ]
-                , Table.th [] [ Html.text "Status" ]
-                ]
-        , tbody = Table.tbody [] (List.map (nodeListView date routeParams) model.nodeList)
-        }
+    Lists.ul [] (List.map (nodeListView date routeParams) model.nodeList)
 
 
-nodeListView : Date.Date -> Route.NodeListParams -> Node -> Table.Row Never
+nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Never
 nodeListView date routeParams node =
     let
         status =
             case node.latestReportStatus of
                 Status.Changed ->
-                    Table.td []
-                        [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.exclamation_circle ]
-                        ]
+                    Lists.icon "check_circle" [ Color.text (Color.color Color.Green Color.S500) ]
 
                 Status.Unchanged ->
-                    Table.td []
-                        [ Html.span [ Html.Attributes.class "text-success" ] [ Icon.exclamation_circle ]
-                        ]
+                    Lists.icon "done" []
 
                 Status.Failed ->
-                    Table.td []
-                        [ Html.span [ Html.Attributes.class "text-danger" ] [ Icon.warning ]
-                        ]
+                    Lists.icon "error" [ Color.text (Color.color Color.Red Color.S500) ]
 
                 Status.Unknown ->
-                    Table.td [] [ Icon.question_circle ]
+                    Lists.icon "help" []
 
         timeAgo =
             case node.reportTimestamp of
                 Just reportDate ->
-                    Table.td []
-                        [ Html.text (Date.Distance.inWords date reportDate) ]
+                    Html.text (Util.dateDistance date reportDate)
 
                 Nothing ->
-                    Table.td [] [ Icon.question_circle ]
+                    Icon.question_circle
     in
-        Table.tr []
-            [ Table.td []
-                [ Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ] [ Html.text node.certname ]
+        Lists.li [ Lists.withSubtitle ]
+            [ Lists.content []
+                [ Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
+                    [ Html.text node.certname ]
+                , Lists.subtitle [] [ timeAgo ]
                 ]
-            , timeAgo
-            , status
+            , Lists.content2
+                []
+                [ status ]
             ]

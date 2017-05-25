@@ -1,9 +1,8 @@
 module Dashboard exposing (..)
 
-import Bootstrap.Card as Card
-import Bootstrap.Grid as Grid
+import Material.Grid as Grid
 import Dashboard.Panel as Panel
-import Html exposing (..)
+import Html exposing (Html)
 import Config
 import Route
 import Task exposing (Task)
@@ -68,12 +67,12 @@ updatePanel function rowIndex panelIndex dashboardPanels =
 -}
 panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Card.deck (List.map Panel.view panels)
+    Grid.grid [] (List.map Panel.view panels)
 
 
 view : Model -> Html Never
 view model =
-    div []
+    Html.div []
         (List.append
             (List.map
                 panelRow
@@ -87,16 +86,14 @@ view model =
 -}
 usage : Html Never
 usage =
-    Grid.containerFluid []
-        [ Grid.simpleRow
-            [ Grid.col []
-                [ text "test1"
-                ]
-            , Grid.col []
-                [ text "test2"
-                ]
-            , Grid.col []
-                [ text "test3"
-                ]
+    Grid.grid []
+        [ Grid.cell [ Grid.size Grid.All 4 ]
+            [ Html.text "test1"
+            ]
+        , Grid.cell [ Grid.size Grid.All 4 ]
+            [ Html.text "test2"
+            ]
+        , Grid.cell [ Grid.size Grid.All 4 ]
+            [ Html.text "test3"
             ]
         ]

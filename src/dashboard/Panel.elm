@@ -2,7 +2,12 @@ module Dashboard.Panel exposing (..)
 
 import Html
 import Config
-import Bootstrap.Card as Card
+import Material.Grid as Grid
+import Material.Card as Card
+import Material.Color as Color
+import Material.Elevation as Elevation
+import Material.Options as Options
+import Material.Typography as Typography
 import PuppetDB.Bean
 import Http
 import Page.Errored as Errored exposing (PageLoadError)
@@ -51,22 +56,27 @@ get serverUrl config =
         |> Task.map (fromConfig config)
 
 
-panelStyle : String -> Card.CardOption msg
-panelStyle styleString =
-    case styleString of
-        "primary" ->
-            Card.primary
 
-        _ ->
-            Card.primary
+{-
+   panelStyle : String -> Card.CardOption msg
+   panelStyle styleString =
+       case styleString of
+           "primary" ->
+               Card.primary
+
+           _ ->
+               Card.primary
+-}
 
 
 {-| Render a panel
 -}
-view : DashboardPanel -> Card.Config msg
+view : DashboardPanel -> Grid.Cell msg
 view panel =
-    Card.config [ panelStyle panel.config.style ]
-        |> Card.headerH4 [] [ Html.text panel.config.title ]
-        |> Card.block []
-            [ Card.text [] [ Html.text (toString panel.value) ]
+    Grid.cell [ Grid.size Grid.All 3 ]
+        [ Card.view [ Elevation.e2 ]
+            [ Card.title [] [ Card.head [] [ Html.text panel.config.title ] ]
+            , Card.text [ Color.text Color.accent, Typography.center ]
+                [ Options.span [ Typography.display3 ] [ Html.text (toString panel.value) ] ]
             ]
+        ]

@@ -1,9 +1,11 @@
 module Main exposing (..)
 
+import Material
 import Navigation exposing (Location)
 import Bootstrap.Navbar
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
+import Material.Layout as Layout
 import FontAwesome.Web as Icon
 import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
@@ -44,6 +46,7 @@ type PageState
 
 type alias Model =
     { config : Config
+    , mdl : Material.Model
     , navbarState : Bootstrap.Navbar.State
     , queryField : String
     , date : Date.Date
@@ -61,6 +64,7 @@ init config location =
             setRoute (Route.parse location)
                 { config = config
                 , navbarState = navbarState
+                , mdl = Material.model
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Loaded Blank
@@ -70,6 +74,7 @@ init config location =
         , Cmd.batch
             [ routeCmd
             , navbarCmd
+            , Layout.sub0 Mdl
             ]
         )
 
@@ -108,9 +113,11 @@ setRoute maybeRoute model =
 
 type Msg
     = NavbarMsg Bootstrap.Navbar.State
+    | Mdl (Material.Msg Msg)
     | TimeMsg Time.Time
     | UpdateQueryMsg String
     | SubmitQueryMsg String
+    | SelectTab Int
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
@@ -148,8 +155,26 @@ updatePage page msg model =
                 ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
+            ( Mdl subMsg, _ ) ->
+                Material.update Mdl subMsg model
+
             ( NavbarMsg state, _ ) ->
                 ( { model | navbarState = state }, Cmd.none )
+
+            ( SelectTab num, _ ) ->
+                ( model
+                , Route.newUrl
+                    (case num of
+                        0 ->
+                            Route.Dashboard { query = Nothing }
+
+                        1 ->
+                            Route.NodeList { query = Nothing }
+
+                        _ ->
+                            Route.Dashboard { query = Nothing }
+                    )
+                )
 
             ( UpdateQueryMsg query, _ ) ->
                 ( { model | queryField = query }, Cmd.none )
@@ -242,6 +267,7 @@ subscriptions model =
     Sub.batch
         [ Bootstrap.Navbar.subscriptions model.navbarState NavbarMsg
         , Time.every Time.second TimeMsg
+        , Layout.subs Mdl model.mdl
         ]
 
 
@@ -279,7 +305,7 @@ viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
     let
         frame =
-            Page.frame loading (Just model.queryField) UpdateQueryMsg SubmitQueryMsg NewUrlMsg model.navbarState NavbarMsg
+            Page.frame loading (Just model.queryField) SelectTab Mdl model.mdl
     in
         case page of
             Blank ->

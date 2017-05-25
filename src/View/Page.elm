@@ -3,16 +3,20 @@ module View.Page exposing (ActivePage(..), frame)
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Html
+import Html exposing (Html, text)
 import Html.Attributes as Attributes
 import Html.Events
 import Route
 import Events
+import Material
+import Material.Layout as Layout
+import Material.List as Lists
+import Material.Icon as Icon
+import Material.Options as Options
+import Material.Spinner as Spinner
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Navbar as Navbar
-import Bootstrap.Grid as Grid
-import FontAwesome.Web as Icon
 import View.Spinner
 
 
@@ -30,21 +34,64 @@ type ActivePage
 -- FIXME: WAY too many parameters
 
 
-frame : Bool -> Maybe String -> (String -> msg) -> (String -> msg) -> (Route.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> ActivePage -> Html.Html msg -> Html.Html msg
-frame loading query updateQueryMsg submitQueryMsg newUrlMsg navbarState navbarMsg page content =
-    Html.div []
-        [ searchField query updateQueryMsg submitQueryMsg
-        , navbar loading query page newUrlMsg navbarState navbarMsg
-        , Grid.containerFluid [ Attributes.class "pt-2" ] [ content ]
-        ]
+frame : Bool -> Maybe String -> (Int -> msg) -> (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Html.Html msg -> Html.Html msg
+frame loading query selectTabMsg materialMsg model page content =
+    let
+        selectedTab =
+            case page of
+                Dashboard ->
+                    0
+
+                Nodes ->
+                    1
+
+                _ ->
+                    3
+    in
+        Layout.render materialMsg
+            model
+            [ Layout.selectedTab selectedTab
+            , Layout.onSelectTab selectTabMsg
+            , Layout.fixedDrawer
+            ]
+            { header = []
+            , drawer =
+                [ Layout.title [] [ Html.text "Puppet Explorer" ]
+                , Layout.navigation []
+                    [ Lists.ul []
+                        [ Lists.li []
+                            [ Lists.content []
+                                [ Layout.link [ Layout.href (Route.toString (Route.Dashboard { query = query })) ]
+                                    [ Lists.icon "dashboard" []
+                                    , text "Dashboard"
+                                    ]
+                                ]
+                            , Lists.li []
+                                [ Lists.content []
+                                    [ Layout.link [ Layout.href (Route.toString (Route.NodeList { query = query })) ]
+                                        [ Lists.icon "storage" []
+                                        , text "Nodes"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                , Layout.spacer
+                , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
+                ]
+            , tabs =
+                ( [], [] )
+            , main = [ content ]
+            }
 
 
 navbar : Bool -> Maybe String -> ActivePage -> (Route.Route -> msg) -> Navbar.State -> (Navbar.State -> msg) -> Html.Html msg
 navbar loading query page routeMsg navbarState navbarMsg =
     Navbar.config navbarMsg
         |> Navbar.items
-            [ navbarLink (page == Dashboard) (Route.Dashboard (Route.DashboardParams query)) [ Icon.tachometer, Html.text " ", Html.text "Dashboard" ]
-            , navbarLink (page == Nodes) (Route.NodeList (Route.NodeListParams query)) [ Icon.server, Html.text " ", Html.text "Nodes" ]
+            [ navbarLink (page == Dashboard) (Route.Dashboard (Route.DashboardParams query)) [ Icon.i "dashboard", Html.text " ", Html.text "Dashboard" ]
+            , navbarLink (page == Nodes) (Route.NodeList (Route.NodeListParams query)) [ Icon.i "dashboard", Html.text " ", Html.text "Nodes" ]
             ]
         |> Navbar.customItems
             [ Navbar.textItem []
@@ -79,10 +126,10 @@ searchField query updateQueryMsg submitQueryMsg =
             ]
         )
         |> InputGroup.predecessors
-            [ InputGroup.span [] [ Icon.search ]
-            , InputGroup.span [] [ Html.text "inventory {" ]
+            [ InputGroup.span [] [ Icon.i "search" ]
+            , InputGroup.span [] [ text "inventory {" ]
             ]
         |> InputGroup.successors
-            [ InputGroup.span [] [ Html.text "}" ]
+            [ InputGroup.span [] [ text "}" ]
             ]
         |> InputGroup.view
