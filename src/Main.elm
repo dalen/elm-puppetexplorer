@@ -305,39 +305,45 @@ viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
     let
         frame =
-            Page.frame loading (Just model.queryField) SelectTab Mdl model.mdl
+            Page.frame loading (Just model.queryField) Mdl model.mdl
     in
         case page of
             Blank ->
                 Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
+                    |> Page.Page "Loading"
                     |> frame Page.Dashboard
 
             NotFound ->
                 Html.div [] [ Html.text "Page not found" ]
+                    |> Page.Page "Page not found"
                     |> frame Page.Other
 
             Errored subModel ->
                 Errored.view subModel
+                    |> Page.Page "Error"
                     |> frame Page.Other
 
             Dashboard params subModel ->
                 Dashboard.view subModel
                     |> Html.map DashboardMsg
+                    |> Page.Page "Dashboard"
                     |> frame Page.Dashboard
 
             NodeList params subModel ->
                 NodeList.view subModel params model.date
                     |> Html.map NodeListMsg
+                    |> Page.Page "Nodes"
                     |> frame Page.Nodes
 
             NodeDetail params subModel ->
                 NodeDetail.view subModel params model.date
-                    |> Html.map NodeDetailMsg
+                    |> Page.map (Html.map NodeDetailMsg)
                     |> frame Page.Nodes
 
             Report params subModel ->
                 Report.view subModel params model.date
                     |> Html.map ReportMsg
+                    |> Page.Page "Report"
                     |> frame Page.Nodes
 
 

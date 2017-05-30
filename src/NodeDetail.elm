@@ -119,18 +119,18 @@ update msg model =
             )
 
 
-view : Model -> Route.NodeDetailParams -> Date.Date -> Html.Html Msg
+view : Model -> Route.NodeDetailParams -> Date.Date -> Page.Page Msg
 view model routeParams date =
-    Html.div []
-        [ Html.h1 [] [ Html.text routeParams.node ]
-        , Grid.simpleRow
+    { title = routeParams.node
+    , content =
+        Grid.simpleRow
             [ Grid.col
                 [ Col.md6 ]
                 [ reportList date model.reportList
                 , pagination model
                 ]
             ]
-        ]
+    }
 
 
 reportList : Date.Date -> List Report -> Html.Html Msg
