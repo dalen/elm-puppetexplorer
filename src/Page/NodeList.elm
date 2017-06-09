@@ -1,4 +1,4 @@
-module NodeList exposing (..)
+module Page.NodeList exposing (..)
 
 import Html exposing (Html)
 import PuppetDB

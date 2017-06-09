@@ -1,4 +1,4 @@
-module Report exposing (..)
+module Page.Report exposing (..)
 
 import PuppetDB
 import PuppetDB.Report exposing (Report)

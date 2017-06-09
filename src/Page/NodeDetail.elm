@@ -1,4 +1,4 @@
-module NodeDetail exposing (..)
+module Page.NodeDetail exposing (..)
 
 import Html
 import Html.Attributes

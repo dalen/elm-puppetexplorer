@@ -1,4 +1,4 @@
-module Dashboard exposing (..)
+module Page.Dashboard exposing (..)
 
 import Material.Grid as Grid
 import Dashboard.Panel as Panel
