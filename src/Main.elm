@@ -9,10 +9,10 @@ import Material.Layout as Layout
 import FontAwesome.Web as Icon
 import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
-import Dashboard
-import NodeDetail
-import NodeList
-import Report
+import Page.Dashboard as Dashboard
+import Page.NodeDetail as NodeDetail
+import Page.NodeList as NodeList
+import Page.Report as Report
 import Page.Errored as Errored exposing (PageLoadError)
 import Html
 import Html.Events
