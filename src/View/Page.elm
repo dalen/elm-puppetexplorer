@@ -8,11 +8,9 @@ import Html.Attributes as Attributes
 import Route
 import Material
 import Material.Layout as Layout
-import Material.Icon as Icon
 import Material.Spinner as Spinner
 import Material.Options as Options
 import Material.Color as Color
-import Material.Button as Button
 import Material.List as Lists
 
 
@@ -35,10 +33,10 @@ type alias Page msg =
 navLink : String -> String -> Bool -> String -> Html msg
 navLink icon label isActive href =
     Html.a [ Attributes.href href ]
-        [ Lists.li []
+        [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
             [ Lists.content []
-                [ Lists.avatarIcon icon []
-                , Options.span [ Color.text Color.accent |> Options.when isActive ] [ text label ]
+                [ Lists.avatarIcon icon [ Color.background Color.primary |> Options.when isActive ]
+                , Options.span [ Color.text Color.primary |> Options.when isActive ] [ text label ]
                 ]
             ]
         ]
