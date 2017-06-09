@@ -2,11 +2,7 @@ module Main exposing (..)
 
 import Material
 import Navigation exposing (Location)
-import Bootstrap.Navbar
-import Bootstrap.Form.InputGroup as InputGroup
-import Bootstrap.Form.Input as Input
 import Material.Layout as Layout
-import Material.Icon as Icon
 import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
 import Page.Dashboard as Dashboard
@@ -15,9 +11,7 @@ import Page.NodeList as NodeList
 import Page.Report as Report
 import Page.Errored as Errored exposing (PageLoadError)
 import Html
-import Html.Events
 import Html.Attributes as Attributes
-import Events
 import Date
 import Date.Extra
 import Time
@@ -47,7 +41,6 @@ type PageState
 type alias Model =
     { config : Config
     , mdl : Material.Model
-    , navbarState : Bootstrap.Navbar.State
     , queryField : String
     , date : Date.Date
     , pageState : PageState
@@ -57,13 +50,9 @@ type alias Model =
 init : Config -> Location -> ( Model, Cmd Msg )
 init config location =
     let
-        ( navbarState, navbarCmd ) =
-            Bootstrap.Navbar.initialState NavbarMsg
-
         ( model, routeCmd ) =
             setRoute (Route.parse location)
                 { config = config
-                , navbarState = navbarState
                 , mdl = Material.model
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
@@ -73,7 +62,6 @@ init config location =
         ( model
         , Cmd.batch
             [ routeCmd
-            , navbarCmd
             , Layout.sub0 Mdl
             ]
         )
@@ -112,8 +100,7 @@ setRoute maybeRoute model =
 
 
 type Msg
-    = NavbarMsg Bootstrap.Navbar.State
-    | Mdl (Material.Msg Msg)
+    = Mdl (Material.Msg Msg)
     | TimeMsg Time.Time
     | UpdateQueryMsg String
     | SubmitQueryMsg String
@@ -157,9 +144,6 @@ updatePage page msg model =
         case ( msg, page ) of
             ( Mdl subMsg, _ ) ->
                 Material.update Mdl subMsg model
-
-            ( NavbarMsg state, _ ) ->
-                ( { model | navbarState = state }, Cmd.none )
 
             ( SelectTab num, _ ) ->
                 ( model
@@ -265,8 +249,7 @@ updatePage page msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Bootstrap.Navbar.subscriptions model.navbarState NavbarMsg
-        , Time.every Time.second TimeMsg
+        [ Time.every Time.second TimeMsg
         , Layout.subs Mdl model.mdl
         ]
 
@@ -282,23 +265,6 @@ andThen advance ( beginModel, cmd1 ) =
 
 
 -- View
-
-
-searchField : String -> Html.Html Msg
-searchField query =
-    InputGroup.config
-        (InputGroup.search
-            [ Input.attrs [ Html.Events.onInput UpdateQueryMsg, Events.onChange SubmitQueryMsg ]
-            ]
-        )
-        |> InputGroup.predecessors
-            [ InputGroup.span [] [ Icon.i "search" ]
-            , InputGroup.span [] [ Html.text "inventory {" ]
-            ]
-        |> InputGroup.successors
-            [ InputGroup.span [] [ Html.text "}" ]
-            ]
-        |> InputGroup.view
 
 
 viewPage : Model -> Bool -> Page -> Html.Html Msg
