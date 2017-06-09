@@ -342,8 +342,7 @@ viewPage model loading page =
 
             Report params subModel ->
                 Report.view subModel params model.date
-                    |> Html.map ReportMsg
-                    |> Page.Page "Report"
+                    |> Page.map (Html.map ReportMsg)
                     |> frame Page.Nodes
 
 

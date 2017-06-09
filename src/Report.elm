@@ -7,8 +7,13 @@ import Date
 import Route
 import Config exposing (Config)
 import Json.Decode
-import Bootstrap.Card as Card
-import FontAwesome.Web as Icon
+import Material.Card as Card
+import Material.Icon as Icon
+import Material.Grid as Grid
+import Material.Color as Color
+import Material.Elevation as Elevation
+import Material.Options as Options
+import Material.Typography as Typography
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
@@ -60,45 +65,36 @@ update msg model =
                 )
 
 
-view : Model -> Route.ReportParams -> Date.Date -> Html.Html Msg
-view model routeParams date =
-    Html.div []
-        [ Html.h1 [] [ Html.text model.report.certname ]
-        , Card.deck
-            [ Card.config []
-                |> Card.headerH6 [] [ Html.text "Environment" ]
-                |> Card.block [] [ Card.text [] [ Html.text model.report.environment ] ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "Run time" ]
-                |> Card.block [] [ Card.text [] [ Html.text "todo" ] ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "Configuration version" ]
-                |> Card.block [] [ Card.text [] [ Html.text model.report.configurationVersion ] ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "Start time" ]
-                |> Card.block [] [ Card.text [] [ Html.text (toString model.report.startTime) ] ]
-            ]
-        , Card.deck
-            [ Card.config []
-                |> Card.headerH6 [] [ Html.text "Puppet version" ]
-                |> Card.block [] [ Card.text [] [ Html.text model.report.puppetVersion ] ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "Catalog retrieval time" ]
-                |> Card.block [] [ Card.text [] [ Html.text "todo" ] ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "Catalog compiled by" ]
-                |> Card.block []
-                    [ Card.text []
-                        [ case model.report.producer of
-                            Just producer ->
-                                Html.text producer
-
-                            Nothing ->
-                                Icon.question_circle
-                        ]
-                    ]
-            , Card.config []
-                |> Card.headerH6 [] [ Html.text "End time" ]
-                |> Card.block [] [ Card.text [] [ Html.text (toString model.report.endTime) ] ]
+card : String -> Html.Html msg -> Grid.Cell msg
+card title content =
+    Grid.cell [ Grid.size Grid.All 3 ]
+        [ Card.view [ Elevation.e2, Options.css "width" "100%" ]
+            [ Card.title [] [ Card.head [] [ Html.text title ] ]
+            , Card.text [ Card.expand, Color.text Color.accent, Typography.center ]
+                [ Options.span [ Typography.display3 ] [ content ] ]
             ]
         ]
+
+
+view : Model -> Route.ReportParams -> Date.Date -> Page.Page Msg
+view model routeParams date =
+    { title = model.report.certname
+    , content =
+        Grid.grid []
+            [ card "Environment" (Html.text model.report.environment)
+            , card "Run time" (Html.text "todo")
+            , card "Configuration version" (Html.text model.report.configurationVersion)
+            , card "Start time" (Html.text (toString model.report.startTime))
+            , card "Puppet version" (Html.text model.report.puppetVersion)
+            , card "Catalog retrieval time" (Html.text "todo")
+            , card "Catalog compiled by"
+                (case model.report.producer of
+                    Just producer ->
+                        Html.text producer
+
+                    Nothing ->
+                        Icon.i "help"
+                )
+            , card "End time" (Html.text (toString model.report.endTime))
+            ]
+    }

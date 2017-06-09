@@ -76,7 +76,7 @@ view panel =
     Grid.cell [ Grid.size Grid.All 3 ]
         [ Card.view [ Elevation.e2, Options.css "width" "100%" ]
             [ Card.title [] [ Card.head [] [ Html.text panel.config.title ] ]
-            , Card.text [ Color.text Color.accent, Typography.center ]
+            , Card.text [ Card.expand, Color.text Color.accent, Typography.center ]
                 [ Options.span [ Typography.display3 ] [ Html.text (toString panel.value) ] ]
             ]
         ]

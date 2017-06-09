@@ -4,14 +4,11 @@ module View.Page exposing (ActivePage(..), Page, map, frame)
 -}
 
 import Html exposing (Html, text)
-import Html.Events
 import Route
-import Events
 import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Spinner as Spinner
-import View.Spinner
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
