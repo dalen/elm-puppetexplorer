@@ -4,12 +4,16 @@ module View.Page exposing (ActivePage(..), Page, map, frame)
 -}
 
 import Html exposing (Html, text)
+import Html.Attributes as Attributes
 import Route
 import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Spinner as Spinner
 import Material.Options as Options
+import Material.Color as Color
+import Material.Button as Button
+import Material.List as Lists
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -30,36 +34,43 @@ type alias Page msg =
 
 navLink : String -> String -> Bool -> String -> Html msg
 navLink icon label isActive href =
-    Layout.link
-        [ Options.cs "is-active" |> Options.when isActive
-        , Layout.href href
-        ]
-        [ Icon.i icon
-        , text label
+    Html.a [ Attributes.href href ]
+        [ Lists.li []
+            [ Lists.content []
+                [ Lists.avatarIcon icon []
+                , Options.span [ Color.text Color.accent |> Options.when isActive ] [ text label ]
+                ]
+            ]
         ]
 
 
 frame : Bool -> Maybe String -> (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
 frame loading query materialMsg model activePage page =
-    Layout.render materialMsg
-        model
-        [ Layout.fixedDrawer
-        , Layout.fixedHeader
-        ]
-        { header = [ header page.title ]
-        , drawer =
-            [ Layout.title [] [ Html.text "Puppet Explorer" ]
-            , Layout.navigation []
-                [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
-                , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
-                ]
-            , Layout.spacer
-            , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
+    let
+        materialNavLink =
+            navLink
+    in
+        Layout.render materialMsg
+            model
+            [ Layout.fixedDrawer
+            , Layout.fixedHeader
             ]
-        , tabs =
-            ( [], [] )
-        , main = [ page.content ]
-        }
+            { header = [ header page.title ]
+            , drawer =
+                [ Layout.title [] [ Html.text "Puppet Explorer" ]
+                , Layout.navigation []
+                    [ Lists.ul []
+                        [ materialNavLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
+                        , materialNavLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
+                        ]
+                    ]
+                , Layout.spacer
+                , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
+                ]
+            , tabs =
+                ( [], [] )
+            , main = [ page.content ]
+            }
 
 
 header : String -> Html m

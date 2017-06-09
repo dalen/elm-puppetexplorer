@@ -3,7 +3,6 @@ module Page.NodeList exposing (..)
 import Html exposing (Html)
 import PuppetDB
 import Material.List as Lists
-import Material.Color as Color
 import Material.Icon as Icon
 import Date
 import Status
