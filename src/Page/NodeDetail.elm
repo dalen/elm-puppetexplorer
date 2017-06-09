@@ -6,7 +6,7 @@ import Html.Events
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
-import FontAwesome.Web as Icon
+import Material.Icon as Icon
 import Bootstrap.Table as Table
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -153,21 +153,21 @@ reportListItemView date report =
             case report.status of
                 Status.Changed ->
                     Table.td []
-                        [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.exclamation_circle ]
+                        [ Html.span [ Html.Attributes.class "text-warning" ] [ Icon.i "done" ]
                         ]
 
                 Status.Unchanged ->
                     Table.td []
-                        [ Html.span [ Html.Attributes.class "text-success" ] [ Icon.exclamation_circle ]
+                        [ Html.span [ Html.Attributes.class "text-success" ] [ Icon.i "check_box" ]
                         ]
 
                 Status.Failed ->
                     Table.td []
-                        [ Html.span [ Html.Attributes.class "text-danger" ] [ Icon.warning ]
+                        [ Html.span [ Html.Attributes.class "text-danger" ] [ Icon.i "error" ]
                         ]
 
                 Status.Unknown ->
-                    Table.td [] [ Icon.question_circle ]
+                    Table.td [] [ Icon.i "help" ]
 
         {- }
            timeAgo =

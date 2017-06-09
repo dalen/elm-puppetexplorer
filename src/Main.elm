@@ -6,7 +6,7 @@ import Bootstrap.Navbar
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Material.Layout as Layout
-import FontAwesome.Web as Icon
+import Material.Icon as Icon
 import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
 import Page.Dashboard as Dashboard
@@ -292,7 +292,7 @@ searchField query =
             ]
         )
         |> InputGroup.predecessors
-            [ InputGroup.span [] [ Icon.search ]
+            [ InputGroup.span [] [ Icon.i "search" ]
             , InputGroup.span [] [ Html.text "inventory {" ]
             ]
         |> InputGroup.successors

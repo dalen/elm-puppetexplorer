@@ -4,7 +4,7 @@ import Html exposing (Html)
 import PuppetDB
 import Material.List as Lists
 import Material.Color as Color
-import FontAwesome.Web as Icon
+import Material.Icon as Icon
 import Date
 import Status
 import Route
@@ -78,7 +78,7 @@ nodeListView date routeParams node =
                     Html.text (Util.dateDistance date reportDate)
 
                 Nothing ->
-                    Icon.question_circle
+                    Icon.i "help"
     in
         Lists.li [ Lists.withSubtitle ]
             [ Lists.content []
