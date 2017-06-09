@@ -9,6 +9,7 @@ import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Spinner as Spinner
+import Material.Options as Options
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -27,6 +28,17 @@ type alias Page msg =
     }
 
 
+navLink : String -> String -> Bool -> String -> Html msg
+navLink icon label isActive href =
+    Layout.link
+        [ Options.cs "is-active" |> Options.when isActive
+        , Layout.href href
+        ]
+        [ Icon.i icon
+        , text label
+        ]
+
+
 frame : Bool -> Maybe String -> (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
 frame loading query materialMsg model activePage page =
     Layout.render materialMsg
@@ -38,14 +50,8 @@ frame loading query materialMsg model activePage page =
         , drawer =
             [ Layout.title [] [ Html.text "Puppet Explorer" ]
             , Layout.navigation []
-                [ Layout.link [ Layout.href (Route.toString (Route.Dashboard { query = query })) ]
-                    [ Icon.i "dashboard"
-                    , text "Dashboard"
-                    ]
-                , Layout.link [ Layout.href (Route.toString (Route.NodeList { query = query })) ]
-                    [ Icon.i "storage"
-                    , text "Nodes"
-                    ]
+                [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
+                , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
                 ]
             , Layout.spacer
             , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
