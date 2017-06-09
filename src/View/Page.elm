@@ -35,7 +35,7 @@ navLink icon label isActive href =
     Html.a [ Attributes.href href ]
         [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
             [ Lists.content []
-                [ Lists.avatarIcon icon [ Color.background Color.primary |> Options.when isActive ]
+                [ Lists.avatarIcon icon [ Color.background Color.primary |> Options.when isActive, Color.text (Color.color Color.Grey Color.S200) |> Options.when isActive ]
                 , Options.span [ Color.text Color.primary |> Options.when isActive ] [ text label ]
                 ]
             ]
