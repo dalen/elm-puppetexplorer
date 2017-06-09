@@ -46,31 +46,27 @@ navLink icon label isActive href =
 
 frame : Bool -> Maybe String -> (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
 frame loading query materialMsg model activePage page =
-    let
-        materialNavLink =
-            navLink
-    in
-        Layout.render materialMsg
-            model
-            [ Layout.fixedDrawer
-            , Layout.fixedHeader
-            ]
-            { header = [ header page.title ]
-            , drawer =
-                [ Layout.title [] [ Html.text "Puppet Explorer" ]
-                , Layout.navigation []
-                    [ Lists.ul []
-                        [ materialNavLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
-                        , materialNavLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
-                        ]
+    Layout.render materialMsg
+        model
+        [ Layout.fixedDrawer
+        , Layout.fixedHeader
+        ]
+        { header = [ header page.title ]
+        , drawer =
+            [ Layout.title [] [ Html.text "Puppet Explorer" ]
+            , Layout.navigation []
+                [ Lists.ul []
+                    [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
+                    , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
                     ]
-                , Layout.spacer
-                , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
                 ]
-            , tabs =
-                ( [], [] )
-            , main = [ page.content ]
-            }
+            , Layout.spacer
+            , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
+            ]
+        , tabs =
+            ( [], [] )
+        , main = [ page.content ]
+        }
 
 
 header : String -> Html m
