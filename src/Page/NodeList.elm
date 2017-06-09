@@ -50,7 +50,7 @@ getNodeList serverUrl query =
         |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load list of nodes")
 
 
-view : Model -> Route.NodeListParams -> Date.Date -> Html.Html Never
+view : Model -> Route.NodeListParams -> Date.Date -> Html Never
 view model routeParams date =
     Lists.ul [] (List.map (nodeListView date routeParams) model.nodeList)
 
@@ -58,20 +58,6 @@ view model routeParams date =
 nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Never
 nodeListView date routeParams node =
     let
-        status =
-            case node.latestReportStatus of
-                Status.Changed ->
-                    Lists.icon "check_circle" [ Color.text (Color.color Color.Green Color.S500) ]
-
-                Status.Unchanged ->
-                    Lists.icon "done" []
-
-                Status.Failed ->
-                    Lists.icon "error" [ Color.text (Color.color Color.Red Color.S500) ]
-
-                Status.Unknown ->
-                    Lists.icon "help" []
-
         timeAgo =
             case node.reportTimestamp of
                 Just reportDate ->
@@ -88,5 +74,5 @@ nodeListView date routeParams node =
                 ]
             , Lists.content2
                 []
-                [ status ]
+                [ Status.listIcon node.latestReportStatus ]
             ]
