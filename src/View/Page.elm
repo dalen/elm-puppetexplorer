@@ -35,7 +35,7 @@ navLink icon label isActive href =
     Html.a [ Attributes.href href ]
         [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
             [ Lists.content []
-                [ Lists.avatarIcon icon [ Color.background Color.primary |> Options.when isActive, Color.text (Color.color Color.Grey Color.S200) |> Options.when isActive ]
+                [ Lists.icon icon [ Color.background Color.primary |> Options.when isActive, Color.text (Color.color Color.Grey Color.S200) |> Options.when isActive ]
                 , Options.span [ Color.text Color.primary |> Options.when isActive ] [ text label ]
                 ]
             ]
@@ -53,7 +53,7 @@ frame loading query materialMsg model activePage page =
         , drawer =
             [ Layout.title [] [ Html.text "Puppet Explorer" ]
             , Layout.navigation []
-                [ Lists.ul []
+                [ Lists.ul [ Options.cs "mt-0", Options.cs "pt-0" ]
                     [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
                     , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
                     ]
