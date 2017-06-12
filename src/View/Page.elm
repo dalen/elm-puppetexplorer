@@ -49,7 +49,7 @@ frame loading query materialMsg model activePage page =
         [ Layout.fixedDrawer
         , Layout.fixedHeader
         ]
-        { header = [ header page.title ]
+        { header = [ header loading page.title ]
         , drawer =
             [ Layout.title [] [ Html.text "Puppet Explorer" ]
             , Layout.navigation []
@@ -58,8 +58,6 @@ frame loading query materialMsg model activePage page =
                     , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
                     ]
                 ]
-            , Layout.spacer
-            , Layout.row [] [ Spinner.spinner [ Spinner.active loading ] ]
             ]
         , tabs =
             ( [], [] )
@@ -67,14 +65,13 @@ frame loading query materialMsg model activePage page =
         }
 
 
-header : String -> Html m
-header title =
+header : Bool -> String -> Html m
+header loading title =
     Layout.row
         []
         [ Layout.title [] [ text title ]
         , Layout.spacer
-        , Layout.navigation []
-            []
+        , Spinner.spinner [ Spinner.active loading ]
         ]
 
 
