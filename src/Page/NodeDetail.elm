@@ -5,7 +5,8 @@ import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
 import Material.List as Lists
-import Date
+import Date exposing (Date)
+import Date.Extra
 import Status exposing (Status)
 import Config exposing (Config)
 import Route
@@ -97,23 +98,27 @@ update msg model =
                 )
 
 
-view : Model -> Route.NodeDetailParams -> Date.Date -> Page.Page Msg
+view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { title = routeParams.node
     , content = Lists.ul [] (List.map (reportListItemView date routeParams) model.reportList)
     }
 
 
-reportListItemView : Date.Date -> Route.NodeDetailParams -> Report -> Html msg
+reportListItemView : Date -> Route.NodeDetailParams -> Report -> Html msg
 reportListItemView date routeParams report =
     let
+        -- ISO format without milliseconds
+        formattedDate =
+            Date.Extra.toFormattedString "YYYY-MM-DDThh:mm:ssX" report.receiveTime
+
         timeAgo =
             Html.text (Util.dateDistance date report.receiveTime)
     in
         Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
             [ Lists.li [ Lists.withSubtitle ]
                 [ Lists.content []
-                    [ Html.text report.hash
+                    [ Html.text formattedDate
                     , Lists.subtitle [] [ timeAgo ]
                     ]
                 , Lists.content2
