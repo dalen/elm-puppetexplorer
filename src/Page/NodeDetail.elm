@@ -110,15 +110,16 @@ reportListItemView date routeParams report =
         timeAgo =
             Html.text (Util.dateDistance date report.receiveTime)
     in
-        Lists.li [ Lists.withSubtitle ]
-            [ Lists.content []
-                [ Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
-                    [ Html.text report.hash ]
-                , Lists.subtitle [] [ timeAgo ]
+        Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
+            [ Lists.li [ Lists.withSubtitle ]
+                [ Lists.content []
+                    [ Html.text report.hash
+                    , Lists.subtitle [] [ timeAgo ]
+                    ]
+                , Lists.content2
+                    []
+                    [ Status.listIcon report.status ]
                 ]
-            , Lists.content2
-                []
-                [ Status.listIcon report.status ]
             ]
 
 

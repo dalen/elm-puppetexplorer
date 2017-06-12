@@ -1,3 +1,7 @@
 a {
   text-decoration: none;
 }
+
+a > .mdl-list__item {
+  cursor: auto;
+}

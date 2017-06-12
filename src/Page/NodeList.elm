@@ -65,13 +65,14 @@ nodeListView date routeParams node =
                 Nothing ->
                     Icon.i "help"
     in
-        Lists.li [ Lists.withSubtitle ]
-            [ Lists.content []
-                [ Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
-                    [ Html.text node.certname ]
-                , Lists.subtitle [] [ timeAgo ]
+        Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
+            [ Lists.li [ Lists.withSubtitle ]
+                [ Lists.content []
+                    [ Html.text node.certname
+                    , Lists.subtitle [] [ timeAgo ]
+                    ]
+                , Lists.content2
+                    []
+                    [ Status.listIcon node.latestReportStatus ]
                 ]
-            , Lists.content2
-                []
-                [ Status.listIcon node.latestReportStatus ]
             ]
