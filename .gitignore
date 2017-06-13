@@ -5,6 +5,7 @@ repl-temp-*
 
 # Dependency directories
 node_modules/
+bower_components/
 
 # Logs
 logs
