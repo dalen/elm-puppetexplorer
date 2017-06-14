@@ -8,6 +8,7 @@ import Route
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
+import Polymer.Paper as Paper
 
 
 type alias Model =

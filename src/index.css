@@ -5,3 +5,11 @@ a {
 a > .mdl-list__item {
   cursor: auto;
 }
+
+app-drawer-layout:not([narrow]) [drawer-toggle] {
+  display: none;
+}
+
+app-toolbar > paper-progress {
+  width: 100%;
+}

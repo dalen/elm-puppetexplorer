@@ -5,6 +5,7 @@ import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
 import Material.List as Lists
+import Material.Options as Options
 import Date exposing (Date)
 import Date.Extra
 import Status exposing (Status)
@@ -15,10 +16,12 @@ import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import Http
 import Util
+import Scroll exposing (ScrollInfo)
 
 
 type alias Model =
     { routeParams : Route.NodeDetailParams
+    , growing : Bool
     , reportList : List Report
     , reportCount : Int
     }
@@ -41,7 +44,7 @@ offset page =
 
 init : Config.Config -> Route.NodeDetailParams -> Task PageLoadError Model
 init config params =
-    Task.map2 (Model params)
+    Task.map2 (Model params False)
         (getReportList config.serverUrl params.node (offset params.page))
         (getReportCount config.serverUrl params.node)
 
@@ -83,6 +86,7 @@ getReportCount serverUrl node =
 
 type Msg
     = ChangePage Int
+    | OnScroll ScrollInfo
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -97,11 +101,17 @@ update msg model =
                 , Route.newUrl (Route.NodeDetail { routeParams | page = Just page })
                 )
 
+        OnScroll scrollInfo ->
+            ( { model | growing = True }, Cmd.none )
+
 
 view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { title = routeParams.node
-    , content = Lists.ul [] (List.map (reportListItemView date routeParams) model.reportList)
+    , content =
+        Options.div [ Options.css "overflow-y" "scroll", Scroll.onScroll OnScroll ]
+            [ Lists.ul [] (List.map (reportListItemView date routeParams) model.reportList)
+            ]
     }
 
 
