@@ -6,10 +6,6 @@ module View.Page exposing (ActivePage(..), Page, map, frame)
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (attribute)
 import Route
-import Material
-import Material.Options as Options
-import Material.Color as Color
-import Material.List as Lists
 import Polymer.App as App
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (icon, boolProperty)
@@ -34,19 +30,20 @@ type alias Page msg =
 navLink : String -> String -> Bool -> String -> Html msg
 navLink icon label isActive href =
     Html.a [ Attr.href href ]
-        [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
-            [ Lists.content []
-                [ Lists.icon icon [ Color.background Color.primary |> Options.when isActive, Color.text (Color.color Color.Grey Color.S200) |> Options.when isActive ]
-                , Options.span [ Color.text Color.primary |> Options.when isActive ] [ text label ]
-                ]
+        [ Paper.iconItem [ boolProperty "focused" isActive ]
+            [ Html.node "iron-icon" [ attribute "slot" "item-icon", attribute "icon" icon ] []
+            , text label
             ]
         ]
 
 
-frame : Bool -> Maybe String -> (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
-frame loading query materialMsg model activePage page =
+frame : Bool -> Maybe String -> ActivePage -> Page msg -> Html.Html msg
+frame loading query activePage page =
     App.drawerLayout []
-        [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ] [ text "foo" ]
+        [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
+            [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
+            , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
+            ]
         , App.headerLayout [ attribute "fullbleed" "" ]
             [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
                 [ App.toolbar [] (toolbar loading page.title)
@@ -56,48 +53,12 @@ frame loading query materialMsg model activePage page =
         ]
 
 
-
-{-
-   Layout.render
-   materialMsg
-   model
-   [ Layout.fixedDrawer
-   , Layout.fixedHeader
-   ]
-   { header = [ header loading page.title ]
-   , drawer =
-       [ Layout.title [] [ Html.text "Puppet Explorer" ]
-       , Layout.navigation []
-           [ Lists.ul [ Options.cs "mt-0", Options.cs "pt-0" ]
-               [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
-               , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
-               ]
-           ]
-       ]
-   , tabs =
-       ( [], [] )
-   , main = [ page.content ]
-   }
--}
-
-
 toolbar : Bool -> String -> List (Html m)
 toolbar loading title =
     [ Paper.iconButton [ icon "menu", attribute "drawer-toggle" "" ] []
     , Html.div [ attribute "main-title" "" ] [ text title ]
     , Paper.progress [ attribute "indeterminate" "", attribute "bottom-item" "", boolProperty "disabled" (not loading) ] []
     ]
-
-
-
-{- }
-   Layout.row
-       []
-       [ Layout.title [] [ text title ]
-       , Layout.spacer
-       , Paper.spinner [ A.boolProperty "active" loading ] []
-       ]
--}
 
 
 map : (a -> b) -> { c | content : a } -> { c | content : b }

@@ -1,8 +1,6 @@
 module Main exposing (..)
 
-import Material
 import Navigation exposing (Location)
-import Material.Layout as Layout
 import Route exposing (Route)
 import Config exposing (Config, DashboardPanelConfig)
 import Page.Dashboard as Dashboard
@@ -40,7 +38,6 @@ type PageState
 
 type alias Model =
     { config : Config
-    , mdl : Material.Model
     , queryField : String
     , date : Date.Date
     , pageState : PageState
@@ -53,17 +50,13 @@ init config location =
         ( model, routeCmd ) =
             setRoute (Route.parse location)
                 { config = config
-                , mdl = Material.model
                 , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Loaded Blank
                 }
     in
         ( model
-        , Cmd.batch
-            [ routeCmd
-            , Layout.sub0 Mdl
-            ]
+        , routeCmd
         )
 
 
@@ -100,8 +93,7 @@ setRoute maybeRoute model =
 
 
 type Msg
-    = Mdl (Material.Msg Msg)
-    | TimeMsg Time.Time
+    = TimeMsg Time.Time
     | UpdateQueryMsg String
     | SubmitQueryMsg String
     | SelectTab Int
@@ -142,9 +134,6 @@ updatePage page msg model =
                 ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
-            ( Mdl subMsg, _ ) ->
-                Material.update Mdl subMsg model
-
             ( SelectTab num, _ ) ->
                 ( model
                 , Route.newUrl
@@ -250,7 +239,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every Time.second TimeMsg
-        , Layout.subs Mdl model.mdl
         ]
 
 
@@ -271,7 +259,7 @@ viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
     let
         frame =
-            Page.frame loading (Just model.queryField) Mdl model.mdl
+            Page.frame loading (Just model.queryField)
     in
         case page of
             Blank ->
