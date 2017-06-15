@@ -8,7 +8,6 @@ import Route
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
-import Polymer.Paper as Paper
 
 
 type alias Model =
@@ -68,7 +67,7 @@ updatePanel function rowIndex panelIndex dashboardPanels =
 -}
 panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Grid.grid [] (List.map Panel.view panels)
+    Html.div [] (List.map Panel.view panels)
 
 
 view : Model -> Html Never
