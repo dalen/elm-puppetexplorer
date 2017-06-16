@@ -23,3 +23,15 @@ app-drawer-layout:not([narrow]) [drawer-toggle] {
 app-toolbar > paper-progress {
   width: 100%;
 }
+
+iron-icon.status-unknown {
+  color: var(--paper-grey-500);
+}
+
+iron-icon.status-failed {
+  color: var(--error-color);
+}
+
+iron-icon.status-changed {
+  color: var(--paper-green-500);
+}

@@ -2,8 +2,6 @@ module Status exposing (..)
 
 import Json.Decode
 import Json.Decode.Extra
-import Material.List as Lists
-import Material.Color as Color
 import Html exposing (Html)
 import Html.Attributes exposing (attribute)
 
@@ -21,18 +19,16 @@ icon : Status -> Html msg
 icon status =
     case status of
         Changed ->
-            -- TODO: green
-            Html.node "iron-icon" [ attribute "icon" "check-circle" ] []
+            Html.node "iron-icon" [ attribute "icon" "check-circle", Html.Attributes.class "status-changed" ] []
 
         Unchanged ->
-            Html.node "iron-icon" [ attribute "icon" "done" ] []
+            Html.node "iron-icon" [ attribute "icon" "done", Html.Attributes.class "status-unchanged" ] []
 
         Failed ->
-            -- TODO: red
-            Html.node "iron-icon" [ attribute "icon" "error" ] []
+            Html.node "iron-icon" [ attribute "icon" "error", Html.Attributes.class "status-failed" ] []
 
         Unknown ->
-            Html.node "iron-icon" [ attribute "icon" "help" ] []
+            Html.node "iron-icon" [ attribute "icon" "help", Html.Attributes.class "status-unknown" ] []
 
 
 listIcon =
