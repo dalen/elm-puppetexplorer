@@ -3,8 +3,6 @@ module Page.NodeList exposing (..)
 import Html exposing (Html, text)
 import Html.Attributes exposing (attribute)
 import PuppetDB
-import Material.List as Lists
-import Material.Icon as Icon
 import Date
 import Status
 import Route
@@ -53,7 +51,7 @@ getNodeList serverUrl query =
 
 view : Model -> Route.NodeListParams -> Date.Date -> Html Never
 view model routeParams date =
-    Lists.ul [] (List.map (nodeListView date routeParams) model.nodeList)
+    Html.div [] (List.map (nodeListView date routeParams) model.nodeList)
 
 
 nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Never
