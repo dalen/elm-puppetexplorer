@@ -1,6 +1,7 @@
 module Page.NodeDetail exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Html, text)
+import Html.Attributes exposing (attribute)
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
@@ -17,6 +18,7 @@ import View.Page as Page
 import Http
 import Util
 import Scroll exposing (ScrollInfo)
+import Polymer.Paper as Paper
 
 
 type alias Model =
@@ -109,9 +111,8 @@ view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { title = routeParams.node
     , content =
-        Options.div [ Options.css "overflow-y" "scroll", Scroll.onScroll OnScroll ]
-            [ Lists.ul [] (List.map (reportListItemView date routeParams) model.reportList)
-            ]
+        Options.div [ Scroll.onScroll OnScroll ]
+            (List.map (reportListItemView date routeParams) model.reportList)
     }
 
 
@@ -126,14 +127,12 @@ reportListItemView date routeParams report =
             Html.text (Util.dateDistance date report.receiveTime)
     in
         Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
-            [ Lists.li [ Lists.withSubtitle ]
-                [ Lists.content []
-                    [ Html.text formattedDate
-                    , Lists.subtitle [] [ timeAgo ]
+            [ Paper.item []
+                [ Paper.itemBody [ attribute "two-line" "" ]
+                    [ Html.div [] [ text formattedDate ]
+                    , Html.div [ attribute "secondary" "" ] [ timeAgo ]
                     ]
-                , Lists.content2
-                    []
-                    [ Status.listIcon report.status ]
+                , Status.icon report.status
                 ]
             ]
 
