@@ -1,7 +1,7 @@
 module Dashboard.Panel exposing (..)
 
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute)
+import Html.Attributes as Attr exposing (attribute, class)
 import Config
 import PuppetDB.Bean
 import Http
@@ -69,6 +69,8 @@ get serverUrl config =
 -}
 view : DashboardPanel -> Html msg
 view panel =
-    Paper.card [ attribute "heading" panel.config.title ]
-        [ Html.div [ Attr.class "card-content" ] [ Html.text (toString panel.value) ]
+    Html.div [ class "col-xs-12 col-sm-6 col-md4 col-lg-3" ]
+        [ Paper.card [ attribute "heading" panel.config.title ]
+            [ Html.div [ Attr.class "card-content" ] [ Html.text (toString panel.value) ]
+            ]
         ]

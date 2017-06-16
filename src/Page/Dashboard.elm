@@ -2,6 +2,7 @@ module Page.Dashboard exposing (..)
 
 import Dashboard.Panel as Panel
 import Html exposing (Html, text)
+import Html.Attributes exposing (attribute, class)
 import Config
 import Route
 import Task exposing (Task)
@@ -66,12 +67,12 @@ updatePanel function rowIndex panelIndex dashboardPanels =
 -}
 panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Html.div [] (List.map Panel.view panels)
+    Html.div [ class "row" ] (List.map Panel.view panels)
 
 
 view : Model -> Html Never
 view model =
-    Html.div []
+    Html.div [ class "content-area" ]
         (List.append
             (List.map
                 panelRow

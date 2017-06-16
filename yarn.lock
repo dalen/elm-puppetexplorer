@@ -656,10 +656,6 @@ css-selector-tokenizer@^0.7.0:
     fastparse "^1.1.1"
     regexpu-core "^1.0.0"
 
-css-spaces@^0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/css-spaces/-/css-spaces-0.3.5.tgz#2f85c3cf5373342d80607237313a3aee9af1a8b4"
-
 cssesc@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-0.1.0.tgz#c814903e45623371a0477b40109aaafbeeaddbb4"
@@ -1046,6 +1042,10 @@ firstline@1.2.0:
 flatten@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.2.tgz#dae46a9d78fbe25292258cc1e780a41d95c03782"
+
+flexboxgrid@^6.3.1:
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/flexboxgrid/-/flexboxgrid-6.3.1.tgz#e99898afc07b7047722bb81a958a5fba4d4e20fd"
 
 for-in@^1.0.1:
   version "1.0.2"
