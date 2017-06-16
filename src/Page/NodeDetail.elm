@@ -5,8 +5,6 @@ import Html.Attributes exposing (attribute)
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
-import Material.List as Lists
-import Material.Options as Options
 import Date exposing (Date)
 import Date.Extra
 import Status exposing (Status)
@@ -111,7 +109,7 @@ view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { title = routeParams.node
     , content =
-        Options.div [ Scroll.onScroll OnScroll ]
+        Html.div [ Html.Attributes.id "node-detail", Scroll.onScroll OnScroll ]
             (List.map (reportListItemView date routeParams) model.reportList)
     }
 

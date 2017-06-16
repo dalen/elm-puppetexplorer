@@ -1,8 +1,8 @@
 module Scroll exposing (ScrollInfo, onScroll)
 
-import Html
+import Html exposing (Html)
+import Html.Events
 import Json.Decode
-import Material.Options exposing (on)
 
 
 type alias ScrollInfo =
@@ -12,9 +12,9 @@ type alias ScrollInfo =
     }
 
 
-onScroll : (ScrollInfo -> value) -> Material.Options.Property c value
+onScroll : (ScrollInfo -> msg) -> Html.Attribute msg
 onScroll msg =
-    on "scroll" (Json.Decode.map msg scrollInfoDecoder)
+    Html.Events.on "scroll" (Json.Decode.map msg scrollInfoDecoder)
 
 
 scrollInfoDecoder : Json.Decode.Decoder ScrollInfo
