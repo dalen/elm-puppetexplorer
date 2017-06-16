@@ -1,9 +1,19 @@
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Noto', sans-serif;
+  background-color: #eee;
+}
+
 a {
   text-decoration: none;
 }
 
-a > .mdl-list__item {
-  cursor: auto;
+a > paper-icon-item {
+  color: black;
+}
+
+a > paper-item {
+  color: black;
 }
 
 app-drawer-layout:not([narrow]) [drawer-toggle] {
