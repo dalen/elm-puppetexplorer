@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Roboto', 'Noto', sans-serif;
-  background-color: #eee;
+  background-color: var(--paper-grey-50);
 }
 
 a {
@@ -9,11 +9,11 @@ a {
 }
 
 a > paper-icon-item {
-  color: black;
+  color: var(--primary-text-color);
 }
 
 a > paper-item {
-  color: black;
+  color: var(--primary-text-color);
 }
 
 app-drawer-layout:not([narrow]) [drawer-toggle] {
