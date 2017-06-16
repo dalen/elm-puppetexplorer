@@ -2,6 +2,7 @@ module Page.NodeDetail exposing (..)
 
 import Html exposing (Html, text)
 import Html.Attributes exposing (attribute)
+import Html.Keyed
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Json.Decode
@@ -109,12 +110,13 @@ view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { title = routeParams.node
     , content =
-        Html.div [ Html.Attributes.id "node-detail", Scroll.onScroll OnScroll ]
+        Html.Keyed.node "div"
+            [ Html.Attributes.id "node-detail", Scroll.onScroll OnScroll ]
             (List.map (reportListItemView date routeParams) model.reportList)
     }
 
 
-reportListItemView : Date -> Route.NodeDetailParams -> Report -> Html msg
+reportListItemView : Date -> Route.NodeDetailParams -> Report -> ( String, Html msg )
 reportListItemView date routeParams report =
     let
         -- ISO format without milliseconds
@@ -124,7 +126,8 @@ reportListItemView date routeParams report =
         timeAgo =
             Html.text (Util.dateDistance date report.receiveTime)
     in
-        Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
+        ( "node-report-" ++ "report.hash"
+        , Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
             [ Paper.item []
                 [ Paper.itemBody [ attribute "two-line" "" ]
                     [ Html.div [] [ text formattedDate ]
@@ -133,6 +136,7 @@ reportListItemView date routeParams report =
                 , Status.icon report.status
                 ]
             ]
+        )
 
 
 reportListCountDecoder : Json.Decode.Decoder Int

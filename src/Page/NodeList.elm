@@ -1,7 +1,8 @@
 module Page.NodeList exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes exposing (attribute)
+import Html.Attributes exposing (attribute, class)
+import Html.Keyed
 import PuppetDB
 import Date
 import Status
@@ -51,10 +52,10 @@ getNodeList serverUrl query =
 
 view : Model -> Route.NodeListParams -> Date.Date -> Html Never
 view model routeParams date =
-    Html.div [] (List.map (nodeListView date routeParams) model.nodeList)
+    Html.Keyed.node "div" [] (List.map (nodeListView date routeParams) model.nodeList)
 
 
-nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Never
+nodeListView : Date.Date -> Route.NodeListParams -> Node -> ( String, Html Never )
 nodeListView date routeParams node =
     let
         timeAgo =
@@ -65,7 +66,8 @@ nodeListView date routeParams node =
                 Nothing ->
                     Html.text "No report for node"
     in
-        Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
+        ( "node-" ++ node.certname
+        , Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
             [ Paper.item []
                 [ Paper.itemBody [ attribute "two-line" "" ]
                     [ Html.div [] [ text node.certname ]
@@ -74,3 +76,4 @@ nodeListView date routeParams node =
                 , Status.icon node.latestReportStatus
                 ]
             ]
+        )
