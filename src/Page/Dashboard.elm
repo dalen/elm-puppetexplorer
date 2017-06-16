@@ -1,8 +1,7 @@
 module Page.Dashboard exposing (..)
 
-import Material.Grid as Grid
 import Dashboard.Panel as Panel
-import Html exposing (Html)
+import Html exposing (Html, text)
 import Config
 import Route
 import Task exposing (Task)
@@ -86,14 +85,4 @@ view model =
 -}
 usage : Html Never
 usage =
-    Grid.grid []
-        [ Grid.cell [ Grid.size Grid.All 4 ]
-            [ Html.text "test1"
-            ]
-        , Grid.cell [ Grid.size Grid.All 4 ]
-            [ Html.text "test2"
-            ]
-        , Grid.cell [ Grid.size Grid.All 4 ]
-            [ Html.text "test3"
-            ]
-        ]
+    text "Usage instructions"

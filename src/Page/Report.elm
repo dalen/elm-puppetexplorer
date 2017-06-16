@@ -2,22 +2,17 @@ module Page.Report exposing (..)
 
 import PuppetDB
 import PuppetDB.Report exposing (Report)
-import Html
+import Html exposing (Html, text)
+import Html.Attributes exposing (attribute)
 import Date
 import Route
 import Config exposing (Config)
 import Json.Decode
-import Material.Card as Card
-import Material.Icon as Icon
-import Material.Grid as Grid
-import Material.Color as Color
-import Material.Elevation as Elevation
-import Material.Options as Options
-import Material.Typography as Typography
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import Http
+import Polymer.Paper as Paper
 
 
 type alias Model =
@@ -65,13 +60,12 @@ update msg model =
                 )
 
 
-card : String -> Html.Html msg -> Grid.Cell msg
-card title content =
-    Grid.cell [ Grid.size Grid.All 3 ]
-        [ Card.view [ Elevation.e2, Options.css "width" "100%" ]
-            [ Card.title [] [ Card.head [] [ Html.text title ] ]
-            , Card.text [ Card.expand, Color.text Color.accent, Typography.center ]
-                [ Options.span [ Typography.display3 ] [ content ] ]
+item : String -> Html.Html msg -> Html.Html msg
+item title content =
+    Paper.item []
+        [ Paper.itemBody [ attribute "two-line" "" ]
+            [ Html.div [] [ text title ]
+            , Html.div [ attribute "secondary" "" ] [ content ]
             ]
         ]
 
@@ -80,21 +74,21 @@ view : Model -> Route.ReportParams -> Date.Date -> Page.Page Msg
 view model routeParams date =
     { title = model.report.certname
     , content =
-        Grid.grid []
-            [ card "Environment" (Html.text model.report.environment)
-            , card "Run time" (Html.text "todo")
-            , card "Configuration version" (Html.text model.report.configurationVersion)
-            , card "Start time" (Html.text (toString model.report.startTime))
-            , card "Puppet version" (Html.text model.report.puppetVersion)
-            , card "Catalog retrieval time" (Html.text "todo")
-            , card "Catalog compiled by"
+        Paper.card []
+            [ item "Environment" (text model.report.environment)
+            , item "Run time" (text "todo")
+            , item "Configuration version" (text model.report.configurationVersion)
+            , item "Start time" (text (toString model.report.startTime))
+            , item "Puppet version" (text model.report.puppetVersion)
+            , item "Catalog retrieval time" (text "todo")
+            , item "Catalog compiled by"
                 (case model.report.producer of
                     Just producer ->
-                        Html.text producer
+                        text producer
 
                     Nothing ->
-                        Icon.i "help"
+                        Html.node "iron-icon" [ attribute "icon" "help" ] []
                 )
-            , card "End time" (Html.text (toString model.report.endTime))
+            , item "End time" (text (toString model.report.endTime))
             ]
     }
