@@ -23,8 +23,8 @@ type alias PanelConfigs =
     List (List Config.DashboardPanelConfig)
 
 
-init : Config.Config -> Route.DashboardParams -> Task PageLoadError Model
-init config params =
+init : Config.Config -> Task PageLoadError Model
+init config =
     let
         handleLoadError _ =
             Errored.pageLoadError Page.Dashboard "Failed to load dashboard."

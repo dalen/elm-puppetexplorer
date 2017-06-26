@@ -41,7 +41,7 @@ frame : Bool -> Maybe String -> ActivePage -> Page msg -> Html.Html msg
 frame loading query activePage page =
     App.drawerLayout []
         [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
-            [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString (Route.Dashboard { query = query }))
+            [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
             , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
             ]
         , App.headerLayout [ attribute "fullbleed" "" ]

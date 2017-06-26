@@ -21,7 +21,7 @@ type Page
     = Blank
     | NotFound
     | Errored PageLoadError
-    | Dashboard Route.DashboardParams Dashboard.Model
+    | Dashboard Dashboard.Model
     | NodeList Route.NodeListParams NodeList.Model
     | NodeDetail Route.NodeDetailParams NodeDetail.Model
     | Report Route.ReportParams Report.Model
@@ -75,8 +75,8 @@ setRoute maybeRoute model =
             Nothing ->
                 ( { model | pageState = Loaded NotFound }, Cmd.none )
 
-            Just (Route.Dashboard params) ->
-                transition DashboardLoaded (Dashboard.init model.config params)
+            Just Route.Dashboard ->
+                transition DashboardLoaded (Dashboard.init model.config)
 
             Just (Route.NodeList params) ->
                 transition (NodeListLoaded params) (NodeList.init model.config params)
@@ -139,13 +139,13 @@ updatePage page msg model =
                 , Route.newUrl
                     (case num of
                         0 ->
-                            Route.Dashboard { query = Nothing }
+                            Route.Dashboard
 
                         1 ->
                             Route.NodeList { query = Nothing }
 
                         _ ->
-                            Route.Dashboard { query = Nothing }
+                            Route.Dashboard
                     )
                 )
 
@@ -187,7 +187,7 @@ updatePage page msg model =
             -}
             ( DashboardLoaded (Ok subModel), _ ) ->
                 -- TODO: handle the params
-                ( { model | pageState = Loaded (Dashboard { query = Nothing } subModel) }, Cmd.none )
+                ( { model | pageState = Loaded (Dashboard subModel) }, Cmd.none )
 
             ( DashboardLoaded (Err error), _ ) ->
                 ( { model | pageState = Loaded (Errored error) }, Cmd.none )
@@ -277,7 +277,7 @@ viewPage model loading page =
                     |> Page.Page "Error"
                     |> frame Page.Other
 
-            Dashboard params subModel ->
+            Dashboard subModel ->
                 Dashboard.view subModel
                     |> Html.map DashboardMsg
                     |> Page.Page "Dashboard"

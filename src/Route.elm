@@ -5,10 +5,7 @@ import UrlParser exposing (..)
 import Erl
 import Html
 import Html.Attributes
-
-
-type alias DashboardParams =
-    {}
+import Regex
 
 
 type alias NodeListParams =
@@ -31,10 +28,27 @@ type alias ReportParams =
 
 
 type Route
-    = Dashboard DashboardParams
+    = Dashboard
     | NodeList NodeListParams
     | NodeDetail NodeDetailParams
     | Report ReportParams
+
+
+
+-- TODO: move search part to search if it is in the hash
+
+
+hashLocation : Location -> Location
+hashLocation location =
+    let
+        newPath =
+            Regex.replace
+                Regex.All
+                (Regex.regex "^[/#]*")
+                (\_ -> "/")
+                (String.concat [ location.pathname, location.hash ])
+    in
+        Debug.log "location" { location | pathname = newPath, hash = "" }
 
 
 parse : Location -> Maybe Route
@@ -45,7 +59,7 @@ parse location =
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map Dashboard (map DashboardParams (s ""))
+        [ map Dashboard (s "")
         , map NodeList (map NodeListParams (s "nodes" <?> stringParam "query"))
         , map NodeDetail
             (map NodeDetailParams
@@ -72,7 +86,7 @@ addParam key value url =
 toString : Route -> String
 toString route =
     (case route of
-        Dashboard _ ->
+        Dashboard ->
             Erl.parse "#/"
 
         NodeList params ->
