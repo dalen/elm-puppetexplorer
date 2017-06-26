@@ -8,8 +8,7 @@ import Html.Attributes
 
 
 type alias DashboardParams =
-    { query : Maybe String
-    }
+    {}
 
 
 type alias NodeListParams =
@@ -46,10 +45,16 @@ parse location =
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ map Dashboard (map DashboardParams (s "" <?> stringParam "query"))
+        [ map Dashboard (map DashboardParams (s ""))
         , map NodeList (map NodeListParams (s "nodes" <?> stringParam "query"))
-        , map NodeDetail (map NodeDetailParams (s "nodes" </> string <?> intParam "page" <?> stringParam "query"))
-        , map Report (map ReportParams (s "report" </> string <?> intParam "page" <?> stringParam "query"))
+        , map NodeDetail
+            (map NodeDetailParams
+                (s "nodes" </> string <?> intParam "page" <?> stringParam "query")
+            )
+        , map Report
+            (map ReportParams
+                (s "report" </> string <?> intParam "page" <?> stringParam "query")
+            )
         ]
 
 
@@ -67,7 +72,7 @@ addParam key value url =
 toString : Route -> String
 toString route =
     (case route of
-        Dashboard params ->
+        Dashboard _ ->
             Erl.parse "#/"
 
         NodeList params ->
