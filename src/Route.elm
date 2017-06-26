@@ -33,7 +33,7 @@ type alias ReportParams =
 
 type Route
     = Dashboard DashboardParams
-    | NodeList DashboardParams
+    | NodeList NodeListParams
     | NodeDetail NodeDetailParams
     | Report ReportParams
 
