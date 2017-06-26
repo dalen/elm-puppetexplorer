@@ -15,6 +15,7 @@ import Date.Extra
 import Time
 import View.Page as Page
 import Task
+import Ports
 
 
 type Page
@@ -104,9 +105,10 @@ type Msg
     | NodeDetailLoaded Route.NodeDetailParams (Result PageLoadError NodeDetail.Model)
     | ReportLoaded Route.ReportParams (Result PageLoadError Report.Model)
     | DashboardMsg Never
-    | NodeListMsg Never
+    | NodeListMsg NodeList.Msg
     | NodeDetailMsg NodeDetail.Msg
     | ReportMsg Report.Msg
+    | ScrollMsg Int
     | Noop
 
 
@@ -216,6 +218,12 @@ updatePage page msg model =
             ( LocationChangeMsg location, _ ) ->
                 setRoute (Route.parse location) model
 
+            ( NodeListMsg subMsg, NodeList params subModel ) ->
+                toPage (NodeList params) NodeListMsg NodeList.update subMsg subModel
+
+            ( ScrollMsg _, NodeList params subModel ) ->
+                toPage (NodeList params) NodeListMsg NodeList.update NodeList.LoadMore subModel
+
             ( NodeDetailMsg subMsg, NodeDetail params subModel ) ->
                 toPage (NodeDetail params) NodeDetailMsg NodeDetail.update subMsg subModel
 
@@ -239,6 +247,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every Time.second TimeMsg
+        , Ports.scrollBottom ScrollMsg
         ]
 
 
@@ -264,39 +273,39 @@ viewPage model loading page =
         case page of
             Blank ->
                 Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
-                    |> Page.Page "Loading"
+                    |> Page.Page "Loading" Nothing
                     |> frame Page.Dashboard
 
             NotFound ->
                 Html.div [] [ Html.text "Page not found" ]
-                    |> Page.Page "Page not found"
+                    |> Page.Page "Page not found" Nothing
                     |> frame Page.Other
 
             Errored subModel ->
                 Errored.view subModel
-                    |> Page.Page "Error"
+                    |> Page.Page "Error" Nothing
                     |> frame Page.Other
 
             Dashboard subModel ->
                 Dashboard.view subModel
                     |> Html.map DashboardMsg
-                    |> Page.Page "Dashboard"
+                    |> Page.Page "Dashboard" Nothing
                     |> frame Page.Dashboard
 
             NodeList params subModel ->
                 NodeList.view subModel params model.date
                     |> Html.map NodeListMsg
-                    |> Page.Page "Nodes"
+                    |> Page.Page "Nodes" (Just (\_ -> Noop))
                     |> frame Page.Nodes
 
             NodeDetail params subModel ->
                 NodeDetail.view subModel params model.date
-                    |> Page.map (Html.map NodeDetailMsg)
+                    |> Page.map NodeDetailMsg
                     |> frame Page.Nodes
 
             Report params subModel ->
                 Report.view subModel params model.date
-                    |> Page.map (Html.map ReportMsg)
+                    |> Page.map ReportMsg
                     |> frame Page.Nodes
 
 

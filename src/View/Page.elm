@@ -23,6 +23,7 @@ type ActivePage
 
 type alias Page msg =
     { title : String
+    , onScroll : Maybe (Int -> msg)
     , content : Html msg
     }
 
@@ -44,7 +45,8 @@ frame loading query activePage page =
             [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
             , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
             ]
-        , App.headerLayout [ attribute "fullbleed" "" ]
+        , App.headerLayout
+            [ attribute "fullbleed" "" ]
             [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
                 [ App.toolbar [] (toolbar loading page.title)
                 ]
@@ -61,6 +63,9 @@ toolbar loading title =
     ]
 
 
-map : (a -> b) -> { c | content : a } -> { c | content : b }
+map : (a -> b) -> Page a -> Page b
 map function page =
-    { page | content = function page.content }
+    { page
+        | content = Html.map function page.content
+        , onScroll = Maybe.map (\onScroll -> onScroll >> function) page.onScroll
+    }
