@@ -14,15 +14,13 @@ import Page.Errored as Errored exposing (PageLoadError)
 import PuppetDB.Node exposing (Node)
 import Http
 import Util
+import Scroll
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (boolProperty)
 
 
 type alias Model =
-    { loadMore : Int -> Http.Request (List Node)
-    , loading : Bool
-    , nodeList : List Node
-    }
+    Scroll.Model Node
 
 
 init : Config.Config -> Route.NodeListParams -> Task PageLoadError Model
@@ -31,7 +29,7 @@ init config params =
         handleLoadError _ =
             Errored.pageLoadError Page.Nodes "Failed to load list of nodes."
     in
-        Task.map (Model (nodeListRequest config.serverUrl params.query) False) (getNodeList config.serverUrl params.query)
+        Task.map (Scroll.setItems (Scroll.init 10 (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
             |> Task.mapError handleLoadError
 
 
@@ -64,38 +62,18 @@ nodeListRequest serverUrl query offset =
 -- update
 
 
-type Msg
-    = LoadMore
-    | OnLoadMore (Result Http.Error (List Node))
+type alias Msg =
+    Scroll.Msg Node
+
+
+grow : Msg
+grow =
+    Scroll.Grow
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    let
-        _ =
-            Debug.log "NodeList.update" msg
-    in
-        case msg of
-            LoadMore ->
-                ( { model | loading = True }
-                , (if model.loading then
-                    Cmd.none
-                   else
-                    model.loadMore (List.length model.nodeList)
-                        |> Http.send OnLoadMore
-                  )
-                )
-
-            OnLoadMore (Err _) ->
-                ( { model | loading = False }, Cmd.none )
-
-            OnLoadMore (Ok result) ->
-                ( { model
-                    | loading = False
-                    , nodeList = List.concat [ model.nodeList, result ]
-                  }
-                , Cmd.none
-                )
+update =
+    Scroll.update
 
 
 view : Model -> Route.NodeListParams -> Date.Date -> Html Msg
@@ -103,8 +81,8 @@ view model routeParams date =
     Html.div []
         [ Html.Keyed.node "div"
             []
-            (List.map (nodeListView date routeParams) model.nodeList)
-        , Paper.spinner [ boolProperty "active" model.loading ] []
+            (List.map (nodeListView date routeParams) (Scroll.items model))
+        , Paper.spinner [ boolProperty "active" (Scroll.isGrowing model) ] []
         ]
 
 

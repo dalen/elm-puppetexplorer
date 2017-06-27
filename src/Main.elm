@@ -97,7 +97,6 @@ type Msg
     = TimeMsg Time.Time
     | UpdateQueryMsg String
     | SubmitQueryMsg String
-    | SelectTab Int
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
@@ -133,24 +132,14 @@ updatePage page msg model =
                 ( newModel, newCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
+                case model.pageState of
+                    Loaded page ->
+                        ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
+
+                    TransitioningFrom page ->
+                        ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
-            ( SelectTab num, _ ) ->
-                ( model
-                , Route.newUrl
-                    (case num of
-                        0 ->
-                            Route.Dashboard
-
-                        1 ->
-                            Route.NodeList { query = Nothing }
-
-                        _ ->
-                            Route.Dashboard
-                    )
-                )
-
             ( UpdateQueryMsg query, _ ) ->
                 ( { model | queryField = query }, Cmd.none )
 
@@ -222,7 +211,7 @@ updatePage page msg model =
                 toPage (NodeList params) NodeListMsg NodeList.update subMsg subModel
 
             ( ScrollMsg _, NodeList params subModel ) ->
-                toPage (NodeList params) NodeListMsg NodeList.update NodeList.LoadMore subModel
+                toPage (NodeList params) NodeListMsg NodeList.update NodeList.grow subModel
 
             ( NodeDetailMsg subMsg, NodeDetail params subModel ) ->
                 toPage (NodeDetail params) NodeDetailMsg NodeDetail.update subMsg subModel
