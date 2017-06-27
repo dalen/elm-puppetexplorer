@@ -50,6 +50,22 @@ iron-icon.status-changed {
   color: var(--paper-green-500);
 }
 
+iron-icon.eventstatus-success {
+  color: var(--paper-green-500);
+}
+
+iron-icon.eventstatus-failure {
+  color: var(--error-color);
+}
+
+iron-icon.eventstatus-skipped {
+  color: var(--paper-yellow-500);
+}
+
+iron-icon.eventstatus-noop {
+  color: var(--paper-grey-500);
+}
+
 paper-item.static {
   color: var(--primary-text-color);
 }

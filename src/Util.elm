@@ -1,6 +1,7 @@
 module Util exposing (..)
 
 import Date exposing (Date)
+import Date.Extra
 import Date.Distance
 import Date.Distance.I18n.En
 
@@ -18,3 +19,10 @@ dateDistance =
             { defaultConfig | locale = locale }
     in
         Date.Distance.inWordsWithConfig config
+
+
+{-| ISO format without milliseconds
+-}
+formattedDate : Date -> String
+formattedDate date =
+    Date.Extra.toFormattedString "YYYY-MM-DDThh:mm:ssX" date

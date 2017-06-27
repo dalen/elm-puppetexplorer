@@ -11,6 +11,7 @@ import Json.Decode
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
+import View.EventList as EventList
 import Http
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (boolProperty)
@@ -99,28 +100,13 @@ view model routeParams date =
                             ]
                         ]
                     ]
-                , eventView date model.report.resourceEvents
+                , Html.div [ class "col-xs-12 col-sm-12 col-md8 col-lg-9" ]
+                    [ Paper.card []
+                        [ Html.div [ class "card-content" ]
+                            [ EventList.view date model.report.resourceEvents
+                            ]
+                        ]
+                    ]
                 ]
             ]
     }
-
-
-eventView : Date -> Maybe (List PuppetDB.Report.Event) -> Html Msg
-eventView date events =
-    Html.div [ class "col-xs-12 col-sm-12 col-md8 col-lg-9" ]
-        [ Paper.card []
-            [ Html.div [ class "card-content" ]
-                (case events of
-                    Nothing ->
-                        [ text "No events found" ]
-
-                    Just eventList ->
-                        List.map (eventItem date) eventList
-                )
-            ]
-        ]
-
-
-eventItem : Date -> PuppetDB.Report.Event -> Html Msg
-eventItem date event =
-    text (toString event)
