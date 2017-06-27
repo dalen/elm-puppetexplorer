@@ -5,7 +5,6 @@ import Html.Attributes exposing (attribute)
 import Html.Keyed
 import PuppetDB
 import PuppetDB.Report exposing (Report)
-import Json.Decode
 import Date exposing (Date)
 import Date.Extra
 import Status exposing (Status)
@@ -16,40 +15,32 @@ import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import Http
 import Util
+import Scroll
 import Polymer.Paper as Paper
 
 
 type alias Model =
-    { routeParams : Route.NodeDetailParams
-    , reportList : List Report
-    , reportCount : Int
+    { list : Scroll.Model Report
     }
 
 
-perPage : Int
-perPage =
-    10
-
-
-offset : Maybe Int -> Int
-offset page =
-    case page of
-        Just page ->
-            (page - 1) * perPage
-
-        Nothing ->
-            0
+perLoad : Int
+perLoad =
+    50
 
 
 init : Config.Config -> Route.NodeDetailParams -> Task PageLoadError Model
 init config params =
-    Task.map2 (Model params)
-        (getReportList config.serverUrl params.node (offset params.page))
-        (getReportCount config.serverUrl params.node)
+    Task.map
+        (Scroll.setItems (Scroll.init perLoad (reportListRequest config.serverUrl params.node)))
+        (getReportList config.serverUrl params.node)
+        |> Task.map Model
 
 
-getReportList : String -> String -> Int -> Task PageLoadError (List Report)
-getReportList serverUrl node offset =
+{-| Create a Http.Request for a list of reports
+-}
+reportListRequest : String -> String -> Int -> Http.Request (List Report)
+reportListRequest serverUrl node offset =
     PuppetDB.request
         serverUrl
         (PuppetDB.pql "reports"
@@ -59,45 +50,32 @@ getReportList serverUrl node offset =
                 ++ "\" order by receive_time desc offset "
                 ++ toString offset
                 ++ " limit "
-                ++ toString perPage
+                ++ toString perLoad
             )
         )
         PuppetDB.Report.listDecoder
+
+
+getReportList : String -> String -> Task PageLoadError (List Report)
+getReportList serverUrl node =
+    reportListRequest serverUrl node 0
         |> Http.toTask
         |> Task.mapError (Errored.httpError Page.Nodes "loading list of reports")
 
 
-getReportCount : String -> String -> Task PageLoadError Int
-getReportCount serverUrl node =
-    PuppetDB.request
-        serverUrl
-        (PuppetDB.pql "reports"
-            [ "count()" ]
-            ("certname=\""
-                ++ node
-                ++ "\""
-            )
-        )
-        reportListCountDecoder
-        |> Http.toTask
-        |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load count of nodes")
-
-
 type Msg
-    = ChangePage Int
+    = ScrollMsg (Scroll.Msg Report)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ChangePage page ->
+        ScrollMsg subMsg ->
             let
-                routeParams =
-                    model.routeParams
+                ( subModel, subCmd ) =
+                    Scroll.update subMsg model.list
             in
-                ( model
-                , Route.newUrl (Route.NodeDetail { routeParams | page = Just page })
-                )
+                ( { model | list = subModel }, Cmd.map ScrollMsg subCmd )
 
 
 view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
@@ -107,7 +85,7 @@ view model routeParams date =
     , content =
         Html.Keyed.node "div"
             [ Html.Attributes.id "node-detail" ]
-            (List.map (reportListItemView date routeParams) model.reportList)
+            (List.map (reportListItemView date routeParams) (Scroll.items model.list))
     }
 
 
@@ -132,8 +110,3 @@ reportListItemView date routeParams report =
                 ]
             ]
         )
-
-
-reportListCountDecoder : Json.Decode.Decoder Int
-reportListCountDecoder =
-    Json.Decode.index 0 (Json.Decode.field "count" Json.Decode.int)
