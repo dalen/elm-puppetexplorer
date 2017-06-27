@@ -24,7 +24,7 @@ init perLoad grow =
 
 setItems : Model a -> List a -> Model a
 setItems model items =
-    { model | items = items }
+    { model | items = items, reachedEnd = (List.length items) < model.perLoad }
 
 
 items : Model a -> List a
