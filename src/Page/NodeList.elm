@@ -23,13 +23,18 @@ type alias Model =
     Scroll.Model Node
 
 
+perLoad : Int
+perLoad =
+    50
+
+
 init : Config.Config -> Route.NodeListParams -> Task PageLoadError Model
 init config params =
     let
         handleLoadError _ =
             Errored.pageLoadError Page.Nodes "Failed to load list of nodes."
     in
-        Task.map (Scroll.setItems (Scroll.init 10 (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
+        Task.map (Scroll.setItems (Scroll.init perLoad (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
             |> Task.mapError handleLoadError
 
 
@@ -52,7 +57,8 @@ nodeListRequest serverUrl query offset =
             ((PuppetDB.subquery "inventory" query)
                 ++ "order by certname offset "
                 ++ toString offset
-                ++ " limit 10"
+                ++ " limit "
+                ++ toString perLoad
             )
         )
         PuppetDB.Node.listDecoder
