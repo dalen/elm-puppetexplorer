@@ -17,6 +17,7 @@ import Http
 import Util
 import Scroll
 import Polymer.Paper as Paper
+import Polymer.Attributes exposing (boolProperty)
 
 
 type alias Model =
@@ -83,9 +84,13 @@ view model routeParams date =
     { title = routeParams.node
     , onScroll = Nothing
     , content =
-        Html.Keyed.node "div"
-            [ Html.Attributes.id "node-detail" ]
-            (List.map (reportListItemView date routeParams) (Scroll.items model.list))
+        Html.div
+            []
+            [ Html.Keyed.node "div"
+                [ Html.Attributes.id "node-detail" ]
+                (List.map (reportListItemView date routeParams) (Scroll.items model.list))
+            , Paper.spinner [ boolProperty "active" (Scroll.isGrowing model.list) ] []
+            ]
     }
 
 
