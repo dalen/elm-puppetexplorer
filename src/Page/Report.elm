@@ -77,7 +77,7 @@ item title content =
 
 view : Model -> Route.ReportParams -> Date -> Page.Page Msg
 view model routeParams date =
-    { title = model.report.certname
+    { title = "Report for " ++ model.report.certname
     , onScroll = Nothing
     , content =
         Html.div [ class "content-area" ]
