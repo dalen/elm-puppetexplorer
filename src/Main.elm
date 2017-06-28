@@ -39,7 +39,6 @@ type PageState
 
 type alias Model =
     { config : Config
-    , queryField : String
     , date : Date.Date
     , pageState : PageState
     }
@@ -51,7 +50,6 @@ init config location =
         ( model, routeCmd ) =
             setRoute (Route.parse location)
                 { config = config
-                , queryField = ""
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Loaded Blank
                 }
@@ -95,8 +93,6 @@ setRoute maybeRoute model =
 
 type Msg
     = TimeMsg Time.Time
-    | UpdateQueryMsg String
-    | SubmitQueryMsg String
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
@@ -140,42 +136,6 @@ updatePage page msg model =
                         ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
-            ( UpdateQueryMsg query, _ ) ->
-                ( { model | queryField = query }, Cmd.none )
-
-            ( SubmitQueryMsg query, _ ) ->
-                ( model, Cmd.none )
-
-            -- Can this be simplified?
-            {- case model.route of
-               Route.Dashboard params ->
-                   ( model
-                   , Navigation.newUrl
-                       (Route.toString
-                           (Route.Dashboard { params | query = Just model.queryField })
-                       )
-                   )
-
-               Route.NodeList params ->
-                   ( model
-                   , Navigation.newUrl
-                       (Route.toString
-                           (Route.NodeList { params | query = Just model.queryField })
-                       )
-                   )
-
-               Route.NodeDetail params ->
-                   ( model
-                   , Route.newUrl
-                       (Route.NodeDetail { params | query = Just model.queryField })
-                   )
-
-               Route.Report params ->
-                   ( model
-                   , Route.newUrl
-                       (Route.Report { params | query = Just model.queryField })
-                   )
-            -}
             ( DashboardLoaded (Ok subModel), _ ) ->
                 -- TODO: handle the params
                 ( { model | pageState = Loaded (Dashboard subModel) }, Cmd.none )
@@ -257,7 +217,7 @@ viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
     let
         frame =
-            Page.frame loading (Just model.queryField)
+            Page.frame loading
     in
         case page of
             Blank ->

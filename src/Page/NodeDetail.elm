@@ -10,6 +10,7 @@ import Date.Extra
 import Status exposing (Status)
 import Config exposing (Config)
 import Route
+import Route.Report
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
@@ -105,7 +106,7 @@ reportListItemView date routeParams report =
             Html.text (Util.dateDistance date report.receiveTime)
     in
         ( "node-report-" ++ "report.hash"
-        , Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Nothing routeParams.query)) ]
+        , Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Route.Report.Events)) ]
             [ Paper.item []
                 [ Paper.itemBody [ attribute "two-line" "" ]
                     [ Html.div [] [ text formattedDate ]

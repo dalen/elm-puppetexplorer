@@ -4,7 +4,6 @@ import Dashboard.Panel as Panel
 import Html exposing (Html, text)
 import Html.Attributes exposing (attribute, class)
 import Config
-import Route
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)

@@ -20,6 +20,14 @@ a > paper-item {
   color: var(--primary-text-color);
 }
 
+paper-tabs {
+  background-color: var(--primary-color);
+}
+
+app-header {
+  background-color: var(--primary-color);
+}
+
 app-drawer-layout:not([narrow]) [drawer-toggle] {
   display: none;
 }

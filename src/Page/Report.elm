@@ -6,6 +6,7 @@ import Html exposing (Html, text)
 import Html.Attributes exposing (attribute, class)
 import Date exposing (Date)
 import Route
+import Route.Report exposing (Tab(..))
 import Config exposing (Config)
 import Json.Decode
 import Task exposing (Task)
@@ -21,7 +22,8 @@ import FormatNumber.Locales exposing (usLocale)
 
 
 type alias Model =
-    { routeParams : Route.ReportParams
+    { tab : Tab
+    , routeParams : Route.ReportParams
     , report : PuppetDB.Report.Report
     }
 
@@ -32,7 +34,7 @@ type Msg
 
 init : Config.Config -> Route.ReportParams -> Task PageLoadError Model
 init config params =
-    Task.map (Model params)
+    Task.map (Model Events params)
         (getReport config.serverUrl params.hash)
 
 
@@ -61,7 +63,7 @@ update msg model =
                     model.routeParams
             in
                 ( model
-                , Route.newUrl (Route.Report { routeParams | page = Just page })
+                , Route.newUrl (Route.Report routeParams)
                 )
 
 
@@ -81,7 +83,12 @@ view model routeParams date =
     , onScroll = Nothing
     , content =
         Html.div [ class "content-area" ]
-            [ Html.div [ class "row" ]
+            [ Paper.tabs [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab)) ]
+                [ Paper.tab [] [ text "Events" ]
+                , Paper.tab [] [ text "Logs" ]
+                , Paper.tab [] [ text "Metrics" ]
+                ]
+            , Html.div [ class "row" ]
                 [ Html.div [ class "col-xs-12 col-sm-12 col-md4 col-lg-3" ]
                     [ Paper.card []
                         [ Html.div [ class "card-content" ]

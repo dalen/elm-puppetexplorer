@@ -38,12 +38,12 @@ navLink icon label isActive href =
         ]
 
 
-frame : Bool -> Maybe String -> ActivePage -> Page msg -> Html.Html msg
-frame loading query activePage page =
+frame : Bool -> ActivePage -> Page msg -> Html.Html msg
+frame loading activePage page =
     App.drawerLayout []
         [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
             [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
-            , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = query }))
+            , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
             ]
         , App.headerLayout
             [ attribute "fullbleed" "" ]

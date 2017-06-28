@@ -6,6 +6,7 @@ import Erl
 import Html
 import Html.Attributes
 import Regex
+import Route.Report
 
 
 type alias NodeListParams =
@@ -22,8 +23,7 @@ type alias NodeDetailParams =
 
 type alias ReportParams =
     { hash : String
-    , page : Maybe Int
-    , query : Maybe String
+    , tab : Route.Report.Tab
     }
 
 
@@ -66,8 +66,9 @@ route =
                 (s "nodes" </> string <?> intParam "page" <?> stringParam "query")
             )
         , map Report
-            (map ReportParams
-                (s "report" </> string <?> intParam "page" <?> stringParam "query")
+            (map
+                ReportParams
+                (s "report" </> string </> Route.Report.parser)
             )
         ]
 
@@ -99,9 +100,7 @@ toString route =
                 |> addParam "query" params.query
 
         Report params ->
-            Erl.parse ("#/report/" ++ params.hash)
-                |> addParam "page" (Maybe.map Basics.toString params.page)
-                |> addParam "query" params.query
+            Erl.parse ("#/report/" ++ params.hash ++ "/" ++ (Route.Report.toPath params.tab))
     )
         |> Erl.toString
 
