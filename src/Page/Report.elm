@@ -13,8 +13,11 @@ import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import View.EventList as EventList
 import Http
+import Util
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (boolProperty)
+import FormatNumber
+import FormatNumber.Locales exposing (usLocale)
 
 
 type alias Model =
@@ -83,11 +86,11 @@ view model routeParams date =
                     [ Paper.card []
                         [ Html.div [ class "card-content" ]
                             [ item "Environment" (text model.report.environment)
-                            , item "Run time" (text "todo")
+                            , item "Run time" (showMetric 1 (Just "s") "time" "total" model.report)
                             , item "Configuration version" (text model.report.configurationVersion)
-                            , item "Start time" (text (toString model.report.startTime))
+                            , item "Start time" (text (Util.formattedDate model.report.startTime))
                             , item "Puppet version" (text model.report.puppetVersion)
-                            , item "Catalog retrieval time" (text "todo")
+                            , item "Catalog retrieval time" (showMetric 1 (Just "s") "time" "total" model.report)
                             , item "Catalog compiled by"
                                 (case model.report.producer of
                                     Just producer ->
@@ -96,7 +99,7 @@ view model routeParams date =
                                     Nothing ->
                                         Html.node "iron-icon" [ attribute "icon" "help" ] []
                                 )
-                            , item "End time" (text (toString model.report.endTime))
+                            , item "End time" (text (Util.formattedDate model.report.endTime))
                             ]
                         ]
                     ]
@@ -110,3 +113,16 @@ view model routeParams date =
                 ]
             ]
     }
+
+
+showMetric : Int -> Maybe String -> String -> String -> Report -> Html msg
+showMetric decimals unit name category report =
+    case (PuppetDB.Report.getMetric "time" "total" report) of
+        Just metric ->
+            text
+                ((FormatNumber.format { usLocale | decimals = decimals } metric)
+                    ++ (Maybe.withDefault "" unit)
+                )
+
+        Nothing ->
+            Html.node "iron-icon" [ attribute "icon" "help" ] []
