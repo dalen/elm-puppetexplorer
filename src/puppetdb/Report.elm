@@ -5,6 +5,7 @@ import Json.Decode.Extra exposing (date)
 import Json.Decode.Pipeline
 import Date exposing (Date)
 import Status exposing (Status)
+import List.Extra
 
 
 type EventStatus
@@ -156,3 +157,9 @@ decodeEventStatus =
                                 Err "Unknown value"
                    )
             )
+
+
+getMetric : String -> String -> Report -> Maybe Float
+getMetric category name report =
+    List.Extra.find (\metric -> metric.category == category && metric.name == name) report.metrics
+        |> Maybe.map (\metric -> metric.value)
