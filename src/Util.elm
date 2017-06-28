@@ -25,4 +25,4 @@ dateDistance =
 -}
 formattedDate : Date -> String
 formattedDate date =
-    Date.Extra.toFormattedString "YYYY-MM-DDThh:mm:ssX" date
+    Date.Extra.toFormattedString "YYYY-MM-ddThh:mm:ssX" date
