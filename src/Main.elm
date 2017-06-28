@@ -215,47 +215,45 @@ andThen advance ( beginModel, cmd1 ) =
 
 viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
-    let
-        frame =
-            Page.frame loading
-    in
-        case page of
-            Blank ->
-                Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
-                    |> Page.Page "Loading" Nothing
-                    |> frame Page.Dashboard
+    case page of
+        Blank ->
+            Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
+                |> Page.Page loading "Loading" Nothing
+                |> Page.frame Page.Dashboard
 
-            NotFound ->
-                Html.div [] [ Html.text "Page not found" ]
-                    |> Page.Page "Page not found" Nothing
-                    |> frame Page.Other
+        NotFound ->
+            Html.div [] [ Html.text "Page not found" ]
+                |> Page.Page loading "Page not found" Nothing
+                |> Page.frame Page.Other
 
-            Errored subModel ->
-                Errored.view subModel
-                    |> Page.Page "Error" Nothing
-                    |> frame Page.Other
+        Errored subModel ->
+            Errored.view subModel
+                |> Page.Page loading "Error" Nothing
+                |> Page.frame Page.Other
 
-            Dashboard subModel ->
-                Dashboard.view subModel
-                    |> Html.map DashboardMsg
-                    |> Page.Page "Dashboard" Nothing
-                    |> frame Page.Dashboard
+        Dashboard subModel ->
+            Dashboard.view subModel
+                |> Html.map DashboardMsg
+                |> Page.Page loading "Dashboard" Nothing
+                |> Page.frame Page.Dashboard
 
-            NodeList params subModel ->
-                NodeList.view subModel params model.date
-                    |> Html.map NodeListMsg
-                    |> Page.Page "Nodes" (Just (\_ -> Noop))
-                    |> frame Page.Nodes
+        NodeList params subModel ->
+            NodeList.view subModel params model.date
+                |> Html.map NodeListMsg
+                |> Page.Page loading "Nodes" (Just (\_ -> Noop))
+                |> Page.frame Page.Nodes
 
-            NodeDetail params subModel ->
-                NodeDetail.view subModel params model.date
-                    |> Page.map NodeDetailMsg
-                    |> frame Page.Nodes
+        NodeDetail params subModel ->
+            NodeDetail.view subModel params model.date
+                |> Page.map NodeDetailMsg
+                |> Page.addLoading loading
+                |> Page.frame Page.Nodes
 
-            Report params subModel ->
-                Report.view subModel params model.date
-                    |> Page.map ReportMsg
-                    |> frame Page.Nodes
+        Report params subModel ->
+            Report.view subModel params model.date
+                |> Page.map ReportMsg
+                |> Page.addLoading loading
+                |> Page.frame Page.Nodes
 
 
 view : Model -> Html.Html Msg

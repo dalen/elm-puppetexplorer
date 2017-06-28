@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), Page, map, frame)
+module View.Page exposing (ActivePage(..), Page, map, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
@@ -22,7 +22,8 @@ type ActivePage
 
 
 type alias Page msg =
-    { title : String
+    { loading : Bool
+    , title : String
     , onScroll : Maybe (Int -> msg)
     , content : Html msg
     }
@@ -38,8 +39,8 @@ navLink icon label isActive href =
         ]
 
 
-frame : Bool -> ActivePage -> Page msg -> Html.Html msg
-frame loading activePage page =
+frame : ActivePage -> Page msg -> Html.Html msg
+frame activePage page =
     App.drawerLayout []
         [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
             [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
@@ -48,7 +49,7 @@ frame loading activePage page =
         , App.headerLayout
             [ attribute "fullbleed" "" ]
             [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
-                [ App.toolbar [] (toolbar loading page.title)
+                [ App.toolbar [] (toolbar page.loading page.title)
                 ]
             , page.content
             ]
@@ -69,3 +70,10 @@ map function page =
         | content = Html.map function page.content
         , onScroll = Maybe.map (\onScroll -> onScroll >> function) page.onScroll
     }
+
+
+{-| Set loading to true if argument is true or if it already was true in the Page
+-}
+addLoading : Bool -> Page msg -> Page msg
+addLoading loading page =
+    { page | loading = page.loading || loading }

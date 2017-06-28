@@ -82,7 +82,8 @@ update msg model =
 
 view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
-    { title = routeParams.node
+    { loading = False
+    , title = routeParams.node
     , onScroll = Nothing
     , content =
         Html.div
