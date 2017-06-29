@@ -8,6 +8,7 @@ import Page.NodeDetail as NodeDetail
 import Page.NodeList as NodeList
 import Page.Report as Report
 import Page.Errored as Errored exposing (PageLoadError)
+import Page.Loading as Loading
 import Html
 import Html.Attributes as Attributes
 import Date
@@ -217,7 +218,7 @@ viewPage : Model -> Bool -> Page -> Html.Html Msg
 viewPage model loading page =
     case page of
         Blank ->
-            Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
+            Loading.view
                 |> Page.Page loading (Page.Title "Loading")
                 |> Page.frame Page.Dashboard
 
