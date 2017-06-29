@@ -9,12 +9,12 @@ import Page.NodeList as NodeList
 import Page.Report as Report
 import Page.Errored as Errored exposing (PageLoadError)
 import Page.Loading as Loading
-import Html
-import Html.Attributes as Attributes
+import Html exposing (Html)
 import Date
 import Date.Extra
 import Time
 import View.Page as Page
+import View.Toolbar as Toolbar
 import Task
 import Ports
 
@@ -214,34 +214,34 @@ andThen advance ( beginModel, cmd1 ) =
 -- View
 
 
-viewPage : Model -> Bool -> Page -> Html.Html Msg
+viewPage : Model -> Bool -> Page -> Html Msg
 viewPage model loading page =
     case page of
         Blank ->
             Loading.view
-                |> Page.Page loading (Page.Title "Loading")
+                |> Page.Page loading (Toolbar.Title "Loading")
                 |> Page.frame Page.Dashboard
 
         NotFound ->
             Html.div [] [ Html.text "Page not found" ]
-                |> Page.Page loading (Page.Title "Page not found")
+                |> Page.Page loading (Toolbar.Title "Page not found")
                 |> Page.frame Page.Other
 
         Errored subModel ->
             Errored.view subModel
-                |> Page.Page loading (Page.Title "Error")
+                |> Page.Page loading (Toolbar.Title "Error")
                 |> Page.frame Page.Other
 
         Dashboard subModel ->
             Dashboard.view subModel
                 |> Html.map DashboardMsg
-                |> Page.Page loading (Page.Title "Dashboard")
+                |> Page.Page loading (Toolbar.Title "Dashboard")
                 |> Page.frame Page.Dashboard
 
         NodeList params subModel ->
             NodeList.view subModel params model.date
                 |> Html.map NodeListMsg
-                |> Page.Page loading (Page.Title "Nodes")
+                |> Page.Page loading (Toolbar.Title "Nodes")
                 |> Page.frame Page.Nodes
 
         NodeDetail params subModel ->
@@ -257,7 +257,7 @@ viewPage model loading page =
                 |> Page.frame Page.Nodes
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html Msg
 view model =
     case model.pageState of
         Loaded page ->

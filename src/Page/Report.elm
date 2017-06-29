@@ -12,6 +12,7 @@ import Json.Decode
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
+import View.Toolbar as Toolbar
 import View.EventList as EventList
 import Http
 import Util
@@ -80,7 +81,7 @@ item title content =
 view : Model -> Route.ReportParams -> Date -> Page.Page Msg
 view model routeParams date =
     { loading = False
-    , toolbar = Page.Title ("Report for " ++ model.report.certname)
+    , toolbar = Toolbar.Title ("Report for " ++ model.report.certname)
     , content =
         Html.div [ class "content-area" ]
             [ Paper.tabs [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab)) ]

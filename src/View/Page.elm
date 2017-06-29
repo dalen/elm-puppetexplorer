@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), Page, Toolbar(..), map, frame, addLoading)
+module View.Page exposing (ActivePage(..), Page, map, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
@@ -6,6 +6,7 @@ module View.Page exposing (ActivePage(..), Page, Toolbar(..), map, frame, addLoa
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (attribute)
 import Route
+import View.Toolbar as Toolbar
 import Polymer.App as App
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (icon, boolProperty)
@@ -21,14 +22,9 @@ type ActivePage
     | Other
 
 
-type Toolbar msg
-    = Title String
-    | Custom (List (Html msg))
-
-
 type alias Page msg =
     { loading : Bool
-    , toolbar : Toolbar msg
+    , toolbar : Toolbar.Toolbar msg
     , content : Html msg
     }
 
@@ -53,15 +49,7 @@ frame activePage page =
         , App.headerLayout
             [ attribute "fullbleed" "" ]
             [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
-                [ App.toolbar []
-                    (case page.toolbar of
-                        Title title ->
-                            (toolbar page.loading title)
-
-                        Custom html ->
-                            html
-                    )
-                ]
+                [ Toolbar.view page.loading page.toolbar ]
             , page.content
             ]
         ]
@@ -79,13 +67,7 @@ map : (a -> b) -> Page a -> Page b
 map function page =
     { page
         | content = Html.map function page.content
-        , toolbar =
-            case page.toolbar of
-                Custom html ->
-                    Custom (List.map (Html.map function) html)
-
-                Title title ->
-                    Title title
+        , toolbar = Toolbar.map function page.toolbar
     }
 
 

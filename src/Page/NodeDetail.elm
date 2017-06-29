@@ -14,6 +14,7 @@ import Route.Report
 import Task exposing (Task)
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
+import View.Toolbar as Toolbar
 import Http
 import Util
 import Scroll
@@ -83,7 +84,7 @@ update msg model =
 view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { loading = False
-    , toolbar = Page.Title routeParams.node
+    , toolbar = Toolbar.Title routeParams.node
     , content =
         Html.div
             []
