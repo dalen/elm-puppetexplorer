@@ -218,29 +218,29 @@ viewPage model loading page =
     case page of
         Blank ->
             Html.i [ Attributes.class "fa fa-spinner fa-spin", Attributes.style [ ( "size", "50" ) ] ] []
-                |> Page.Page loading "Loading" Nothing
+                |> Page.Page loading (Page.Title "Loading")
                 |> Page.frame Page.Dashboard
 
         NotFound ->
             Html.div [] [ Html.text "Page not found" ]
-                |> Page.Page loading "Page not found" Nothing
+                |> Page.Page loading (Page.Title "Page not found")
                 |> Page.frame Page.Other
 
         Errored subModel ->
             Errored.view subModel
-                |> Page.Page loading "Error" Nothing
+                |> Page.Page loading (Page.Title "Error")
                 |> Page.frame Page.Other
 
         Dashboard subModel ->
             Dashboard.view subModel
                 |> Html.map DashboardMsg
-                |> Page.Page loading "Dashboard" Nothing
+                |> Page.Page loading (Page.Title "Dashboard")
                 |> Page.frame Page.Dashboard
 
         NodeList params subModel ->
             NodeList.view subModel params model.date
                 |> Html.map NodeListMsg
-                |> Page.Page loading "Nodes" (Just (\_ -> Noop))
+                |> Page.Page loading (Page.Title "Nodes")
                 |> Page.frame Page.Nodes
 
         NodeDetail params subModel ->

@@ -80,8 +80,7 @@ item title content =
 view : Model -> Route.ReportParams -> Date -> Page.Page Msg
 view model routeParams date =
     { loading = False
-    , title = "Report for " ++ model.report.certname
-    , onScroll = Nothing
+    , toolbar = Page.Title ("Report for " ++ model.report.certname)
     , content =
         Html.div [ class "content-area" ]
             [ Paper.tabs [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab)) ]

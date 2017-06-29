@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), Page, map, frame, addLoading)
+module View.Page exposing (ActivePage(..), Page, Toolbar(..), map, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
@@ -21,10 +21,14 @@ type ActivePage
     | Other
 
 
+type Toolbar msg
+    = Title String
+    | Custom (List (Html msg))
+
+
 type alias Page msg =
     { loading : Bool
-    , title : String
-    , onScroll : Maybe (Int -> msg)
+    , toolbar : Toolbar msg
     , content : Html msg
     }
 
@@ -49,7 +53,14 @@ frame activePage page =
         , App.headerLayout
             [ attribute "fullbleed" "" ]
             [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
-                [ App.toolbar [] (toolbar page.loading page.title)
+                [ App.toolbar []
+                    (case page.toolbar of
+                        Title title ->
+                            (toolbar page.loading title)
+
+                        Custom html ->
+                            html
+                    )
                 ]
             , page.content
             ]
@@ -68,7 +79,13 @@ map : (a -> b) -> Page a -> Page b
 map function page =
     { page
         | content = Html.map function page.content
-        , onScroll = Maybe.map (\onScroll -> onScroll >> function) page.onScroll
+        , toolbar =
+            case page.toolbar of
+                Custom html ->
+                    Custom (List.map (Html.map function) html)
+
+                Title title ->
+                    Title title
     }
 
 
