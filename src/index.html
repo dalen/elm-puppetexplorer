@@ -26,34 +26,11 @@
     <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
     <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
     <link rel="stylesheet" href="/src/index.css">
-
-    <custom-style>
-      <style is="custom-style">
-        #drawer {
-          --app-drawer-content-container: {
-            box-shadow: 1px 0 2px 1px rgba(0,0,0,0.18);
-          }
-        }
-
-        app-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          background-color: #4285f4;
-          color: #fff;
-        }
-
-        app-header paper-icon-button {
-          --paper-icon-button-ink-color: white;
-        }
-      </style>
-    </custom-style>
   </head>
   <body>
     <div id="main">
       <h2>Loading configuration...</h2>
-      <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+      <paper-spinner></paper-spinner>
     </div>
     <script src="/app.js"></script>
   </body>
