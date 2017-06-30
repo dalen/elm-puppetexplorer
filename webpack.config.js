@@ -1,88 +1,82 @@
-var path = require("path");
+var path = require('path');
 
 module.exports = {
   entry: {
     app: [
       path.resolve(__dirname, 'src', 'index.js'),
       path.resolve(__dirname, 'src', 'index.html'),
-      path.resolve(__dirname, 'src', 'config.json'),
+      path.resolve(__dirname, 'src', 'config.json')
     ]
   },
 
   output: {
     path: path.resolve(__dirname + '/dist'),
-    filename: '[name].js',
+    filename: '[name].js'
   },
 
   module: {
     rules: [
       {
         test: /\.(css|scss)$/,
-        use: [
-          'file-loader',
-          'extract-loader',
-          'style-loader',
-          'css-loader',
-        ]
+        use: ['file-loader', 'extract-loader', 'style-loader', 'css-loader']
       },
       {
-        test:    /\.html$/,
-        exclude: /node_modules/,
+        test: /\.(png|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'file-loader'
+      },
+      {
+        test: /\.html$/,
+        exclude: /bower_components/,
         use: [
           {
             loader: 'file-loader',
             options: {
-              name: '[name].[ext]',
-            },
+              name: '[name].[ext]'
+            }
           },
           {
-            loader: 'extract-loader',
+            loader: 'extract-loader'
           },
           {
             loader: 'html-loader',
             options: {
-              attrs: 'img:src',
-              link: 'href',
-            },
-          },
-        ],
+              attrs: ['img:src']
+            }
+          }
+        ]
       },
       {
-        test:    /\.elm$/,
+        test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        loader:  'elm-webpack-loader?verbose=true&warn=true',
+        loader: 'elm-webpack-loader?verbose=true&warn=true'
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff',
-      },
-      {
-        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file-loader',
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
       },
       {
         test: /config\.json$/,
         loader: 'file-loader',
         options: {
-          name: '[name].[ext]',
-        },
-      },
+          name: '[name].[ext]'
+        }
+      }
     ],
 
-    noParse: /\.elm$/,
+    noParse: /\.elm$/
   },
 
   devServer: {
     inline: true,
     stats: { colors: true },
     historyApiFallback: {
-      disableDotRule: true, // certnames usually contain dots
-    }  ,
+      disableDotRule: true // certnames usually contain dots
+    },
     proxy: {
       '/api': {
         target: process.env.PUPPETDB_URL || 'http://puppetdb.puppetexplorer.io',
-        pathRewrite: { '^/api': '' },
-      },
-    },
-  },
+        pathRewrite: { '^/api': '' }
+      }
+    }
+  }
 };

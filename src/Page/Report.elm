@@ -68,7 +68,7 @@ update msg model =
                 )
 
 
-item : String -> Html.Html msg -> Html.Html msg
+item : String -> Html msg -> Html msg
 item title content =
     Paper.item [ boolProperty "disabled" True, class "static" ]
         [ Paper.itemBody [ attribute "two-line" "" ]
@@ -82,14 +82,19 @@ view : Model -> Route.ReportParams -> Date -> Page.Page Msg
 view model routeParams date =
     { loading = False
     , toolbar = Toolbar.Title ("Report for " ++ model.report.certname)
-    , content =
-        Html.div [ class "content-area" ]
-            [ Paper.tabs [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab)) ]
+    , extraToolbar =
+        Just
+            (Paper.tabs
+                [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab))
+                ]
                 [ Paper.tab [] [ text "Events" ]
                 , Paper.tab [] [ text "Logs" ]
                 , Paper.tab [] [ text "Metrics" ]
                 ]
-            , Html.div [ class "row" ]
+            )
+    , content =
+        Html.div [ class "content-area" ]
+            [ Html.div [ class "row" ]
                 [ Html.div [ class "col-xs-12 col-sm-12 col-md4 col-lg-3" ]
                     [ Paper.card []
                         [ Html.div [ class "card-content" ]
@@ -121,6 +126,13 @@ view model routeParams date =
                 ]
             ]
     }
+
+
+toolbar : String -> Tab -> Toolbar.Toolbar msg
+toolbar certname tab =
+    Toolbar.Custom
+        [ Html.div [ attribute "main-title" "" ] [ text ("Report for " ++ certname) ]
+        ]
 
 
 showMetric : Int -> Maybe String -> String -> String -> Report -> Html msg

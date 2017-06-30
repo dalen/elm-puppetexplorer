@@ -85,6 +85,7 @@ view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
 view model routeParams date =
     { loading = False
     , toolbar = Toolbar.Title routeParams.node
+    , extraToolbar = Nothing
     , content =
         Html.div
             []

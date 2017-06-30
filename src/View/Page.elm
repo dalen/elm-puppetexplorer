@@ -10,6 +10,8 @@ import View.Toolbar as Toolbar
 import Polymer.App as App
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (icon, boolProperty)
+import Material.Layout as Layout
+import Material
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -25,6 +27,7 @@ type ActivePage
 type alias Page msg =
     { loading : Bool
     , toolbar : Toolbar.Toolbar msg
+    , extraToolbar : Maybe (Html msg)
     , content : Html msg
     }
 
@@ -39,28 +42,42 @@ navLink icon label isActive href =
         ]
 
 
-frame : ActivePage -> Page msg -> Html.Html msg
-frame activePage page =
-    App.drawerLayout []
-        [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
-            [ navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
-            , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
-            ]
-        , App.headerLayout
-            [ attribute "fullbleed" "" ]
-            [ App.header [ attribute "slot" "header", boolProperty "reveals" True ]
-                [ Toolbar.view page.loading page.toolbar ]
-            , page.content
-            ]
-        ]
+frame : Material.Model -> ActivePage -> Page msg -> Html.Html msg
+frame mdl activePage page =
+    let
+        toolbar =
+            Toolbar.view page.toolbar
 
+        progressBar =
+            Paper.progress
+                [ attribute "indeterminate" ""
+                , attribute "bottom-item" ""
+                , boolProperty "disabled" (not page.loading)
+                ]
+                []
+    in
+        App.drawerLayout []
+            [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
+                [ App.toolbar [] []
+                , navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
+                , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
+                ]
+            , App.headerLayout
+                [ attribute "fullbleed" "" ]
+                [ App.header
+                    [ attribute "slot" "header"
+                    , boolProperty "reveals" True
+                    ]
+                    (case page.extraToolbar of
+                        Nothing ->
+                            [ toolbar, progressBar ]
 
-toolbar : Bool -> String -> List (Html m)
-toolbar loading title =
-    [ Paper.iconButton [ icon "menu", attribute "drawer-toggle" "" ] []
-    , Html.div [ attribute "main-title" "" ] [ text title ]
-    , Paper.progress [ attribute "indeterminate" "", attribute "bottom-item" "", boolProperty "disabled" (not loading) ] []
-    ]
+                        Just extraToolbar ->
+                            [ toolbar, extraToolbar, progressBar ]
+                    )
+                , page.content
+                ]
+            ]
 
 
 map : (a -> b) -> Page a -> Page b
@@ -68,6 +85,7 @@ map function page =
     { page
         | content = Html.map function page.content
         , toolbar = Toolbar.map function page.toolbar
+        , extraToolbar = Maybe.map (Html.map function) page.extraToolbar
     }
 
 

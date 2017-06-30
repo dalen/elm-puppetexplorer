@@ -16,23 +16,26 @@ type Toolbar msg
     | Custom (List (Html msg))
 
 
-view : Bool -> Toolbar msg -> Html msg
-view loading toolbar =
+{-| Add The drawer button and loading indicator.
+In between we either add a title or some custom Html
+-}
+view : Toolbar msg -> Html msg
+view toolbar =
     App.toolbar []
-        (case toolbar of
-            Title title ->
-                titleView loading title
+        (Paper.iconButton [ icon "menu", attribute "drawer-toggle" "" ] []
+            :: (case toolbar of
+                    Title title ->
+                        titleView title
 
-            Custom html ->
-                html
+                    Custom html ->
+                        html
+               )
         )
 
 
-titleView : Bool -> String -> List (Html m)
-titleView loading title =
-    [ Paper.iconButton [ icon "menu", attribute "drawer-toggle" "" ] []
-    , Html.div [ attribute "main-title" "" ] [ text title ]
-    , Paper.progress [ attribute "indeterminate" "", attribute "bottom-item" "", boolProperty "disabled" (not loading) ] []
+titleView : String -> List (Html m)
+titleView title =
+    [ Html.div [ attribute "main-title" "" ] [ text title ]
     ]
 
 

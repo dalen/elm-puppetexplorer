@@ -27,6 +27,12 @@ paper-tabs {
 
 app-header {
   background-color: var(--primary-color);
+  width: 100%;
+  color: var(--text-primary-color);
+}
+
+app-toolbar {
+  background-color: var(--primary-color);
 }
 
 app-drawer-layout:not([narrow]) [drawer-toggle] {
@@ -41,14 +47,6 @@ app-header > paper-progress {
   --app-drawer-content-container: {
     box-shadow: 1px 0 2px 1px rgba(0, 0, 0, 0.18);
   }
-}
-
-app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  color: #fff;
 }
 
 app-header paper-icon-button {

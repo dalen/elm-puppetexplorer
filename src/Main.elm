@@ -219,29 +219,29 @@ viewPage model loading page =
     case page of
         Blank ->
             Loading.view
-                |> Page.Page loading (Toolbar.Title "Loading")
+                |> Page.Page loading (Toolbar.Title "Loading") Nothing
                 |> Page.frame Page.Dashboard
 
         NotFound ->
             Html.div [] [ Html.text "Page not found" ]
-                |> Page.Page loading (Toolbar.Title "Page not found")
+                |> Page.Page loading (Toolbar.Title "Page not found") Nothing
                 |> Page.frame Page.Other
 
         Errored subModel ->
             Errored.view subModel
-                |> Page.Page loading (Toolbar.Title "Error")
+                |> Page.Page loading (Toolbar.Title "Error") Nothing
                 |> Page.frame Page.Other
 
         Dashboard subModel ->
             Dashboard.view subModel
                 |> Html.map DashboardMsg
-                |> Page.Page loading (Toolbar.Title "Dashboard")
+                |> Page.Page loading (Toolbar.Title "Dashboard") Nothing
                 |> Page.frame Page.Dashboard
 
         NodeList params subModel ->
             NodeList.view subModel params model.date
                 |> Html.map NodeListMsg
-                |> Page.Page loading (Toolbar.Title "Nodes")
+                |> Page.Page loading (Toolbar.Title "Nodes") Nothing
                 |> Page.frame Page.Nodes
 
         NodeDetail params subModel ->
