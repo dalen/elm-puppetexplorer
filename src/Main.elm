@@ -17,6 +17,7 @@ import View.Page as Page
 import View.Toolbar as Toolbar
 import Task
 import Ports
+import Material
 
 
 type Page
@@ -39,7 +40,8 @@ type PageState
 
 
 type alias Model =
-    { config : Config
+    { mdl : Material.Model
+    , config : Config
     , date : Date.Date
     , pageState : PageState
     }
@@ -50,7 +52,8 @@ init config location =
     let
         ( model, routeCmd ) =
             setRoute (Route.parse location)
-                { config = config
+                { mdl = Material.model
+                , config = config
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Loaded Blank
                 }
@@ -93,7 +96,8 @@ setRoute maybeRoute model =
 
 
 type Msg
-    = TimeMsg Time.Time
+    = Mdl (Material.Msg Msg)
+    | TimeMsg Time.Time
     | NewUrlMsg Route
     | LocationChangeMsg Location
     | DashboardLoaded (Result PageLoadError Dashboard.Model)
@@ -137,6 +141,9 @@ updatePage page msg model =
                         ( { model | pageState = TransitioningFrom (toModel newModel) }, Cmd.map toMsg newCmd )
     in
         case ( msg, page ) of
+            ( Mdl mdlMsg, _ ) ->
+                Material.update Mdl mdlMsg model
+
             ( DashboardLoaded (Ok subModel), _ ) ->
                 -- TODO: handle the params
                 ( { model | pageState = Loaded (Dashboard subModel) }, Cmd.none )
@@ -198,6 +205,7 @@ subscriptions model =
     Sub.batch
         [ Time.every Time.second TimeMsg
         , Ports.scrollBottom ScrollMsg
+        , Material.subscriptions Mdl model
         ]
 
 
@@ -216,45 +224,49 @@ andThen advance ( beginModel, cmd1 ) =
 
 viewPage : Model -> Bool -> Page -> Html Msg
 viewPage model loading page =
-    case page of
-        Blank ->
-            Loading.view
-                |> Page.Page loading (Toolbar.Title "Loading") Nothing
-                |> Page.frame Page.Dashboard
+    let
+        frame =
+            Page.frame Mdl model.mdl
+    in
+        case page of
+            Blank ->
+                Loading.view
+                    |> Page.Page loading (Toolbar.Title "Loading") Nothing
+                    |> frame Page.Dashboard
 
-        NotFound ->
-            Html.div [] [ Html.text "Page not found" ]
-                |> Page.Page loading (Toolbar.Title "Page not found") Nothing
-                |> Page.frame Page.Other
+            NotFound ->
+                Html.div [] [ Html.text "Page not found" ]
+                    |> Page.Page loading (Toolbar.Title "Page not found") Nothing
+                    |> frame Page.Other
 
-        Errored subModel ->
-            Errored.view subModel
-                |> Page.Page loading (Toolbar.Title "Error") Nothing
-                |> Page.frame Page.Other
+            Errored subModel ->
+                Errored.view subModel
+                    |> Page.Page loading (Toolbar.Title "Error") Nothing
+                    |> frame Page.Other
 
-        Dashboard subModel ->
-            Dashboard.view subModel
-                |> Html.map DashboardMsg
-                |> Page.Page loading (Toolbar.Title "Dashboard") Nothing
-                |> Page.frame Page.Dashboard
+            Dashboard subModel ->
+                Dashboard.view subModel
+                    |> Html.map DashboardMsg
+                    |> Page.Page loading (Toolbar.Title "Dashboard") Nothing
+                    |> frame Page.Dashboard
 
-        NodeList params subModel ->
-            NodeList.view subModel params model.date
-                |> Html.map NodeListMsg
-                |> Page.Page loading (Toolbar.Title "Nodes") Nothing
-                |> Page.frame Page.Nodes
+            NodeList params subModel ->
+                NodeList.view subModel params model.date
+                    |> Html.map NodeListMsg
+                    |> Page.Page loading (Toolbar.Title "Nodes") Nothing
+                    |> frame Page.Nodes
 
-        NodeDetail params subModel ->
-            NodeDetail.view subModel params model.date
-                |> Page.map NodeDetailMsg
-                |> Page.addLoading loading
-                |> Page.frame Page.Nodes
+            NodeDetail params subModel ->
+                NodeDetail.view subModel params model.date
+                    |> Page.map NodeDetailMsg
+                    |> Page.addLoading loading
+                    |> frame Page.Nodes
 
-        Report params subModel ->
-            Report.view subModel params model.date
-                |> Page.map ReportMsg
-                |> Page.addLoading loading
-                |> Page.frame Page.Nodes
+            Report params subModel ->
+                Report.view subModel params model.date
+                    |> Page.map ReportMsg
+                    |> Page.addLoading loading
+                    |> frame Page.Nodes
 
 
 view : Model -> Html Msg

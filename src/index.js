@@ -4,10 +4,24 @@ const mountNode = document.getElementById('main');
 
 fetch('/config.json').then(res => res.json()).then(out => {
   const app = Elm.Main.embed(mountNode, out);
-  document.addEventListener('scroll', event => {
-    const scroll = window.innerHeight + window.scrollY;
-    if (scroll == document.body.scrollHeight && window.scrollY > 0) {
-      app.ports.scrollBottom.send(scroll);
+
+  // Hack to add event listener to Elm-Mdl main element
+  const addScrollListener = () => {
+    const mainElem = document.getElementById('elm-mdl-layout-main');
+    if (mainElem) {
+      mainElem.addEventListener('scroll', event => {
+        if (
+          mainElem.scrollHeight - mainElem.scrollTop ===
+          mainElem.clientHeight
+        ) {
+          app.ports.scrollBottom.send(
+            mainElem.scrollHeight - mainElem.scrollTop
+          );
+        }
+      });
+    } else {
+      window.setTimeout(addScrollListener, 100);
     }
-  });
+  };
+  addScrollListener();
 });

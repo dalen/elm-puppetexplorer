@@ -6,9 +6,7 @@ module View.Toolbar exposing (..)
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (attribute)
 import Route
-import Polymer.App as App
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (icon, boolProperty)
+import Material.Layout as Layout
 
 
 type Toolbar msg
@@ -21,22 +19,14 @@ In between we either add a title or some custom Html
 -}
 view : Toolbar msg -> Html msg
 view toolbar =
-    App.toolbar []
-        (Paper.iconButton [ icon "menu", attribute "drawer-toggle" "" ] []
-            :: (case toolbar of
-                    Title title ->
-                        titleView title
+    Layout.row []
+        (case toolbar of
+            Title title ->
+                [ Layout.title [] [ text title ] ]
 
-                    Custom html ->
-                        html
-               )
+            Custom html ->
+                html
         )
-
-
-titleView : String -> List (Html m)
-titleView title =
-    [ Html.div [ attribute "main-title" "" ] [ text title ]
-    ]
 
 
 map : (a -> b) -> Toolbar a -> Toolbar b

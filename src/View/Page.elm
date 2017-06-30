@@ -7,11 +7,10 @@ import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (attribute)
 import Route
 import View.Toolbar as Toolbar
-import Polymer.App as App
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (icon, boolProperty)
-import Material.Layout as Layout
 import Material
+import Material.Layout as Layout
+import Material.List as Lists
+import Material.Progress as Progress
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -35,49 +34,49 @@ type alias Page msg =
 navLink : String -> String -> Bool -> String -> Html msg
 navLink icon label isActive href =
     Html.a [ Attr.href href ]
-        [ Paper.iconItem [ boolProperty "focused" isActive ]
-            [ Html.node "iron-icon" [ attribute "slot" "item-icon", attribute "icon" icon ] []
-            , text label
+        [ Lists.li []
+            [ Lists.content []
+                [ Lists.icon icon []
+                , text label
+                ]
             ]
         ]
 
 
-frame : Material.Model -> ActivePage -> Page msg -> Html.Html msg
-frame mdl activePage page =
+frame : (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
+frame mdlMsg mdlModel activePage page =
     let
         toolbar =
             Toolbar.view page.toolbar
 
         progressBar =
-            Paper.progress
-                [ attribute "indeterminate" ""
-                , attribute "bottom-item" ""
-                , boolProperty "disabled" (not page.loading)
-                ]
-                []
+            if page.loading then
+                Progress.indeterminate
+            else
+                Progress.progress 100
     in
-        App.drawerLayout []
-            [ App.drawer [ attribute "slot" "drawer", Attr.id "drawer" ]
-                [ App.toolbar [] []
-                , navLink "icons:dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
-                , navLink "device:storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
-                ]
-            , App.headerLayout
-                [ attribute "fullbleed" "" ]
-                [ App.header
-                    [ attribute "slot" "header"
-                    , boolProperty "reveals" True
-                    ]
-                    (case page.extraToolbar of
-                        Nothing ->
-                            [ toolbar, progressBar ]
+        Layout.render mdlMsg
+            mdlModel
+            [ Layout.fixedDrawer ]
+            { header =
+                (case page.extraToolbar of
+                    Nothing ->
+                        [ toolbar, progressBar ]
 
-                        Just extraToolbar ->
-                            [ toolbar, extraToolbar, progressBar ]
-                    )
-                , page.content
+                    Just extraToolbar ->
+                        [ toolbar, extraToolbar, progressBar ]
+                )
+            , drawer =
+                [ Layout.navigation []
+                    [ Lists.ul []
+                        [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
+                        , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
+                        ]
+                    ]
                 ]
-            ]
+            , tabs = ( [], [] )
+            , main = [ page.content ]
+            }
 
 
 map : (a -> b) -> Page a -> Page b

@@ -8,6 +8,14 @@ body {
   padding: 16px;
 }
 
+.mdl-layout__header > .mdl-progress {
+  width: 100%;
+}
+
+a > .mdl-list__item {
+  cursor: auto;
+}
+
 a {
   text-decoration: none;
 }
