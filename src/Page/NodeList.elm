@@ -1,8 +1,6 @@
 module Page.NodeList exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (attribute, class)
-import Html.Keyed
 import PuppetDB
 import Date
 import Status
@@ -15,8 +13,8 @@ import PuppetDB.Node exposing (Node)
 import Http
 import Util
 import Scroll
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (boolProperty)
+import Material.List as Lists
+import Material.Spinner as Spinner
 
 
 type alias Model =
@@ -85,14 +83,14 @@ update =
 view : Model -> Route.NodeListParams -> Date.Date -> Html Msg
 view model routeParams date =
     Html.div []
-        [ Html.Keyed.node "div"
+        [ Lists.ul
             []
             (List.map (nodeListView date routeParams) (Scroll.items model))
-        , Paper.spinner [ boolProperty "active" (Scroll.isGrowing model) ] []
+        , Spinner.spinner [ Spinner.active (Scroll.isGrowing model) ]
         ]
 
 
-nodeListView : Date.Date -> Route.NodeListParams -> Node -> ( String, Html Msg )
+nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Msg
 nodeListView date routeParams node =
     let
         timeAgo =
@@ -103,14 +101,14 @@ nodeListView date routeParams node =
                 Nothing ->
                     Html.text "No report for node"
     in
-        ( "node-" ++ node.certname
-        , Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
-            [ Paper.item []
-                [ Paper.itemBody [ attribute "two-line" "" ]
-                    [ Html.div [] [ text node.certname ]
-                    , Html.div [ attribute "secondary" "" ] [ timeAgo ]
+        Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
+            [ Lists.li [ Lists.withSubtitle ]
+                [ Lists.content []
+                    [ text node.certname
+                    , Lists.subtitle [] [ timeAgo ]
                     ]
-                , Status.icon node.latestReportStatus
+                , Lists.content2 []
+                    [ Status.icon node.latestReportStatus
+                    ]
                 ]
             ]
-        )

@@ -58,7 +58,7 @@ frame mdlMsg mdlModel activePage page =
     in
         Layout.render mdlMsg
             mdlModel
-            [ Layout.fixedDrawer, Layout.fixedTabs, Layout.fixedHeader ]
+            [ Layout.fixedDrawer, Layout.fixedTabs, Layout.fixedHeader, Layout.selectedTab 0 ]
             { header = [ toolbar, progressBar ]
             , drawer =
                 [ Lists.ul []

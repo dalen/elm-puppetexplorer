@@ -3,7 +3,8 @@ module Status exposing (..)
 import Json.Decode
 import Json.Decode.Extra
 import Html exposing (Html)
-import Html.Attributes exposing (attribute)
+import Material.Icon as Icon
+import Material.Color as Color
 
 
 {-| Handle status field in PuppetDB
@@ -19,20 +20,16 @@ icon : Status -> Html msg
 icon status =
     case status of
         Changed ->
-            Html.node "iron-icon" [ attribute "icon" "check-circle", Html.Attributes.class "status-changed" ] []
+            Icon.view "check_circle" [ Color.text (Color.color Color.Green Color.S500) ]
 
         Unchanged ->
-            Html.node "iron-icon" [ attribute "icon" "done", Html.Attributes.class "status-unchanged" ] []
+            Icon.view "done" []
 
         Failed ->
-            Html.node "iron-icon" [ attribute "icon" "error", Html.Attributes.class "status-failed" ] []
+            Icon.view "error" [ Color.text (Color.color Color.DeepOrange Color.A700) ]
 
         Unknown ->
-            Html.node "iron-icon" [ attribute "icon" "help", Html.Attributes.class "status-unknown" ] []
-
-
-listIcon =
-    icon
+            Icon.view "help" [ Color.text (Color.color Color.Grey Color.S500) ]
 
 
 decoder : Json.Decode.Decoder Status
