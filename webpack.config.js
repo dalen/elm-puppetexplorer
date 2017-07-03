@@ -18,11 +18,7 @@ module.exports = {
     rules: [
       {
         test: /\.(css|scss)$/,
-        use: ['file-loader', 'extract-loader', 'style-loader', 'css-loader']
-      },
-      {
-        test: /\.(png|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file-loader'
+        use: ['file-loader?name=[name].[ext]', 'extract-loader', 'css-loader']
       },
       {
         test: /\.html$/,
@@ -60,9 +56,7 @@ module.exports = {
           name: '[name].[ext]'
         }
       }
-    ],
-
-    noParse: /\.elm$/
+    ]
   },
 
   devServer: {
