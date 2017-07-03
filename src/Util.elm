@@ -21,6 +21,13 @@ dateDistance =
         Date.Distance.inWordsWithConfig config
 
 
+{-| Hours and minutes
+-}
+time : Date -> String
+time date =
+    Date.Extra.toFormattedString "hh:mm:ssX" date
+
+
 {-| ISO format without milliseconds
 -}
 formattedDate : Date -> String

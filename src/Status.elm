@@ -5,6 +5,7 @@ import Json.Decode.Extra
 import Html exposing (Html)
 import Material.Icon as Icon
 import Material.Color as Color
+import ColorScheme
 
 
 {-| Handle status field in PuppetDB
@@ -20,16 +21,16 @@ icon : Status -> Html msg
 icon status =
     case status of
         Changed ->
-            Icon.view "check_circle" [ Color.text (Color.color Color.Green Color.S500) ]
+            Icon.view "check_circle" [ Color.text ColorScheme.success ]
 
         Unchanged ->
             Icon.view "done" []
 
         Failed ->
-            Icon.view "error" [ Color.text (Color.color Color.DeepOrange Color.A700) ]
+            Icon.view "error" [ Color.text ColorScheme.error ]
 
         Unknown ->
-            Icon.view "help" [ Color.text (Color.color Color.Grey Color.S500) ]
+            Icon.view "help" [ Color.text ColorScheme.unknown ]
 
 
 decoder : Json.Decode.Decoder Status

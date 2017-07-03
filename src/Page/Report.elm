@@ -13,6 +13,7 @@ import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import View.Toolbar as Toolbar
 import View.EventList as EventList
+import View.LogList as LogList
 import Http
 import Util
 import Material.Grid as Grid
@@ -120,8 +121,16 @@ view model routeParams date msg =
                     ]
                 ]
             , Grid.cell [ Grid.size Grid.All 8 ]
-                [ EventList.view date model.report.resourceEvents
-                ]
+                (case routeParams.tab of
+                    Events ->
+                        [ EventList.view date model.report.resourceEvents ]
+
+                    Logs ->
+                        [ LogList.view date model.report.logs ]
+
+                    Metrics ->
+                        [ EventList.view date model.report.resourceEvents ]
+                )
             ]
     }
 

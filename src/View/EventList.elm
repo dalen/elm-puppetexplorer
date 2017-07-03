@@ -6,6 +6,7 @@ import PuppetDB.Report as Report
 import Material.List as Lists
 import Material.Icon as Icon
 import Material.Color as Color
+import ColorScheme
 
 
 view : Date -> Maybe (List Report.Event) -> Html msg
@@ -29,7 +30,6 @@ itemView date event =
                 event.resourceTitle
     in
         Lists.li [ Lists.withBody ]
-            -- NB! Required on every Lists.li containing subtitle.
             [ Lists.content []
                 [ text (event.resourceType ++ "[" ++ truncatedTitle ++ "]")
                 , Lists.body [] [ text (Maybe.withDefault "" event.message) ]
@@ -44,13 +44,13 @@ statusIcon : Report.EventStatus -> Html msg
 statusIcon status =
     case status of
         Report.Success ->
-            Icon.view "check_circle" [ Color.text (Color.color Color.Green Color.S500) ]
+            Icon.view "check_circle" [ Color.text ColorScheme.success ]
 
         Report.Failure ->
-            Icon.view "error" [ Color.text (Color.color Color.DeepOrange Color.A700) ]
+            Icon.view "error" [ Color.text ColorScheme.error ]
 
         Report.Noop ->
-            Icon.view "done" [ Color.text (Color.color Color.Grey Color.S500) ]
+            Icon.view "done" [ Color.text ColorScheme.unknown ]
 
         Report.Skipped ->
-            Icon.view "block" [ Color.text (Color.color Color.Yellow Color.S500) ]
+            Icon.view "block" [ Color.text ColorScheme.warning ]

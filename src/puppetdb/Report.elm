@@ -59,7 +59,7 @@ type alias Log =
     , message : String
     , source : String
     , tags : List String
-    , time : String
+    , time : Date
     }
 
 
@@ -123,7 +123,7 @@ decodeLog =
         |> Json.Decode.Pipeline.required "message" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "source" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "tags" (Json.Decode.list Json.Decode.string)
-        |> Json.Decode.Pipeline.required "time" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "time" (date)
 
 
 decodeMetric : Json.Decode.Decoder Metric
