@@ -20,6 +20,10 @@ a {
   text-decoration: none;
 }
 
+div.mdl-card__supporting-text > ul.mdl-list {
+  margin: 0px;
+}
+
 a > paper-icon-item {
   color: var(--primary-text-color);
 }
@@ -61,6 +65,10 @@ app-header paper-icon-button {
   --paper-icon-button-ink-color: white;
 }
 
+div.mdl-card {
+  width: 100%;
+}
+
 paper-card {
   width: 100%;
   height: 100%;
@@ -81,22 +89,6 @@ iron-icon.status-failed {
 
 iron-icon.status-changed {
   color: var(--paper-green-500);
-}
-
-iron-icon.eventstatus-success {
-  color: var(--paper-green-500);
-}
-
-iron-icon.eventstatus-failure {
-  color: var(--error-color);
-}
-
-iron-icon.eventstatus-skipped {
-  color: var(--paper-yellow-500);
-}
-
-iron-icon.eventstatus-noop {
-  color: var(--paper-grey-500);
 }
 
 paper-item.static {

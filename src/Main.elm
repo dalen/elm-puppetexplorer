@@ -231,40 +231,38 @@ viewPage model loading page =
         case page of
             Blank ->
                 Loading.view
-                    |> Page.Page loading (Toolbar.Title "Loading") Nothing
+                    |> Page.Page loading (Toolbar.Title "Loading") ( [], [] )
                     |> frame Page.Dashboard
 
             NotFound ->
                 Html.div [] [ Html.text "Page not found" ]
-                    |> Page.Page loading (Toolbar.Title "Page not found") Nothing
+                    |> Page.Page loading (Toolbar.Title "Page not found") ( [], [] )
                     |> frame Page.Other
 
             Errored subModel ->
                 Errored.view subModel
-                    |> Page.Page loading (Toolbar.Title "Error") Nothing
+                    |> Page.Page loading (Toolbar.Title "Error") ( [], [] )
                     |> frame Page.Other
 
             Dashboard subModel ->
                 Dashboard.view subModel
                     |> Html.map DashboardMsg
-                    |> Page.Page loading (Toolbar.Title "Dashboard") Nothing
+                    |> Page.Page loading (Toolbar.Title "Dashboard") ( [], [] )
                     |> frame Page.Dashboard
 
             NodeList params subModel ->
                 NodeList.view subModel params model.date
                     |> Html.map NodeListMsg
-                    |> Page.Page loading (Toolbar.Title "Nodes") Nothing
+                    |> Page.Page loading (Toolbar.Title "Nodes") ( [], [] )
                     |> frame Page.Nodes
 
             NodeDetail params subModel ->
-                NodeDetail.view subModel params model.date
-                    |> Page.map NodeDetailMsg
+                NodeDetail.view subModel params model.date NodeDetailMsg
                     |> Page.addLoading loading
                     |> frame Page.Nodes
 
             Report params subModel ->
-                Report.view subModel params model.date
-                    |> Page.map ReportMsg
+                Report.view subModel params model.date ReportMsg
                     |> Page.addLoading loading
                     |> frame Page.Nodes
 

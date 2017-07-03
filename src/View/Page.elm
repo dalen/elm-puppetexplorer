@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), Page, map, frame, addLoading)
+module View.Page exposing (ActivePage(..), Page, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
@@ -8,6 +8,7 @@ import Html.Attributes as Attr exposing (attribute)
 import Route
 import View.Toolbar as Toolbar
 import Material
+import Material.Options as Options
 import Material.Layout as Layout
 import Material.List as Lists
 import Material.Progress as Progress
@@ -26,7 +27,7 @@ type ActivePage
 type alias Page msg =
     { loading : Bool
     , toolbar : Toolbar.Toolbar msg
-    , extraToolbar : Maybe (Html msg)
+    , tabs : ( List (Html msg), List (Options.Style msg) )
     , content : Html msg
     }
 
@@ -57,35 +58,17 @@ frame mdlMsg mdlModel activePage page =
     in
         Layout.render mdlMsg
             mdlModel
-            [ Layout.fixedDrawer ]
-            { header =
-                (case page.extraToolbar of
-                    Nothing ->
-                        [ toolbar, progressBar ]
-
-                    Just extraToolbar ->
-                        [ toolbar, extraToolbar, progressBar ]
-                )
+            [ Layout.fixedDrawer, Layout.fixedTabs ]
+            { header = [ toolbar, progressBar ]
             , drawer =
-                [ Layout.navigation []
-                    [ Lists.ul []
-                        [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
-                        , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
-                        ]
+                [ Lists.ul []
+                    [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
+                    , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
                     ]
                 ]
-            , tabs = ( [], [] )
+            , tabs = page.tabs
             , main = [ page.content ]
             }
-
-
-map : (a -> b) -> Page a -> Page b
-map function page =
-    { page
-        | content = Html.map function page.content
-        , toolbar = Toolbar.map function page.toolbar
-        , extraToolbar = Maybe.map (Html.map function) page.extraToolbar
-    }
 
 
 {-| Set loading to true if argument is true or if it already was true in the Page

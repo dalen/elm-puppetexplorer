@@ -20,6 +20,7 @@ import Util
 import Scroll
 import Polymer.Paper as Paper
 import Polymer.Attributes exposing (boolProperty)
+import Material
 
 
 type alias Model =
@@ -68,6 +69,7 @@ getReportList serverUrl node =
 
 type Msg
     = ScrollMsg (Scroll.Msg Report)
+    | Mdl (Material.Msg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,12 +82,15 @@ update msg model =
             in
                 ( { model | list = subModel }, Cmd.map ScrollMsg subCmd )
 
+        Mdl mdl ->
+            ( model, Cmd.none )
 
-view : Model -> Route.NodeDetailParams -> Date -> Page.Page Msg
-view model routeParams date =
+
+view : Model -> Route.NodeDetailParams -> Date -> (Msg -> msg) -> Page.Page msg
+view model routeParams date msg =
     { loading = False
     , toolbar = Toolbar.Title routeParams.node
-    , extraToolbar = Nothing
+    , tabs = ( [], [] )
     , content =
         Html.div
             []

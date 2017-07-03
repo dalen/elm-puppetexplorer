@@ -16,8 +16,10 @@ import View.Toolbar as Toolbar
 import View.EventList as EventList
 import Http
 import Util
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (boolProperty)
+import Material.Grid as Grid
+import Material.Card as Card
+import Material.Elevation as Elevation
+import Material.List as Lists
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 
@@ -70,34 +72,25 @@ update msg model =
 
 item : String -> Html msg -> Html msg
 item title content =
-    Paper.item [ boolProperty "disabled" True, class "static" ]
-        [ Paper.itemBody [ attribute "two-line" "" ]
-            [ Html.div [] [ text title ]
-            , Html.div [ attribute "secondary" "" ] [ content ]
+    Lists.li [ Lists.withSubtitle ]
+        [ Lists.content []
+            [ text title
+            , Lists.subtitle [] [ content ]
             ]
         ]
 
 
-view : Model -> Route.ReportParams -> Date -> Page.Page Msg
-view model routeParams date =
+view : Model -> Route.ReportParams -> Date -> (Msg -> msg) -> Page.Page msg
+view model routeParams date msg =
     { loading = False
     , toolbar = Toolbar.Title ("Report for " ++ model.report.certname)
-    , extraToolbar =
-        Just
-            (Paper.tabs
-                [ attribute "selected" (toString (Route.Report.toIndex routeParams.tab))
-                ]
-                [ Paper.tab [] [ text "Events" ]
-                , Paper.tab [] [ text "Logs" ]
-                , Paper.tab [] [ text "Metrics" ]
-                ]
-            )
+    , tabs = ( [ text "Events", text "Logs", text "Metrics" ], [] )
     , content =
-        Html.div [ class "content-area" ]
-            [ Html.div [ class "row" ]
-                [ Html.div [ class "col-xs-12 col-sm-12 col-md4 col-lg-3" ]
-                    [ Paper.card []
-                        [ Html.div [ class "card-content" ]
+        Grid.grid []
+            [ Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 8, Grid.size Grid.Desktop 4 ]
+                [ Card.view [ Elevation.e2 ]
+                    [ Card.text []
+                        [ Lists.ul []
                             [ item "Environment" (text model.report.environment)
                             , item "Run time" (showMetric 1 (Just "s") "time" "total" model.report)
                             , item "Configuration version" (text model.report.configurationVersion)
@@ -116,13 +109,9 @@ view model routeParams date =
                             ]
                         ]
                     ]
-                , Html.div [ class "col-xs-12 col-sm-12 col-md8 col-lg-9" ]
-                    [ Paper.card []
-                        [ Html.div [ class "card-content" ]
-                            [ EventList.view date model.report.resourceEvents
-                            ]
-                        ]
-                    ]
+                ]
+            , Grid.cell [ Grid.size Grid.All 8 ]
+                [ EventList.view date model.report.resourceEvents
                 ]
             ]
     }
