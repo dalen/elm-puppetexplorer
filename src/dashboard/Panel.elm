@@ -1,14 +1,18 @@
 module Dashboard.Panel exposing (..)
 
-import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute, class)
+import Html exposing (Html, text)
 import Config
 import PuppetDB.Bean
 import Http
 import Page.Errored as Errored exposing (PageLoadError)
 import View.Page as Page
 import Task exposing (Task)
-import Polymer.Paper as Paper
+import Material.Card as Card
+import Material.Grid as Grid
+import Material.Options as Options
+import Material.Typography as Typography
+import Material.Color as Color
+import Material.Elevation as Elevation
 
 
 type alias DashboardPanel =
@@ -67,10 +71,19 @@ get serverUrl config =
 
 {-| Render a panel
 -}
-view : DashboardPanel -> Html msg
+view : DashboardPanel -> Grid.Cell msg
 view panel =
-    Html.div [ class "col-xs-12 col-sm-6 col-md4 col-lg-3" ]
-        [ Paper.card [ attribute "heading" panel.config.title ]
-            [ Html.div [ Attr.class "card-content" ] [ Html.text (toString panel.value) ]
+    Grid.cell [ Grid.size Grid.All 4 ]
+        [ Card.view [ Elevation.e2 ]
+            [ Card.title []
+                [ Card.head [] [ text panel.config.title ]
+                ]
+            , Card.text []
+                [ Options.span
+                    [ Typography.display4
+                    , Color.text Color.primary
+                    ]
+                    [ text (toString panel.value) ]
+                ]
             ]
         ]

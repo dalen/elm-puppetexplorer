@@ -7,6 +7,9 @@ import Config
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError)
+import Material.Options as Options
+import Material.Color as Color
+import Material.Grid as Grid
 
 
 type alias Model =
@@ -66,12 +69,12 @@ updatePanel function rowIndex panelIndex dashboardPanels =
 -}
 panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Html.div [ class "row" ] (List.map Panel.view panels)
+    Grid.grid [] (List.map Panel.view panels)
 
 
 view : Model -> Html Never
 view model =
-    Html.div [ class "content-area" ]
+    Options.div [ Options.cs "content-area", Color.background (Color.color Color.Grey Color.S50) ]
         (List.append
             (List.map
                 panelRow

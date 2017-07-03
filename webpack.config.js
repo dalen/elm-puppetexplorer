@@ -26,7 +26,6 @@ module.exports = {
       },
       {
         test: /\.html$/,
-        exclude: /bower_components/,
         use: [
           {
             loader: 'file-loader',
@@ -40,7 +39,7 @@ module.exports = {
           {
             loader: 'html-loader',
             options: {
-              attrs: ['img:src']
+              attrs: ['img:src', 'link:href']
             }
           }
         ]

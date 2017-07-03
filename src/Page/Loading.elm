@@ -1,10 +1,9 @@
 module Page.Loading exposing (..)
 
 import Html exposing (Html)
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (boolProperty)
+import Material.Spinner as Spinner
 
 
 view : Html msg
 view =
-    Paper.spinner [ boolProperty "active" True ] []
+    Spinner.spinner [ Spinner.active True ]
