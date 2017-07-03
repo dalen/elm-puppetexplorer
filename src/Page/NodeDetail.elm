@@ -86,17 +86,15 @@ update msg model =
 
 view : Model -> Route.NodeDetailParams -> Date -> (Msg -> msg) -> Page.Page msg
 view model routeParams date msg =
-    { loading = False
-    , toolbar = Toolbar.Title routeParams.node
-    , tabs = ( [], [] )
-    , content =
-        Html.div []
-            [ Lists.ul
-                []
+    Page.pageWithoutTabs
+        False
+        (Toolbar.Title routeParams.node)
+        (Html.div []
+            [ Lists.ul []
                 (List.map (reportListItemView date routeParams) (Scroll.items model.list))
             , Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
             ]
-    }
+        )
 
 
 reportListItemView : Date -> Route.NodeDetailParams -> Report -> Html msg

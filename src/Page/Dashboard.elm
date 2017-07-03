@@ -2,7 +2,6 @@ module Page.Dashboard exposing (..)
 
 import Dashboard.Panel as Panel
 import Html exposing (Html, text)
-import Html.Attributes exposing (attribute, class)
 import Config
 import Task exposing (Task)
 import View.Page as Page

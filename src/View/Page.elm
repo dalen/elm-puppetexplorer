@@ -1,4 +1,4 @@
-module View.Page exposing (ActivePage(..), Page, frame, addLoading)
+module View.Page exposing (ActivePage(..), Page, pageWithoutTabs, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
@@ -28,7 +28,20 @@ type alias Page msg =
     { loading : Bool
     , toolbar : Toolbar.Toolbar msg
     , tabs : ( List (Html msg), List (Options.Style msg) )
+    , selectedTab : Int
+    , onSelectTab : Maybe (Int -> msg)
     , content : Html msg
+    }
+
+
+pageWithoutTabs : Bool -> Toolbar.Toolbar msg -> Html msg -> Page msg
+pageWithoutTabs loading toolbar content =
+    { loading = loading
+    , toolbar = toolbar
+    , tabs = ( [], [] )
+    , selectedTab = 0
+    , onSelectTab = Nothing
+    , content = content
     }
 
 
@@ -55,10 +68,24 @@ frame mdlMsg mdlModel activePage page =
                 Progress.indeterminate
             else
                 Progress.progress 100
+
+        layoutOptions =
+            [ Layout.fixedDrawer
+            , Layout.fixedTabs
+            , Layout.fixedHeader
+            , Layout.selectedTab page.selectedTab
+            , Layout.rippleTabs
+            ]
     in
         Layout.render mdlMsg
             mdlModel
-            [ Layout.fixedDrawer, Layout.fixedTabs, Layout.fixedHeader, Layout.selectedTab 0 ]
+            (case page.onSelectTab of
+                Just onSelectTab ->
+                    (Layout.onSelectTab onSelectTab) :: layoutOptions
+
+                Nothing ->
+                    layoutOptions
+            )
             { header = [ toolbar, progressBar ]
             , drawer =
                 [ Lists.ul []

@@ -9,6 +9,22 @@ type Tab
     | Metrics
 
 
+fromIndex : Int -> Tab
+fromIndex index =
+    case index of
+        0 ->
+            Events
+
+        1 ->
+            Logs
+
+        2 ->
+            Metrics
+
+        _ ->
+            Events
+
+
 toPath : Tab -> String
 toPath tab =
     case tab of

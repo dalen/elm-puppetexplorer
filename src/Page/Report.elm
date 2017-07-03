@@ -20,24 +20,25 @@ import Material.Grid as Grid
 import Material.Card as Card
 import Material.Elevation as Elevation
 import Material.List as Lists
+import Material.Icon as Icon
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 
 
 type alias Model =
-    { tab : Tab
-    , routeParams : Route.ReportParams
+    { routeParams : Route.ReportParams
     , report : PuppetDB.Report.Report
     }
 
 
 type Msg
     = ChangePage Int
+    | SelectTab Int
 
 
 init : Config.Config -> Route.ReportParams -> Task PageLoadError Model
 init config params =
-    Task.map (Model Events params)
+    Task.map (Model params)
         (getReport config.serverUrl params.hash)
 
 
@@ -60,6 +61,13 @@ getReport serverUrl hash =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectTab tab ->
+            let
+                routeParams =
+                    model.routeParams
+            in
+                ( model, Route.newUrl (Route.Report { routeParams | tab = Route.Report.fromIndex tab }) )
+
         ChangePage page ->
             let
                 routeParams =
@@ -85,6 +93,8 @@ view model routeParams date msg =
     { loading = False
     , toolbar = Toolbar.Title ("Report for " ++ model.report.certname)
     , tabs = ( [ text "Events", text "Logs", text "Metrics" ], [] )
+    , selectedTab = Route.Report.toIndex routeParams.tab
+    , onSelectTab = Just (SelectTab >> msg)
     , content =
         Grid.grid []
             [ Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 8, Grid.size Grid.Desktop 4 ]
@@ -103,7 +113,7 @@ view model routeParams date msg =
                                         text producer
 
                                     Nothing ->
-                                        Html.node "iron-icon" [ attribute "icon" "help" ] []
+                                        Icon.view "help" []
                                 )
                             , item "End time" (text (Util.formattedDate model.report.endTime))
                             ]
@@ -115,13 +125,6 @@ view model routeParams date msg =
                 ]
             ]
     }
-
-
-toolbar : String -> Tab -> Toolbar.Toolbar msg
-toolbar certname tab =
-    Toolbar.Custom
-        [ Html.div [ attribute "main-title" "" ] [ text ("Report for " ++ certname) ]
-        ]
 
 
 showMetric : Int -> Maybe String -> String -> String -> Report -> Html msg
