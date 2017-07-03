@@ -3,7 +3,6 @@ module Page.Report exposing (..)
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Html exposing (Html, text)
-import Html.Attributes exposing (attribute, class)
 import Date exposing (Date)
 import Route
 import Route.Report exposing (Tab(..))
@@ -137,4 +136,4 @@ showMetric decimals unit name category report =
                 )
 
         Nothing ->
-            Html.node "iron-icon" [ attribute "icon" "help" ] []
+            Icon.view "help" []
