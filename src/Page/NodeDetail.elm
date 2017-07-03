@@ -1,8 +1,6 @@
 module Page.NodeDetail exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes exposing (attribute)
-import Html.Keyed
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Date exposing (Date)
@@ -18,9 +16,9 @@ import View.Toolbar as Toolbar
 import Http
 import Util
 import Scroll
-import Polymer.Paper as Paper
-import Polymer.Attributes exposing (boolProperty)
 import Material
+import Material.List as Lists
+import Material.Spinner as Spinner
 
 
 type alias Model =
@@ -92,17 +90,16 @@ view model routeParams date msg =
     , toolbar = Toolbar.Title routeParams.node
     , tabs = ( [], [] )
     , content =
-        Html.div
-            []
-            [ Html.Keyed.node "div"
-                [ Html.Attributes.id "node-detail" ]
+        Html.div []
+            [ Lists.ul
+                []
                 (List.map (reportListItemView date routeParams) (Scroll.items model.list))
-            , Paper.spinner [ boolProperty "active" (Scroll.isGrowing model.list) ] []
+            , Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
             ]
     }
 
 
-reportListItemView : Date -> Route.NodeDetailParams -> Report -> ( String, Html msg )
+reportListItemView : Date -> Route.NodeDetailParams -> Report -> Html msg
 reportListItemView date routeParams report =
     let
         -- ISO format without milliseconds
@@ -112,14 +109,12 @@ reportListItemView date routeParams report =
         timeAgo =
             Html.text (Util.dateDistance date report.receiveTime)
     in
-        ( "node-report-" ++ "report.hash"
-        , Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Route.Report.Events)) ]
-            [ Paper.item []
-                [ Paper.itemBody [ attribute "two-line" "" ]
-                    [ Html.div [] [ text formattedDate ]
-                    , Html.div [ attribute "secondary" "" ] [ timeAgo ]
+        Html.a [ Route.href (Route.Report (Route.ReportParams report.hash Route.Report.Events)) ]
+            [ Lists.li [ Lists.withSubtitle ]
+                [ Lists.content []
+                    [ text formattedDate
+                    , Lists.subtitle [] [ timeAgo ]
                     ]
                 , Status.icon report.status
                 ]
             ]
-        )
