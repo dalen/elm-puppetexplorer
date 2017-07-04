@@ -7,6 +7,9 @@ body {
 .content-area {
   padding: 16px;
 }
+.content-white {
+  background-color: white;
+}
 
 .mdl-layout__header > .mdl-progress {
   width: 100%;
@@ -27,4 +30,13 @@ ul.mdl-list {
 div.mdl-card {
   width: 100%;
   height: 100%;
+}
+
+/* Divider color should be 12% opacity */
+ul > hr {
+  border-color: rgba(0, 0, 0, .12);
+}
+
+hr.divider {
+  border-color: rgba(0, 0, 0, .12);
 }

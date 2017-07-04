@@ -19,8 +19,8 @@ itemView : Date -> Report.Log -> Html msg
 itemView date log =
     Lists.li [ Lists.withBody ]
         [ Lists.content []
-            [ text (Util.time log.time)
-            , Lists.body [] [ text log.message ]
+            [ text log.source
+            , Lists.body [] [ text ((Util.time log.time) ++ " - " ++ log.message) ]
             ]
         , Lists.content2 []
             [ Lists.info2 []

@@ -3,6 +3,7 @@ module Page.Report exposing (..)
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Html exposing (Html, text)
+import Html.Attributes as Attr
 import Date exposing (Date)
 import Route
 import Route.Report exposing (Tab(..))
@@ -17,10 +18,9 @@ import View.LogList as LogList
 import Http
 import Util
 import Material.Grid as Grid
-import Material.Card as Card
-import Material.Elevation as Elevation
 import Material.List as Lists
 import Material.Icon as Icon
+import Material.Options as Options
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 
@@ -78,11 +78,12 @@ update msg model =
                 )
 
 
-item : String -> Html msg -> Html msg
-item title content =
+item : String -> String -> Html msg -> Html msg
+item title icon content =
     Lists.li [ Lists.withSubtitle ]
         [ Lists.content []
-            [ text title
+            [ Lists.icon icon []
+            , text title
             , Lists.subtitle [] [ content ]
             ]
         ]
@@ -96,41 +97,46 @@ view model routeParams date msg =
     , selectedTab = Route.Report.toIndex routeParams.tab
     , onSelectTab = Just (SelectTab >> msg)
     , content =
-        Grid.grid []
-            [ Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 8, Grid.size Grid.Desktop 4 ]
-                [ Card.view [ Elevation.e2 ]
-                    [ Card.text []
-                        [ Lists.ul []
-                            [ item "Environment" (text model.report.environment)
-                            , item "Run time" (showMetric 1 (Just "s") "time" "total" model.report)
-                            , item "Configuration version" (text model.report.configurationVersion)
-                            , item "Start time" (text (Util.formattedDate model.report.startTime))
-                            , item "Puppet version" (text model.report.puppetVersion)
-                            , item "Catalog retrieval time" (showMetric 1 (Just "s") "time" "total" model.report)
-                            , item "Catalog compiled by"
-                                (case model.report.producer of
-                                    Just producer ->
-                                        text producer
+        Html.div [ Attr.class "content-white" ]
+            [ Grid.grid []
+                [ Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 4, Grid.size Grid.Desktop 6, Options.css "margin-bottom" "0" ]
+                    [ Lists.ul [ Options.css "padding" "0" ]
+                        [ item "Environment" "label_outline" (text model.report.environment)
+                        , item "Run time" "schedule" (showMetric 1 (Just "s") "time" "total" model.report)
+                        , item "Configuration version"
+                            "assignment"
+                            (text model.report.configurationVersion)
+                        , item "Puppet version" "receipt" (text model.report.puppetVersion)
+                        ]
+                    ]
+                , Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 4, Grid.size Grid.Desktop 6, Options.css "margin-top" "0" ]
+                    [ Lists.ul [ Options.css "padding" "0" ]
+                        [ item "Catalog retrieval time" "assignment_returned" (showMetric 1 (Just "s") "time" "total" model.report)
+                        , item "Catalog compiled by"
+                            "build"
+                            (case model.report.producer of
+                                Just producer ->
+                                    text producer
 
-                                    Nothing ->
-                                        Icon.view "help" []
-                                )
-                            , item "End time" (text (Util.formattedDate model.report.endTime))
-                            ]
+                                Nothing ->
+                                    Icon.view "help" []
+                            )
+                        , item "Start time" "flight_takeoff" (text (Util.formattedDate model.report.startTime))
+                        , item "End time" "flight_land" (text (Util.formattedDate model.report.endTime))
                         ]
                     ]
                 ]
-            , Grid.cell [ Grid.size Grid.All 8 ]
-                (case routeParams.tab of
-                    Events ->
-                        [ EventList.view date model.report.resourceEvents ]
+            , Html.hr [ Attr.class "divider" ] []
+            , (case routeParams.tab of
+                Events ->
+                    EventList.view date model.report.resourceEvents
 
-                    Logs ->
-                        [ LogList.view date model.report.logs ]
+                Logs ->
+                    LogList.view date model.report.logs
 
-                    Metrics ->
-                        [ EventList.view date model.report.resourceEvents ]
-                )
+                Metrics ->
+                    EventList.view date model.report.resourceEvents
+              )
             ]
     }
 
