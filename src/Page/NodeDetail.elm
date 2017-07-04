@@ -1,6 +1,7 @@
 module Page.NodeDetail exposing (..)
 
 import Html exposing (Html, text)
+import Html.Attributes as Attr
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Date exposing (Date)

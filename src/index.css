@@ -1,14 +1,5 @@
-body {
-  margin: 0;
-  font-family: 'Roboto', 'Noto', sans-serif;
-  background-color: #fafafa;
-}
-
-.content-area {
+.dashboard {
   padding: 16px;
-}
-.content-white {
-  background-color: white;
 }
 
 .mdl-layout__header > .mdl-progress {

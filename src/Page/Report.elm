@@ -97,7 +97,7 @@ view model routeParams date msg =
     , selectedTab = Route.Report.toIndex routeParams.tab
     , onSelectTab = Just (SelectTab >> msg)
     , content =
-        Html.div [ Attr.class "content-white" ]
+        Html.div []
             [ Grid.grid []
                 [ Grid.cell [ Grid.size Grid.Phone 4, Grid.size Grid.Tablet 4, Grid.size Grid.Desktop 6, Options.css "margin-bottom" "0" ]
                     [ Lists.ul [ Options.css "padding" "0" ]

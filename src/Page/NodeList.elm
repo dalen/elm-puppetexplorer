@@ -1,6 +1,7 @@
 module Page.NodeList exposing (..)
 
 import Html exposing (Html, text)
+import Html.Attributes as Attr
 import PuppetDB
 import Date
 import Status
