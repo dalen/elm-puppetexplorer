@@ -59,7 +59,7 @@ init config location =
                 }
     in
         ( model
-        , routeCmd
+        , Cmd.batch [ routeCmd, Material.init Mdl ]
         )
 
 
