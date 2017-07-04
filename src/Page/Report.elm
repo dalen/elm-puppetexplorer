@@ -21,8 +21,11 @@ import Material.Grid as Grid
 import Material.List as Lists
 import Material.Icon as Icon
 import Material.Options as Options
+import Material.Table as Table
+import Material.Typography as Typography
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
+import Set
 
 
 type alias Model =
@@ -135,7 +138,7 @@ view model routeParams date msg =
                     LogList.view date model.report.logs
 
                 Metrics ->
-                    EventList.view date model.report.resourceEvents
+                    metricsView model.report.metrics
               )
             ]
     }
@@ -152,3 +155,57 @@ showMetric decimals unit name category report =
 
         Nothing ->
             Icon.view "help" []
+
+
+metricCategories : List PuppetDB.Report.Metric -> List String
+metricCategories metrics =
+    List.foldl (\metric categories -> Set.insert metric.category categories) Set.empty metrics
+        |> Set.toList
+
+
+metricsForCategory : String -> List PuppetDB.Report.Metric -> List PuppetDB.Report.Metric
+metricsForCategory category metrics =
+    List.foldl
+        (\metric filteredMetrics ->
+            if metric.category == category then
+                List.append filteredMetrics [ metric ]
+            else
+                filteredMetrics
+        )
+        []
+        metrics
+
+
+metricsView : List PuppetDB.Report.Metric -> Html msg
+metricsView metrics =
+    Html.div []
+        (metricCategories metrics
+            |> List.map
+                (\category ->
+                    Html.div []
+                        [ Options.styled Html.p
+                            [ Typography.subhead, Typography.capitalize ]
+                            [ text category ]
+                        , Table.table
+                            []
+                            [ Table.tbody []
+                                (metricsForCategory category metrics
+                                    |> List.map
+                                        (\metric ->
+                                            Table.tr []
+                                                [ Table.td [ Typography.capitalize ] [ text metric.name ]
+                                                , Table.td []
+                                                    [ text
+                                                        (if (floor metric.value) == (ceiling metric.value) then
+                                                            (toString metric.value)
+                                                         else
+                                                            (FormatNumber.format { usLocale | decimals = 2 } metric.value)
+                                                        )
+                                                    ]
+                                                ]
+                                        )
+                                )
+                            ]
+                        ]
+                )
+        )
