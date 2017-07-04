@@ -251,9 +251,8 @@ viewPage model loading page =
                     |> frame Page.Dashboard
 
             NodeList params subModel ->
-                NodeList.view subModel params model.date
-                    |> Html.map NodeListMsg
-                    |> Page.pageWithoutTabs loading (Toolbar.Title "Nodes")
+                NodeList.view model.mdl Mdl subModel params model.date NodeListMsg
+                    |> Page.addLoading loading
                     |> frame Page.Nodes
 
             NodeDetail params subModel ->

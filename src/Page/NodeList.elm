@@ -14,8 +14,12 @@ import PuppetDB.Node exposing (Node)
 import Http
 import Util
 import Scroll
+import View.Toolbar as Toolbar
+import Material
 import Material.List as Lists
+import Material.Layout as Layout
 import Material.Spinner as Spinner
+import Material.Textfield as Textfield
 
 
 type alias Model =
@@ -81,14 +85,40 @@ update =
     Scroll.update
 
 
-view : Model -> Route.NodeListParams -> Date.Date -> Html Msg
-view model routeParams date =
-    Html.div []
-        [ Lists.ul
-            []
-            (List.map (nodeListView date routeParams) (Scroll.items model))
-        , Spinner.spinner [ Spinner.active (Scroll.isGrowing model) ]
-        ]
+view :
+    Material.Model
+    -> (Material.Msg msg -> msg)
+    -> Model
+    -> Route.NodeListParams
+    -> Date.Date
+    -> (Msg -> msg)
+    -> Page.Page msg
+view mdlModel mdlMsg model routeParams date msg =
+    Page.pageWithoutTabs
+        (Scroll.isGrowing model)
+        (Toolbar.Custom
+            [ Layout.title [] [ text "Nodes" ]
+            , Layout.spacer
+            , Textfield.render mdlMsg
+                [ 0 ]
+                mdlModel
+                [ Textfield.label "Expandable"
+                , Textfield.floatingLabel
+                , Textfield.expandable "nodelist-query"
+                , Textfield.expandableIcon "search"
+                ]
+                []
+            ]
+        )
+        (Html.map msg
+            (Html.div []
+                [ Lists.ul
+                    []
+                    (List.map (nodeListView date routeParams) (Scroll.items model))
+                , Spinner.spinner [ Spinner.active (Scroll.isGrowing model) ]
+                ]
+            )
+        )
 
 
 nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Msg
