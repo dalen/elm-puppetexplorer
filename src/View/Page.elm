@@ -12,6 +12,7 @@ import Material.Options as Options
 import Material.Layout as Layout
 import Material.List as Lists
 import Material.Progress as Progress
+import Material.Color as Color
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -48,7 +49,7 @@ pageWithoutTabs loading toolbar content =
 navLink : String -> String -> Bool -> String -> Html msg
 navLink icon label isActive href =
     Html.a [ Attr.href href ]
-        [ Lists.li []
+        [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
             [ Lists.content []
                 [ Lists.icon icon []
                 , text label
