@@ -19,6 +19,7 @@ import Material.List as Lists
 import Material.Layout as Layout
 import Material.Spinner as Spinner
 import Material.Textfield as Textfield
+import Material.Options as Options
 
 
 type alias Model =
@@ -122,7 +123,9 @@ view mdlModel mdlMsg model routeParams date msg =
                 [ Lists.ul
                     []
                     (List.map (nodeListView date routeParams) (Scroll.items model.list))
-                , Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
+                , Options.div [ Options.center ]
+                    [ Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
+                    ]
                 ]
             )
         )

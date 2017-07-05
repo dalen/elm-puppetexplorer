@@ -1,7 +1,6 @@
 module Page.NodeDetail exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes as Attr
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Date exposing (Date)
@@ -20,6 +19,7 @@ import Scroll
 import Material
 import Material.List as Lists
 import Material.Spinner as Spinner
+import Material.Options as Options
 
 
 type alias Model =
@@ -93,7 +93,9 @@ view model routeParams date msg =
         (Html.div []
             [ Lists.ul []
                 (List.map (reportListItemView date routeParams) (Scroll.items model.list))
-            , Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
+            , Options.div [ Options.center ]
+                [ Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
+                ]
             ]
         )
 
