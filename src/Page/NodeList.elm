@@ -1,7 +1,6 @@
 module Page.NodeList exposing (..)
 
 import Html exposing (Html, text)
-import Html.Attributes as Attr
 import PuppetDB
 import Date
 import Status
@@ -23,7 +22,8 @@ import Material.Textfield as Textfield
 
 
 type alias Model =
-    Scroll.Model Node
+    { list : Scroll.Model Node
+    }
 
 
 perLoad : Int
@@ -39,6 +39,7 @@ init config params =
     in
         Task.map (Scroll.setItems (Scroll.init perLoad (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
             |> Task.mapError handleLoadError
+            |> Task.map Model
 
 
 getNodeList : String -> Maybe String -> Task PageLoadError (List Node)
@@ -71,18 +72,24 @@ nodeListRequest serverUrl query offset =
 -- update
 
 
-type alias Msg =
-    Scroll.Msg Node
+type Msg
+    = ScrollMsg (Scroll.Msg Node)
 
 
 grow : Msg
 grow =
-    Scroll.Grow
+    ScrollMsg Scroll.Grow
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update =
-    Scroll.update
+update msg model =
+    case msg of
+        ScrollMsg subMsg ->
+            let
+                ( subModel, subCmd ) =
+                    Scroll.update subMsg model.list
+            in
+                ( { model | list = subModel }, Cmd.map ScrollMsg subCmd )
 
 
 view :
@@ -95,7 +102,7 @@ view :
     -> Page.Page msg
 view mdlModel mdlMsg model routeParams date msg =
     Page.pageWithoutTabs
-        (Scroll.isGrowing model)
+        (Scroll.isGrowing model.list)
         (Toolbar.Custom
             [ Layout.title [] [ text "Nodes" ]
             , Layout.spacer
@@ -114,8 +121,8 @@ view mdlModel mdlMsg model routeParams date msg =
             (Html.div []
                 [ Lists.ul
                     []
-                    (List.map (nodeListView date routeParams) (Scroll.items model))
-                , Spinner.spinner [ Spinner.active (Scroll.isGrowing model) ]
+                    (List.map (nodeListView date routeParams) (Scroll.items model.list))
+                , Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
                 ]
             )
         )
