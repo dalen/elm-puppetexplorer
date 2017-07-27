@@ -165,47 +165,61 @@ metricCategories metrics =
 
 metricsForCategory : String -> List PuppetDB.Report.Metric -> List PuppetDB.Report.Metric
 metricsForCategory category metrics =
-    List.foldl
-        (\metric filteredMetrics ->
-            if metric.category == category then
-                List.append filteredMetrics [ metric ]
-            else
-                filteredMetrics
-        )
-        []
-        metrics
+    let
+        unsortedMetrics =
+            List.foldl
+                (\metric filteredMetrics ->
+                    if metric.category == category then
+                        List.append filteredMetrics [ metric ]
+                    else
+                        filteredMetrics
+                )
+                []
+                metrics
+    in
+        -- Make sure we put the total last in the list
+        List.append
+            (List.filter (\metric -> metric.name /= "total") unsortedMetrics)
+            (List.filter (\metric -> metric.name == "total") unsortedMetrics)
 
 
 metricsView : List PuppetDB.Report.Metric -> Html msg
 metricsView metrics =
-    Html.div []
+    Grid.grid []
         (metricCategories metrics
             |> List.map
-                (\category ->
-                    Html.div []
-                        [ Options.styled Html.p
-                            [ Typography.subhead, Typography.capitalize ]
-                            [ text category ]
-                        , Table.table
-                            []
-                            [ Table.tbody []
-                                (metricsForCategory category metrics
-                                    |> List.map
-                                        (\metric ->
-                                            Table.tr []
-                                                [ Table.td [ Typography.capitalize ] [ text metric.name ]
-                                                , Table.td []
-                                                    [ text
-                                                        (if (floor metric.value) == (ceiling metric.value) then
-                                                            (toString metric.value)
-                                                         else
-                                                            (FormatNumber.format { usLocale | decimals = 2 } metric.value)
-                                                        )
-                                                    ]
-                                                ]
-                                        )
-                                )
-                            ]
-                        ]
-                )
+                (metricsCategoryView metrics)
         )
+
+
+metricsCategoryView : List PuppetDB.Report.Metric -> String -> Grid.Cell msg
+metricsCategoryView metrics category =
+    Grid.cell [ Grid.size Grid.All 4 ]
+        [ Options.styled Html.p
+            [ Typography.subhead, Typography.capitalize ]
+            [ text category ]
+        , Table.table
+            []
+            [ Table.tbody []
+                (metricsForCategory category metrics
+                    |> List.map
+                        (\metric ->
+                            Table.tr []
+                                [ Table.td
+                                    [ Typography.capitalize
+                                    , Typography.body2 |> Options.when (metric.name == "total")
+                                    ]
+                                    [ text metric.name ]
+                                , Table.td [ Typography.body2 |> Options.when (metric.name == "total") ]
+                                    [ text
+                                        (if (floor metric.value) == (ceiling metric.value) then
+                                            (toString metric.value)
+                                         else
+                                            (FormatNumber.format { usLocale | decimals = 2 } metric.value)
+                                        )
+                                    ]
+                                ]
+                        )
+                )
+            ]
+        ]
