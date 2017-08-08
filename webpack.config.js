@@ -68,7 +68,8 @@ module.exports = {
     proxy: {
       '/api': {
         target: process.env.PUPPETDB_URL || 'http://puppetdb.puppetexplorer.io',
-        pathRewrite: { '^/api': '' }
+        pathRewrite: { '^/api': '' },
+        changeOrigin: true
       }
     }
   }
