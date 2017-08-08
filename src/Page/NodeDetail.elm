@@ -10,7 +10,7 @@ import Config exposing (Config)
 import Route
 import Route.Report
 import Task exposing (Task)
-import Page.Errored as Errored exposing (PageLoadError)
+import Page.Errored as Errored exposing (PageLoadError, ErrorMessage)
 import View.Page as Page
 import View.Toolbar as Toolbar
 import Http
@@ -37,6 +37,7 @@ init config params =
     Task.map
         (Scroll.setItems (Scroll.init perLoad (reportListRequest config.serverUrl params.node)))
         (getReportList config.serverUrl params.node)
+        |> Task.mapError (Errored.pageLoadError Page.Nodes)
         |> Task.map Model
 
 
@@ -59,11 +60,11 @@ reportListRequest serverUrl node offset =
         PuppetDB.Report.listDecoder
 
 
-getReportList : String -> String -> Task PageLoadError (List Report)
+getReportList : String -> String -> Task ErrorMessage (List Report)
 getReportList serverUrl node =
     reportListRequest serverUrl node 0
         |> Http.toTask
-        |> Task.mapError (Errored.httpError Page.Nodes "loading list of reports")
+        |> Task.mapError (Errored.httpError "loading list of reports")
 
 
 type Msg

@@ -5,7 +5,7 @@ import Html exposing (Html, text)
 import Config
 import Task exposing (Task)
 import View.Page as Page
-import Page.Errored as Errored exposing (PageLoadError)
+import Page.Errored as Errored exposing (PageLoadError, ErrorMessage)
 import Material.Options as Options
 import Material.Color as Color
 import Material.Grid as Grid
@@ -26,21 +26,17 @@ type alias PanelConfigs =
 
 init : Config.Config -> Task PageLoadError Model
 init config =
-    let
-        handleLoadError _ =
-            Errored.pageLoadError Page.Dashboard "Failed to load dashboard."
-    in
-        Task.map Model (getPanels config.serverUrl config.dashboardPanels)
-            |> Task.mapError handleLoadError
+    Task.map Model (getPanels config.serverUrl config.dashboardPanels)
+        |> Task.mapError (Errored.pageLoadError Page.Dashboard)
 
 
-getPanels : String -> PanelConfigs -> Task PageLoadError DashboardPanels
+getPanels : String -> PanelConfigs -> Task ErrorMessage DashboardPanels
 getPanels serverUrl panelConfigs =
     List.map (getPanelRow serverUrl) panelConfigs
         |> Task.sequence
 
 
-getPanelRow : String -> List Config.DashboardPanelConfig -> Task PageLoadError (List Panel.DashboardPanel)
+getPanelRow : String -> List Config.DashboardPanelConfig -> Task ErrorMessage (List Panel.DashboardPanel)
 getPanelRow serverUrl panelConfigRow =
     List.map (Panel.get serverUrl) panelConfigRow
         |> Task.sequence

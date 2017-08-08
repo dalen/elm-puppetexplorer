@@ -1,4 +1,4 @@
-module Page.Errored exposing (view, httpError, pageLoadError, PageLoadError)
+module Page.Errored exposing (view, httpError, pageLoadError, PageLoadError, ErrorMessage)
 
 {-| The page that renders when there was an error trying to load another page,
 for example a Page Not Found error.
@@ -26,36 +26,32 @@ type alias Model =
     }
 
 
-pageLoadError : ActivePage -> String -> PageLoadError
+pageLoadError : ActivePage -> ErrorMessage -> PageLoadError
 pageLoadError activePage errorMessage =
     PageLoadError { activePage = activePage, errorMessage = errorMessage }
 
 
-httpError : ActivePage -> String -> Http.Error -> PageLoadError
-httpError activePage context error =
-    let
-        message =
-            "Error when "
-                ++ context
-                ++ ": "
-                ++ (case error of
-                        Http.BadStatus resp ->
-                            "Error " ++ (toString resp.status.code) ++ " : " ++ resp.body
+httpError : String -> Http.Error -> ErrorMessage
+httpError context error =
+    "Error when loading "
+        ++ context
+        ++ ": "
+        ++ (case error of
+                Http.BadStatus resp ->
+                    "Error " ++ (toString resp.status.code) ++ " : " ++ resp.body
 
-                        Http.BadUrl url ->
-                            "The URL " ++ url ++ " is malformed"
+                Http.BadUrl url ->
+                    "The URL " ++ url ++ " is malformed"
 
-                        Http.Timeout ->
-                            "Request timed out"
+                Http.Timeout ->
+                    "Request timed out"
 
-                        Http.NetworkError ->
-                            "Network error"
+                Http.NetworkError ->
+                    "Network error"
 
-                        Http.BadPayload str resp ->
-                            "Could not parse response from PuppetDB: " ++ str
-                   )
-    in
-        PageLoadError { activePage = activePage, errorMessage = message }
+                Http.BadPayload str resp ->
+                    "Could not parse response from PuppetDB: " ++ str
+           )
 
 
 

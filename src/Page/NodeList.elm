@@ -8,7 +8,7 @@ import Route
 import Config
 import Task exposing (Task)
 import View.Page as Page
-import Page.Errored as Errored exposing (PageLoadError)
+import Page.Errored as Errored exposing (PageLoadError, ErrorMessage)
 import PuppetDB.Node exposing (Node)
 import Http
 import Util
@@ -34,20 +34,16 @@ perLoad =
 
 init : Config.Config -> Route.NodeListParams -> Task PageLoadError Model
 init config params =
-    let
-        handleLoadError _ =
-            Errored.pageLoadError Page.Nodes "Failed to load list of nodes."
-    in
-        Task.map (Scroll.setItems (Scroll.init perLoad (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
-            |> Task.mapError handleLoadError
-            |> Task.map Model
+    Task.map (Scroll.setItems (Scroll.init perLoad (nodeListRequest config.serverUrl params.query))) (getNodeList config.serverUrl params.query)
+        |> Task.mapError (Errored.pageLoadError Page.Nodes)
+        |> Task.map Model
 
 
-getNodeList : String -> Maybe String -> Task PageLoadError (List Node)
+getNodeList : String -> Maybe String -> Task ErrorMessage (List Node)
 getNodeList serverUrl query =
     nodeListRequest serverUrl query 0
         |> Http.toTask
-        |> Task.mapError (\_ -> Errored.pageLoadError Page.Nodes "Failed to load list of nodes")
+        |> Task.mapError (Errored.httpError "list of nodes")
 
 
 nodeListRequest : String -> Maybe String -> Int -> Http.Request (List Node)

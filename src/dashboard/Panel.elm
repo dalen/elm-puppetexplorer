@@ -4,7 +4,7 @@ import Html exposing (Html, text)
 import Config
 import PuppetDB.Bean
 import Http
-import Page.Errored as Errored exposing (PageLoadError)
+import Page.Errored as Errored exposing (ErrorMessage)
 import View.Page as Page
 import Task exposing (Task)
 import Material.Card as Card
@@ -48,11 +48,11 @@ value panel value =
     { panel | value = value }
 
 
-get : String -> Config.DashboardPanelConfig -> Task PageLoadError DashboardPanel
+get : String -> Config.DashboardPanelConfig -> Task ErrorMessage DashboardPanel
 get serverUrl config =
     PuppetDB.Bean.get serverUrl config.bean
         |> Http.toTask
-        |> Task.mapError (Errored.httpError Page.Dashboard config.title)
+        |> Task.mapError (Errored.httpError config.title)
         |> Task.map (fromConfig config)
 
 
