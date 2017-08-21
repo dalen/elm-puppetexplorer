@@ -7,8 +7,6 @@ import Material.Options as Options
 import Material.Typography as Typography
 import Set
 import Chart
-import FormatNumber
-import FormatNumber.Locales
 import Util
 
 
@@ -70,17 +68,13 @@ metricsForCategory category metrics =
 -}
 metricsToData : List PuppetDB.Report.Metric -> List ( Float, String )
 metricsToData metrics =
-    let
-        locale =
-            FormatNumber.Locales.usLocale
-    in
-        List.map
-            (\metric ->
-                ( metric.value
-                , (metric.name ++ " " ++ Util.roundSignificantFiguresPretty 3 metric.value)
-                )
+    List.map
+        (\metric ->
+            ( metric.value
+            , (metric.name ++ " " ++ Util.roundSignificantFiguresPretty 3 metric.value)
             )
-            metrics
+        )
+        metrics
 
 
 chartColors : List String
