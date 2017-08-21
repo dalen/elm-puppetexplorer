@@ -7,6 +7,9 @@ import Material.Options as Options
 import Material.Typography as Typography
 import Set
 import Chart
+import FormatNumber
+import FormatNumber.Locales
+import Util
 
 
 view : List PuppetDB.Report.Metric -> Html msg
@@ -27,9 +30,10 @@ categoryView metrics category =
             [ Typography.subhead, Typography.capitalize ]
             [ text category ]
         , Chart.pie (metricsToData (metricsForCategory category metrics))
-            |> Chart.addValueToLabel
             |> Chart.dimensions 400 300
             |> Chart.colors chartColors
+            |> Chart.updateStyles "container" [ ( "padding", "0" ) ]
+            |> Chart.updateStyles "title" [ ( "display", "none" ) ]
             |> Chart.toHtml
         ]
 
@@ -66,7 +70,17 @@ metricsForCategory category metrics =
 -}
 metricsToData : List PuppetDB.Report.Metric -> List ( Float, String )
 metricsToData metrics =
-    List.map (\metric -> ( metric.value, metric.name )) metrics
+    let
+        locale =
+            FormatNumber.Locales.usLocale
+    in
+        List.map
+            (\metric ->
+                ( metric.value
+                , (metric.name ++ " " ++ Util.roundSignificantFiguresPretty 3 metric.value)
+                )
+            )
+            metrics
 
 
 chartColors : List String
