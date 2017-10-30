@@ -69,7 +69,7 @@ panelRow panels =
 
 view : Model -> Html Never
 view model =
-    Options.div [ Options.cs "dashboard", Color.background (Color.color Color.Grey Color.S50) ]
+    Options.div [ Options.cs "padded", Color.background (Color.color Color.Grey Color.S50) ]
         (List.append
             (List.map
                 panelRow

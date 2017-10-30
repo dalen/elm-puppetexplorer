@@ -1,4 +1,4 @@
-.dashboard {
+.padded {
   padding: 16px;
 }
 
@@ -25,9 +25,9 @@ div.mdl-card {
 
 /* Divider color should be 12% opacity */
 ul > hr {
-  border-color: rgba(0, 0, 0, .12);
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 hr.divider {
-  border-color: rgba(0, 0, 0, .12);
+  border-color: rgba(0, 0, 0, 0.12);
 }
