@@ -4,7 +4,6 @@ import Html exposing (Html, text)
 import PuppetDB
 import PuppetDB.Report exposing (Report)
 import Date exposing (Date)
-import Date.Extra
 import Status exposing (Status)
 import Config exposing (Config)
 import Route
