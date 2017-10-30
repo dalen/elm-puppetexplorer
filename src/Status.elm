@@ -5,6 +5,7 @@ import Json.Decode.Extra
 import Html exposing (Html)
 import Material.Icon as Icon
 import Material.Color as Color
+import Material.List as Lists
 import ColorScheme
 
 
@@ -31,6 +32,22 @@ icon status =
 
         Unknown ->
             Icon.view "help" [ Color.text ColorScheme.unknown ]
+
+
+listIcon : Status -> Html msg
+listIcon status =
+    case status of
+        Changed ->
+            Lists.icon "check_circle" [ Color.text ColorScheme.success ]
+
+        Unchanged ->
+            Lists.icon "done" []
+
+        Failed ->
+            Lists.icon "error" [ Color.text ColorScheme.error ]
+
+        Unknown ->
+            Lists.icon "help" [ Color.text ColorScheme.unknown ]
 
 
 decoder : Json.Decode.Decoder Status

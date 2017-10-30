@@ -141,11 +141,9 @@ nodeListView date routeParams node =
         Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
             [ Lists.li [ Lists.withSubtitle ]
                 [ Lists.content []
-                    [ text node.certname
+                    [ Status.listIcon node.latestReportStatus
+                    , text node.certname
                     , Lists.subtitle [] [ timeAgo ]
-                    ]
-                , Lists.content2 []
-                    [ Status.icon node.latestReportStatus
                     ]
                 ]
             ]
