@@ -106,7 +106,7 @@ reportListItemView date routeParams report =
     let
         -- ISO format without milliseconds
         formattedDate =
-            Date.Extra.toFormattedString "YYYY-MM-DDThh:mm:ssX" report.receiveTime
+            Util.formattedDate report.receiveTime
 
         timeAgo =
             Html.text (Util.dateDistance date report.receiveTime)

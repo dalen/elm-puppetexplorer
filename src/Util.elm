@@ -34,7 +34,7 @@ time date =
 -}
 formattedDate : Date -> String
 formattedDate date =
-    Date.Extra.toFormattedString "YYYY-MM-ddThh:mm:ssX" date
+    Date.Extra.toFormattedString "YYYY-MM-dThh:mm:ssX" date
 
 
 roundSignificantFigures : Int -> Float -> String
