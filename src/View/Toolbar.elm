@@ -4,8 +4,6 @@ module View.Toolbar exposing (..)
 -}
 
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (attribute)
-import Route
 import Material.Layout as Layout
 
 

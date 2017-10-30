@@ -5,7 +5,6 @@ import Config
 import PuppetDB.Bean
 import Http
 import Page.Errored as Errored exposing (ErrorMessage)
-import View.Page as Page
 import Task exposing (Task)
 import Material.Card as Card
 import Material.Grid as Grid
