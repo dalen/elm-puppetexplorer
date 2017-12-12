@@ -9,6 +9,10 @@ import Regex
 import Route.Report
 
 
+type alias QueryRouteParam p =
+    { p | query : Maybe String }
+
+
 type alias NodeListParams =
     { query : Maybe String
     }

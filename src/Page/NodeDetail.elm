@@ -87,7 +87,7 @@ update msg model =
 
 view : Model -> Route.NodeDetailParams -> Date -> (Msg -> msg) -> Page.Page msg
 view model routeParams date msg =
-    Page.pageWithoutTabs
+    Page.Page
         False
         (Toolbar.Title routeParams.node)
         (Html.div []

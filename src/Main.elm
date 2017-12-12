@@ -18,6 +18,7 @@ import View.Toolbar as Toolbar
 import Task
 import Ports
 import Material
+import Bootstrap.Navbar as Navbar
 
 
 type Page
@@ -41,6 +42,7 @@ type PageState
 
 type alias Model =
     { mdl : Material.Model
+    , navbar : Navbar.State
     , config : Config
     , date : Date.Date
     , pageState : PageState
@@ -50,16 +52,20 @@ type alias Model =
 init : Config -> Location -> ( Model, Cmd Msg )
 init config location =
     let
+        ( navbarState, navbarCmd ) =
+            Navbar.initialState NavbarMsg
+
         ( model, routeCmd ) =
             setRoute (Route.parse location)
                 { mdl = Material.model
+                , navbar = navbarState
                 , config = config
                 , date = Date.Extra.fromCalendarDate 2017 Date.Jan 1
                 , pageState = Loaded Blank
                 }
     in
         ( model
-        , Cmd.batch [ routeCmd, Material.init Mdl ]
+        , Cmd.batch [ routeCmd, navbarCmd, Material.init Mdl ]
         )
 
 
@@ -97,6 +103,7 @@ setRoute maybeRoute model =
 
 type Msg
     = Mdl (Material.Msg Msg)
+    | NavbarMsg Navbar.State
     | TimeMsg Time.Time
     | NewUrlMsg Route
     | LocationChangeMsg Location
@@ -143,6 +150,9 @@ updatePage page msg model =
         case ( msg, page ) of
             ( Mdl mdlMsg, _ ) ->
                 Material.update Mdl mdlMsg model
+
+            ( NavbarMsg state, _ ) ->
+                ( { model | navbar = state }, Cmd.none )
 
             ( DashboardLoaded (Ok subModel), _ ) ->
                 -- TODO: handle the params
@@ -206,6 +216,7 @@ subscriptions model =
         [ Time.every Time.second TimeMsg
         , Ports.scrollBottom ScrollMsg
         , Material.subscriptions Mdl model
+        , Navbar.subscriptions model.navbar NavbarMsg
         ]
 
 
@@ -226,28 +237,28 @@ viewPage : Model -> Bool -> Page -> Html Msg
 viewPage model loading page =
     let
         frame =
-            Page.frame Mdl model.mdl
+            Page.frame NavbarMsg model.navbar
     in
         case page of
             Blank ->
                 Loading.view
-                    |> Page.pageWithoutTabs loading (Toolbar.Title "Loading")
+                    |> Page.Page loading (Toolbar.Title "Loading")
                     |> frame Page.Dashboard
 
             NotFound ->
                 Html.div [] [ Html.text "Page not found" ]
-                    |> Page.pageWithoutTabs loading (Toolbar.Title "Page not found")
+                    |> Page.Page loading (Toolbar.Title "Page not found")
                     |> frame Page.Other
 
             Errored subModel ->
                 Errored.view subModel
-                    |> Page.pageWithoutTabs loading (Toolbar.Title "Error")
+                    |> Page.Page loading (Toolbar.Title "Error")
                     |> frame Page.Other
 
             Dashboard subModel ->
                 Dashboard.view subModel
                     |> Html.map DashboardMsg
-                    |> Page.pageWithoutTabs loading (Toolbar.Title "Dashboard")
+                    |> Page.Page loading (Toolbar.Title "Dashboard")
                     |> frame Page.Dashboard
 
             NodeList params subModel ->

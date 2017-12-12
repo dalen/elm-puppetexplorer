@@ -1,37 +1,41 @@
 module View.Toolbar exposing (..)
 
-{-| The frame around a typical page - that is, the header and footer.
--}
-
 import Html exposing (Html, text)
-import Material.Layout as Layout
+import Bootstrap.Navbar as Navbar
 
 
 type Toolbar msg
     = Title String
-    | Custom (List (Html msg))
+    | Custom (Navbar.Config msg -> Navbar.Config msg)
 
 
 {-| Add The drawer button and loading indicator.
 In between we either add a title or some custom Html
 -}
-view : Toolbar msg -> Html msg
-view toolbar =
-    Layout.row []
-        (case toolbar of
-            Title title ->
-                [ Layout.title [] [ text title ] ]
-
-            Custom html ->
-                html
-        )
-
-
-map : (a -> b) -> Toolbar a -> Toolbar b
-map function toolbar =
+view : (Navbar.State -> msg) -> Navbar.State -> Bool -> Toolbar msg -> Html msg
+view navbarMsg navbarState loading toolbar =
     case toolbar of
-        Custom html ->
-            Custom (List.map (Html.map function) html)
-
         Title title ->
-            Title title
+            Navbar.config navbarMsg
+                |> Navbar.withAnimation
+                |> Navbar.brand []
+                    [ text title ]
+                |> Navbar.view navbarState
+
+        Custom custom ->
+            Navbar.config navbarMsg
+                |> custom
+                |> Navbar.view navbarState
+
+
+
+{-
+   map : (a -> b) -> Toolbar a -> Toolbar b
+   map function toolbar =
+       case toolbar of
+           Custom html ->
+               Custom (List.map (Html.map function) html)
+
+           Title title ->
+               Title title
+-}

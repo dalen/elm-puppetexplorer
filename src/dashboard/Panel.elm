@@ -6,12 +6,8 @@ import PuppetDB.Bean
 import Http
 import Page.Errored as Errored exposing (ErrorMessage)
 import Task exposing (Task)
-import Material.Card as Card
-import Material.Grid as Grid
-import Material.Options as Options
-import Material.Typography as Typography
-import Material.Color as Color
-import Material.Elevation as Elevation
+import Bootstrap.Card as Card
+import Bootstrap.Grid as Grid
 
 
 type alias DashboardPanel =
@@ -70,19 +66,15 @@ get serverUrl config =
 
 {-| Render a panel
 -}
-view : DashboardPanel -> Grid.Cell msg
+view : DashboardPanel -> Grid.Column msg
 view panel =
-    Grid.cell [ Grid.size Grid.All 4 ]
-        [ Card.view [ Elevation.e2 ]
-            [ Card.title []
-                [ Card.head [] [ text panel.config.title ]
-                ]
-            , Card.text []
-                [ Options.span
-                    [ Typography.display4
-                    , Color.text Color.primary
-                    ]
+    Grid.col []
+        [ Card.config []
+            |> Card.header [] [ text panel.config.title ]
+            |> Card.block []
+                [ Card.text
+                    []
                     [ text (toString panel.value) ]
                 ]
-            ]
+            |> Card.view
         ]

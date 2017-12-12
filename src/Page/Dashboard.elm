@@ -2,13 +2,13 @@ module Page.Dashboard exposing (..)
 
 import Dashboard.Panel as Panel
 import Html exposing (Html, text)
+import Html.Attributes as Attr
 import Config
 import Task exposing (Task)
 import View.Page as Page
 import Page.Errored as Errored exposing (PageLoadError, ErrorMessage)
-import Material.Options as Options
-import Material.Color as Color
-import Material.Grid as Grid
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
 
 
 type alias Model =
@@ -64,12 +64,12 @@ updatePanel function rowIndex panelIndex dashboardPanels =
 -}
 panelRow : List Panel.DashboardPanel -> Html Never
 panelRow panels =
-    Grid.grid [] (List.map Panel.view panels)
+    Grid.row [ Row.attrs [ Attr.class "py-2" ] ] (List.map Panel.view panels)
 
 
 view : Model -> Html Never
 view model =
-    Options.div [ Options.cs "padded", Color.background (Color.color Color.Grey Color.S50) ]
+    Grid.container [ Attr.class "py-2" ]
         (List.append
             (List.map
                 panelRow

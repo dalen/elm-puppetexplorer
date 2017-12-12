@@ -94,9 +94,11 @@ view : Model -> Route.ReportParams -> Date -> (Msg -> msg) -> Page.Page msg
 view model routeParams date msg =
     { loading = False
     , toolbar = Toolbar.Title ("Report for " ++ model.report.certname)
-    , tabs = ( [ text "Events", text "Logs", text "Metrics" ], [] )
-    , selectedTab = Route.Report.toIndex routeParams.tab
-    , onSelectTab = Just (SelectTab >> msg)
+
+    {- }    , tabs = ( [ text "Events", text "Logs", text "Metrics" ], [] )
+       , selectedTab = Route.Report.toIndex routeParams.tab
+       , onSelectTab = Just (SelectTab >> msg)
+    -}
     , content =
         Html.div []
             [ Grid.grid []

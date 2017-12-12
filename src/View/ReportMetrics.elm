@@ -2,17 +2,19 @@ module View.ReportMetrics exposing (..)
 
 import PuppetDB.Report exposing (Report)
 import Html exposing (Html, text)
-import Material.Grid as Grid
 import Material.Options as Options
 import Material.Typography as Typography
+import Material.Card as Card
+import Material.Grid as Grid
+import Material.Elevation as Elevation
+import Material.Table as Table
 import Set
-import Chart
 import Util
 
 
 view : List PuppetDB.Report.Metric -> Html msg
 view metrics =
-    Grid.grid []
+    Html.div []
         (metricCategories metrics
             |> List.map
                 (categoryView metrics)
@@ -21,18 +23,31 @@ view metrics =
 
 {-| View for one metric category
 -}
-categoryView : List PuppetDB.Report.Metric -> String -> Grid.Cell msg
+categoryView : List PuppetDB.Report.Metric -> String -> Html msg
 categoryView metrics category =
-    Grid.cell [ Grid.size Grid.All 4 ]
-        [ Options.styled Html.p
-            [ Typography.subhead, Typography.capitalize ]
-            [ text category ]
-        , Chart.pie (metricsToData (metricsForCategory category metrics))
-            |> Chart.dimensions 400 300
-            |> Chart.colors chartColors
-            |> Chart.updateStyles "container" [ ( "padding", "0" ) ]
-            |> Chart.updateStyles "title" [ ( "display", "none" ) ]
-            |> Chart.toHtml
+    Card.view [ Elevation.e2 ]
+        [ Card.title []
+            [ Card.head [] [ text category ] ]
+        , Card.text []
+            [ Table.table []
+                [ Table.thead []
+                    [ Table.tr []
+                        [ Table.th [] [ text "Category" ]
+                        , Table.th [] [ text "Count" ]
+                        ]
+                    ]
+                , Table.tbody []
+                    ((metricsForCategory category metrics)
+                        |> List.map
+                            (\metric ->
+                                Table.tr []
+                                    [ Table.td [] [ text metric.name ]
+                                    , Table.td [ Table.numeric ] [ text (Util.roundSignificantFiguresPretty 3 metric.value) ]
+                                    ]
+                            )
+                    )
+                ]
+            ]
         ]
 
 
@@ -48,20 +63,15 @@ metricCategories metrics =
 -}
 metricsForCategory : String -> List PuppetDB.Report.Metric -> List PuppetDB.Report.Metric
 metricsForCategory category metrics =
-    let
-        unsortedMetrics =
-            List.foldl
-                (\metric filteredMetrics ->
-                    if metric.category == category then
-                        List.append filteredMetrics [ metric ]
-                    else
-                        filteredMetrics
-                )
-                []
-                metrics
-    in
-        -- Remove the total from the list
-        (List.filter (\metric -> metric.name /= "total") unsortedMetrics)
+    List.foldl
+        (\metric filteredMetrics ->
+            if metric.category == category then
+                List.append filteredMetrics [ metric ]
+            else
+                filteredMetrics
+        )
+        []
+        metrics
 
 
 {-| Turn list of metrics to list of data for chart library

@@ -1,18 +1,14 @@
-module View.Page exposing (ActivePage(..), Page, pageWithoutTabs, frame, addLoading)
+module View.Page exposing (ActivePage(..), Page, frame, addLoading)
 
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (attribute)
-import Route
 import View.Toolbar as Toolbar
-import Material
-import Material.Options as Options
-import Material.Layout as Layout
-import Material.List as Lists
-import Material.Progress as Progress
-import Material.Color as Color
+import Bootstrap.Navbar as Navbar
+import FontAwesome.Web as Icon
+import Route
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -28,75 +24,43 @@ type ActivePage
 type alias Page msg =
     { loading : Bool
     , toolbar : Toolbar.Toolbar msg
-    , tabs : ( List (Html msg), List (Options.Style msg) )
-    , selectedTab : Int
-    , onSelectTab : Maybe (Int -> msg)
     , content : Html msg
     }
 
 
-pageWithoutTabs : Bool -> Toolbar.Toolbar msg -> Html msg -> Page msg
-pageWithoutTabs loading toolbar content =
-    { loading = loading
-    , toolbar = toolbar
-    , tabs = ( [], [] )
-    , selectedTab = 0
-    , onSelectTab = Nothing
-    , content = content
-    }
+itemLink : ActivePage -> ActivePage -> (List (Html.Attribute msg) -> List (Html msg) -> Navbar.Item msg)
+itemLink activePage linkPage =
+    if activePage == linkPage then
+        Navbar.itemLinkActive
+    else
+        Navbar.itemLink
 
 
-navLink : String -> String -> Bool -> String -> Html msg
-navLink icon label isActive href =
-    Html.a [ Attr.href href ]
-        [ Lists.li [ Color.background (Color.color Color.Grey Color.S200) |> Options.when isActive ]
-            [ Lists.content []
-                [ Lists.icon icon []
-                , text label
-                ]
-            ]
-        ]
-
-
-frame : (Material.Msg msg -> msg) -> Material.Model -> ActivePage -> Page msg -> Html.Html msg
-frame mdlMsg mdlModel activePage page =
+frame : (Navbar.State -> msg) -> Navbar.State -> ActivePage -> Page msg -> Html.Html msg
+frame navbarMsg navbarState activePage page =
     let
         toolbar =
-            Toolbar.view page.toolbar
+            case page.toolbar of
+                Toolbar.Title title ->
+                    Navbar.config navbarMsg
+                        |> Navbar.withAnimation
+                        |> Navbar.brand []
+                            [ text title ]
+                        |> Navbar.items
+                            [ itemLink activePage Dashboard [ Attr.href (Route.toString Route.Dashboard) ] [ Icon.dashboard, text " ", text "Dashboard" ]
+                            , itemLink activePage Nodes [ Attr.href (Route.toString (Route.NodeList { query = Nothing })) ] [ Icon.tasks, text " ", text "Nodes" ]
+                            ]
+                        |> Navbar.view navbarState
 
-        progressBar =
-            if page.loading then
-                Progress.indeterminate
-            else
-                Progress.progress 100
-
-        layoutOptions =
-            [ Layout.fixedDrawer
-            , Layout.fixedTabs
-            , Layout.fixedHeader
-            , Layout.selectedTab page.selectedTab
-            , Layout.rippleTabs
-            ]
+                Toolbar.Custom custom ->
+                    Navbar.config navbarMsg
+                        |> custom
+                        |> Navbar.view navbarState
     in
-        Layout.render mdlMsg
-            mdlModel
-            (case page.onSelectTab of
-                Just onSelectTab ->
-                    (Layout.onSelectTab onSelectTab) :: layoutOptions
-
-                Nothing ->
-                    layoutOptions
-            )
-            { header = [ toolbar, progressBar ]
-            , drawer =
-                [ Lists.ul []
-                    [ navLink "dashboard" "Dashboard" (activePage == Dashboard) (Route.toString Route.Dashboard)
-                    , navLink "storage" "Nodes" (activePage == Nodes) (Route.toString (Route.NodeList { query = Nothing }))
-                    ]
-                ]
-            , tabs = page.tabs
-            , main = [ page.content ]
-            }
+        Html.div []
+            [ toolbar
+            , page.content
+            ]
 
 
 {-| Set loading to true if argument is true or if it already was true in the Page

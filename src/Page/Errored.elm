@@ -7,9 +7,9 @@ for example a Page Not Found error.
 -- MODEL --
 
 import View.Page as Page exposing (ActivePage)
-import Html
-import Html.Attributes as Attributes
+import Html exposing (Html, text)
 import Http
+import Bootstrap.Alert as Alert
 
 
 type PageLoadError
@@ -58,10 +58,9 @@ httpError context error =
 -- VIEW --
 
 
-view : PageLoadError -> Html.Html msg
+view : PageLoadError -> Html msg
 view (PageLoadError model) =
-    Html.main_ [ Attributes.id "content", Attributes.class "container", Attributes.tabindex -1 ]
-        [ Html.h1 [] [ Html.text "Error Loading Page" ]
-        , Html.div [ Attributes.class "row" ]
-            [ Html.p [] [ Html.text model.errorMessage ] ]
+    Alert.danger
+        [ Alert.h4 [] [ text "Error Loading Page" ]
+        , text model.errorMessage
         ]

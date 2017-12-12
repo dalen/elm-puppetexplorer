@@ -16,10 +16,9 @@ import Scroll
 import View.Toolbar as Toolbar
 import Material
 import Material.List as Lists
-import Material.Layout as Layout
 import Material.Spinner as Spinner
-import Material.Textfield as Textfield
 import Material.Options as Options
+import Bootstrap.ListGroup as ListGroup
 
 
 type alias Model =
@@ -98,26 +97,12 @@ view :
     -> (Msg -> msg)
     -> Page.Page msg
 view mdlModel mdlMsg model routeParams date msg =
-    Page.pageWithoutTabs
+    Page.Page
         (Scroll.isGrowing model.list)
-        (Toolbar.Custom
-            [ Layout.title [] [ text "Nodes" ]
-            , Layout.spacer
-            , Textfield.render mdlMsg
-                [ 0 ]
-                mdlModel
-                [ Textfield.label "Expandable"
-                , Textfield.floatingLabel
-                , Textfield.expandable "nodelist-query"
-                , Textfield.expandableIcon "search"
-                ]
-                []
-            ]
-        )
+        (Toolbar.Title "Nodes")
         (Html.map msg
             (Html.div []
-                [ Lists.ul
-                    []
+                [ ListGroup.custom
                     (List.map (nodeListView date routeParams) (Scroll.items model.list))
                 , Options.div [ Options.center ]
                     [ Spinner.spinner [ Spinner.active (Scroll.isGrowing model.list) ]
@@ -127,7 +112,7 @@ view mdlModel mdlMsg model routeParams date msg =
         )
 
 
-nodeListView : Date.Date -> Route.NodeListParams -> Node -> Html Msg
+nodeListView : Date.Date -> Route.NodeListParams -> Node -> ListGroup.CustomItem Msg
 nodeListView date routeParams node =
     let
         timeAgo =
@@ -138,7 +123,7 @@ nodeListView date routeParams node =
                 Nothing ->
                     Html.text "No report for node"
     in
-        Html.a [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ]
+        ListGroup.anchor [ ListGroup.attrs [ Route.href (Route.NodeDetail (Route.NodeDetailParams node.certname Nothing routeParams.query)) ] ]
             [ Lists.li [ Lists.withSubtitle ]
                 [ Lists.content []
                     [ Status.listIcon node.latestReportStatus
